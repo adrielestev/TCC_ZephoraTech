@@ -1,0 +1,650 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-12T00:00:00.000Z",
+  "__export_source": "codex:zephora-backend",
+  "resources": [
+    {
+      "_id": "wrk_zephora",
+      "_type": "workspace",
+      "name": "Zephora API",
+      "description": "Colecao REST da API Zephora."
+    },
+    {
+      "_id": "env_zephora_base",
+      "_type": "environment",
+      "parentId": "wrk_zephora",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "token": "",
+        "room_id": "1",
+        "sensor_id": "1",
+        "collaborator_id": "1",
+        "user_id": "1",
+        "device_key": "lampada",
+        "mac_address": "AA:BB:CC:DD:EE:FF"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "token",
+          "room_id",
+          "sensor_id",
+          "collaborator_id",
+          "user_id",
+          "device_key",
+          "mac_address"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "Auth",
+      "metaSortKey": 100
+    },
+    {
+      "_id": "fld_users",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "Users",
+      "metaSortKey": 200
+    },
+    {
+      "_id": "fld_rooms",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "Rooms",
+      "metaSortKey": 300
+    },
+    {
+      "_id": "fld_collaborators",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "Collaborators",
+      "metaSortKey": 400
+    },
+    {
+      "_id": "fld_sensors",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "Sensors",
+      "metaSortKey": 500
+    },
+    {
+      "_id": "fld_esp32",
+      "_type": "request_group",
+      "parentId": "wrk_zephora",
+      "name": "ESP32",
+      "metaSortKey": 600
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "wrk_zephora",
+      "name": "Health",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "headers": [],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 10
+    },
+    {
+      "_id": "req_auth_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Aluno Teste\",\n  \"email\": \"aluno@zephora.local\",\n  \"password\": \"Aluno@123456\",\n  \"user_photo\": null\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 100
+    },
+    {
+      "_id": "req_auth_verify_email",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Verify Email",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/verify-email",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"aluno@zephora.local\",\n  \"code\": \"123456\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 110
+    },
+    {
+      "_id": "req_auth_resend_code",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Resend Code",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/resend-code",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"aluno@zephora.local\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 120
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login Admin",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@zephora.local\",\n  \"password\": \"Admin@123456\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 130
+    },
+    {
+      "_id": "req_auth_forgot_password",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Forgot Password",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/forgot-password",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@zephora.local\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 140
+    },
+    {
+      "_id": "req_auth_reset_password",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Reset Password",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/reset-password",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@zephora.local\",\n  \"code\": \"123456\",\n  \"password\": \"NovaSenha@123\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 150
+    },
+    {
+      "_id": "req_auth_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Me",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 160
+    },
+    {
+      "_id": "req_users_list",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "List Users",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 200
+    },
+    {
+      "_id": "req_users_update_me",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Update Me",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/users/me",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Administrador Zephora\",\n  \"user_photo\": null\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 210
+    },
+    {
+      "_id": "req_users_level",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Update User Level",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}/level",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"user_level\": \"USER\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 220
+    },
+    {
+      "_id": "req_users_delete",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Soft Delete User",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 230
+    },
+    {
+      "_id": "req_rooms_list",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "List Rooms",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 300
+    },
+    {
+      "_id": "req_rooms_create",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Create Room",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Laboratorio 1\",\n  \"classroom_code\": \"LAB-1\",\n  \"mac_address\": \"AA:BB:CC:DD:EE:FF\",\n  \"room_photo_1\": null,\n  \"room_photo_2\": null,\n  \"room_photo_3\": null\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 310
+    },
+    {
+      "_id": "req_rooms_get",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Get Room",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 320
+    },
+    {
+      "_id": "req_rooms_update",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Update Room",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Laboratorio Maker\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 330
+    },
+    {
+      "_id": "req_rooms_delete",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Delete Room",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 340
+    },
+    {
+      "_id": "req_collaborators_list",
+      "_type": "request",
+      "parentId": "fld_collaborators",
+      "name": "List Collaborators",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/collaborators",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 400
+    },
+    {
+      "_id": "req_collaborators_create",
+      "_type": "request",
+      "parentId": "fld_collaborators",
+      "name": "Add Collaborator",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/collaborators",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"user_id\": 2\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 410
+    },
+    {
+      "_id": "req_collaborators_delete",
+      "_type": "request",
+      "parentId": "fld_collaborators",
+      "name": "Remove Collaborator",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/collaborators/{{ _.collaborator_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 420
+    },
+    {
+      "_id": "req_sensors_list",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "List Sensors",
+      "method": "GET",
+      "url": "{{ _.base_url }}/sensors",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 500
+    },
+    {
+      "_id": "req_sensors_create",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "Create Sensor",
+      "method": "POST",
+      "url": "{{ _.base_url }}/sensors",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"room_id\": 1,\n  \"name\": \"Lampada\",\n  \"device_key\": \"lampada\",\n  \"direction\": \"OUTPUT\",\n  \"type\": \"RELE\",\n  \"type_of_control\": \"DIGITAL\",\n  \"pin\": 12,\n  \"pin_pwm\": null,\n  \"current_state\": 0\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 510
+    },
+    {
+      "_id": "req_sensors_get",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "Get Sensor",
+      "method": "GET",
+      "url": "{{ _.base_url }}/sensors/{{ _.sensor_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 520
+    },
+    {
+      "_id": "req_sensors_update",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "Update Sensor",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/sensors/{{ _.sensor_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Lampada Principal\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 530
+    },
+    {
+      "_id": "req_sensors_command",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "Command Sensor",
+      "method": "POST",
+      "url": "{{ _.base_url }}/sensors/{{ _.sensor_id }}/command",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"current_state\": 1\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 540
+    },
+    {
+      "_id": "req_sensors_delete",
+      "_type": "request",
+      "parentId": "fld_sensors",
+      "name": "Delete Sensor",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/sensors/{{ _.sensor_id }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 550
+    },
+    {
+      "_id": "req_esp32_handshake",
+      "_type": "request",
+      "parentId": "fld_esp32",
+      "name": "Handshake",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/handshake",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"user_id\": 1,\n  \"room_id\": 1,\n  \"mac_address\": \"AA:BB:CC:DD:EE:FF\"\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 600
+    },
+    {
+      "_id": "req_esp32_commands",
+      "_type": "request",
+      "parentId": "fld_esp32",
+      "name": "Get Commands",
+      "method": "GET",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/commands?mac_address={{ _.mac_address }}",
+      "headers": [],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 610
+    },
+    {
+      "_id": "req_esp32_report_state",
+      "_type": "request",
+      "parentId": "fld_esp32",
+      "name": "Report Sensor State",
+      "method": "POST",
+      "url": "{{ _.base_url }}/sensors/rooms/{{ _.room_id }}/{{ _.device_key }}/state",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"mac_address\": \"AA:BB:CC:DD:EE:FF\",\n  \"current_state\": 1\n}"
+      },
+      "authentication": {},
+      "metaSortKey": 620
+    }
+  ]
+}
