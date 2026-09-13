@@ -116,3 +116,31 @@ Troque esses valores antes de usar fora do ambiente local.
 ## E-mail em desenvolvimento
 
 Se `SMTP_HOST` estiver vazio, o Nodemailer usa transporte JSON e imprime o e-mail no console. Isso permite testar os codigos sem SMTP real.
+
+## ⚠️ Rotas de Fotos Ainda Não Implementadas
+
+As funcionalidades relacionadas ao gerenciamento de fotos de usuários e salas ainda não foram implementadas completamente e devem ser consideradas **indisponíveis** nesta versão da API.
+
+### Funcionalidades pendentes
+
+#### Fotos de Usuários
+
+- Upload de foto de perfil;
+- Atualização de foto de perfil;
+- Remoção de foto de perfil;
+- Validação de tipo e tamanho dos arquivos;
+- Armazenamento seguro das imagens;
+- Disponibilização da URL da imagem para consumo pelo frontend.
+
+#### Fotos de Salas
+
+- Upload das imagens da sala;
+- Atualização das imagens da sala;
+- Remoção das imagens da sala;
+- Validação de tipo e tamanho dos arquivos;
+- Armazenamento seguro das imagens;
+- Disponibilização da URL das imagens para consumo pelo frontend.
+
+### Observação
+
+A implementação deve incluir um mecanismo de upload de arquivos (ex.: **Multer**) e uma estratégia adequada de armazenamento
