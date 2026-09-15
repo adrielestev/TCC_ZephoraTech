@@ -8,17 +8,17 @@ const isLargeScreen = width >= 768;
 
 // Cores do tema Zephora
 export const Colors = {
-  // Primary
-  primary: '#0EA5E9',
-  primaryDark: '#0284C7',
-  primaryLight: '#38BDF8',
-  
+  // Primary — tom aproximado do azul de referência do login
+  primary: '#5B8DEF',
+  primaryDark: '#3E6FD1',
+  primaryLight: '#8CB0F5',
+
   // Secondary colors por contexto
   success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
   info: '#8B5CF6',
-  
+
   // Neutros
   background: '#F8FAFC',
   surface: '#FFFFFF',
@@ -28,15 +28,26 @@ export const Colors = {
     tertiary: '#64748B',
     placeholder: '#94A3B8',
   },
-  
+
   // Borders
   border: '#E2E8F0',
   borderLight: '#F1F5F9',
-  
+
   // Shadows
   shadow: {
     color: '#000000',
     opacity: 0.1,
+  },
+
+  // Campos de formulário (preenchidos, sem borda pesada)
+  inputFill: '#F0F4FA',
+  inputFillFocused: '#FFFFFF',
+
+  // Gradientes usados nas telas de autenticação
+  gradient: {
+    background: ['#f6f7f9', '#e3ebf7', '#C7D9F2'],
+    card: ['#FDFEFF', '#EEF2F8'],
+    button: ['#729AF0', '#4D7BE0'],
   },
 };
 

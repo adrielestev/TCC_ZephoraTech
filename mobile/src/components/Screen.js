@@ -1,43 +1,58 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Dimensions } from 'react-native';
-import { Colors, Spacing, Responsive } from '../theme/constants';
+import { View, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Colors, Spacing } from '../theme/constants';
+import { useResponsive } from '../hooks/useResponsive';
 
-const { width } = Dimensions.get('window');
+export const Screen = ({ children, scrollable = false, gradient = true, style, contentMaxWidth }) => {
+  const { horizontalPadding, contentMaxWidth: autoMaxWidth } = useResponsive();
+  const maxWidth = contentMaxWidth ?? autoMaxWidth;
 
-export const Screen = ({ children, scrollable = false, style }) => {
   const content = scrollable ? (
-    <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-      <View style={styles.contentWrapper}>
-        {children}
-      </View>
+    <ScrollView
+      contentContainerStyle={[styles.scrollContainer, { paddingHorizontal: horizontalPadding }]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={[styles.contentWrapper, { maxWidth }]}>{children}</View>
     </ScrollView>
   ) : (
-    <View style={styles.container}>
-      <View style={styles.contentWrapper}>
-        {children}
-      </View>
+    <View style={[styles.container, { paddingHorizontal: horizontalPadding }]}>
+      <View style={[styles.contentWrapper, { maxWidth }]}>{children}</View>
     </View>
   );
 
-  return (
+  const body = (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardView} 
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={[styles.innerContent, style]}>
-          {content}
-        </View>
+        <View style={[styles.innerContent, style]}>{content}</View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+
+  if (!gradient) {
+    return <View style={[styles.safeArea, { backgroundColor: Colors.background }]}>{body}</View>;
+  }
+
+  return (
+    <LinearGradient
+      colors={Colors.gradient.background}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 0.85, y: 1 }}
+      style={styles.safeArea}
+    >
+      {body}
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -47,16 +62,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: Responsive.horizontalPadding,
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingHorizontal: Responsive.horizontalPadding,
     paddingBottom: Spacing.xxxl,
   },
   contentWrapper: {
-    maxWidth: Responsive.maxWidth,
+    flex: 1,
     alignSelf: 'center',
     width: '100%',
-  }
+  },
 });

@@ -1,18 +1,52 @@
-import React from 'react';
-import { TextInput, View, Text, StyleSheet } from 'react-native';
-import { Colors, Heights, BorderRadius, FontSizes, FontWeights, Spacing, Responsive } from '../theme/constants';
+import React, { useRef, useState } from 'react';
+import { TextInput, View, Text, StyleSheet, Animated, Platform } from 'react-native';
+import { Colors, Heights, BorderRadius, FontSizes, FontWeights, Spacing } from '../theme/constants';
+import { useResponsive } from '../hooks/useResponsive';
 
-export const Input = ({ label, error, ...props }) => {
+export const Input = ({ label, error, onFocus, onBlur, style, ...props }) => {
+  const { isSmallScreen } = useResponsive();
+  const [focused, setFocused] = useState(false);
+  const focusAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFocus = (e) => {
+    setFocused(true);
+    Animated.timing(focusAnim, { toValue: 1, duration: 180, useNativeDriver: false }).start();
+    onFocus?.(e);
+  };
+
+  const handleBlur = (e) => {
+    setFocused(false);
+    Animated.timing(focusAnim, { toValue: 0, duration: 180, useNativeDriver: false }).start();
+    onBlur?.(e);
+  };
+
+  const borderColor = error
+    ? Colors.error
+    : focusAnim.interpolate({ inputRange: [0, 1], outputRange: [Colors.border, Colors.primary] });
+
+  const backgroundColor = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [Colors.inputFill, Colors.inputFillFocused],
+  });
+
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={[styles.inputContainer, error && styles.inputError]}>
-        <TextInput 
-          style={styles.input} 
+      {label && <Text style={[styles.label, { fontSize: isSmallScreen ? FontSizes.sm : FontSizes.md }]}>{label}</Text>}
+      <Animated.View
+        style={[
+          styles.inputContainer,
+          { height: Heights.input, paddingHorizontal: isSmallScreen ? Spacing.md : Spacing.lg, borderColor, backgroundColor },
+          focused && styles.inputFocusedShadow,
+        ]}
+      >
+        <TextInput
+          style={[styles.input, { fontSize: isSmallScreen ? FontSizes.md : FontSizes.lg }, Platform.OS === 'web' && styles.inputWeb, style]}
           placeholderTextColor={Colors.text.placeholder}
-          {...props} 
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          {...props}
         />
-      </View>
+      </Animated.View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
@@ -20,44 +54,39 @@ export const Input = ({ label, error, ...props }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: Responsive.isSmallScreen ? Spacing.lg : Spacing.xl,
+    marginBottom: Spacing.lg,
     width: '100%',
   },
   label: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.sm : FontSizes.md,
     color: Colors.text.secondary,
     fontWeight: FontWeights.semibold,
     marginBottom: Spacing.sm,
     letterSpacing: 0.3,
   },
   inputContainer: {
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    paddingHorizontal: Responsive.isSmallScreen ? Spacing.md : Spacing.lg,
-    height: Heights.input,
     justifyContent: 'center',
-    shadowColor: Colors.shadow.color,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  inputFocusedShadow: {
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 3,
   },
   input: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.md : FontSizes.lg,
     color: Colors.text.primary,
     flex: 1,
     fontWeight: FontWeights.medium,
   },
-  inputError: {
-    borderColor: Colors.error,
-    borderWidth: 1.5,
+  inputWeb: {
+    outlineStyle: 'none',
   },
   errorText: {
     color: Colors.error,
     fontSize: FontSizes.sm,
     marginTop: Spacing.sm,
     fontWeight: FontWeights.medium,
-  }
+  },
 });

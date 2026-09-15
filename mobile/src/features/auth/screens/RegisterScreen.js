@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Animated } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
+import { AuthCard } from '../../../components/AuthCard';
 import { ZephoraLogo } from '../../../components/ZephoraLogo';
 import { AuthService } from '../services/auth.service';
-import { Colors, Spacing, FontSizes, FontWeights, Responsive } from '../../../theme/constants';
+import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
+import { useResponsive } from '../../../hooks/useResponsive';
+import { Colors, Spacing, FontSizes, FontWeights } from '../../../theme/constants';
 
 export function RegisterScreen({ navigation }) {
+  const { isSmallScreen } = useResponsive();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const headerAnim = useEntranceAnimation({ delay: 0 });
+  const cardAnim = useEntranceAnimation({ delay: 90 });
+  const footerAnim = useEntranceAnimation({ delay: 180 });
 
   const handleRegister = async () => {
     if (!name || !email || !password) return;
@@ -30,46 +38,40 @@ export function RegisterScreen({ navigation }) {
   return (
     <Screen scrollable>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <ZephoraLogo />
-          <Text style={styles.title}>Criar Conta</Text>
+        <Animated.View style={[styles.header, headerAnim]}>
+          <ZephoraLogo variant="wordmark" size={isSmallScreen ? 56 : 64} />
           <Text style={styles.subtitle}>Junte-se ao Zephora para automatizar seu mundo.</Text>
-        </View>
-        
-        <View style={styles.form}>
-          <Input 
-            label="Nome Completo" 
-            placeholder="Seu nome completo" 
-            value={name}
-            onChangeText={setName}
-          />
-          <Input 
-            label="E-mail" 
-            placeholder="seu@email.com" 
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <Input 
-            label="Senha" 
-            placeholder="Mínimo 8 caracteres" 
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+        </Animated.View>
 
-          <Button title="Criar Conta" onPress={handleRegister} loading={loading} style={styles.registerButton} />
-        </View>
+        <Animated.View style={cardAnim}>
+          <AuthCard>
+            <Text style={styles.cardTitle}>Criar Conta</Text>
 
-        <View style={styles.footer}>
+            <Input label="Nome Completo" placeholder="Seu nome completo" value={name} onChangeText={setName} />
+            <Input
+              label="Email"
+              placeholder="seu@email.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input
+              label="Senha"
+              placeholder="Mínimo 8 caracteres"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            <Button title="Criar Conta" onPress={handleRegister} loading={loading} style={styles.registerButton} />
+          </AuthCard>
+        </Animated.View>
+
+        <Animated.View style={[styles.footer, footerAnim]}>
           <Text style={styles.footerText}>Já possui conta?</Text>
-          <Button 
-            title="Fazer Login" 
-            type="text" 
-            onPress={() => navigation.goBack()} 
-          />
-        </View>
+          <Button title="Fazer Login" type="text" underline onPress={() => navigation.goBack()} />
+        </Animated.View>
       </View>
     </Screen>
   );
@@ -79,28 +81,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxxl,
+    paddingVertical: Spacing.xxxl,
   },
   header: {
     alignItems: 'center',
-    marginBottom: Responsive.isSmallScreen ? Spacing.xxl : Spacing.xxxl,
-  },
-  title: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.xxxl : FontSizes.huge,
-    fontWeight: FontWeights.extrabold,
-    color: Colors.text.primary,
-    marginBottom: Spacing.md,
-    letterSpacing: -1,
+    marginBottom: Spacing.xxl,
   },
   subtitle: {
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.md,
     color: Colors.text.tertiary,
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
-    lineHeight: 24,
+    marginTop: Spacing.md,
+    lineHeight: 22,
   },
-  form: {
-    marginBottom: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxl,
+  cardTitle: {
+    fontSize: FontSizes.xxxl,
+    fontWeight: FontWeights.extrabold,
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+    letterSpacing: -0.5,
   },
   registerButton: {
     marginTop: Spacing.sm,
@@ -109,11 +110,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginTop: Spacing.xxl,
   },
   footerText: {
     color: Colors.text.tertiary,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.md,
     marginRight: Spacing.sm,
   },
 });

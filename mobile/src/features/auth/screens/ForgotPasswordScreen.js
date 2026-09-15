@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Animated } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
+import { AuthCard } from '../../../components/AuthCard';
 import { AuthService } from '../services/auth.service';
-import { Colors, Spacing, FontSizes, FontWeights, Heights, Responsive } from '../../../theme/constants';
+import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
+import { useResponsive } from '../../../hooks/useResponsive';
+import { Colors, Spacing, FontSizes, FontWeights, Heights } from '../../../theme/constants';
 
 export function ForgotPasswordScreen({ navigation }) {
+  const { isSmallScreen } = useResponsive();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const headerAnim = useEntranceAnimation({ delay: 0 });
+  const cardAnim = useEntranceAnimation({ delay: 90 });
+  const footerAnim = useEntranceAnimation({ delay: 180 });
 
   const handleSendCode = async () => {
     if (!email) return;
@@ -25,38 +33,34 @@ export function ForgotPasswordScreen({ navigation }) {
   };
 
   return (
-    <Screen>
+    <Screen scrollable>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <View style={styles.icon}>
-              <Text style={styles.iconText}>?</Text>
-            </View>
+        <Animated.View style={[styles.header, headerAnim]}>
+          <View style={[styles.icon, { width: Heights.logo, height: Heights.logo, borderRadius: Heights.logo / 2 }]}>
+            <Text style={styles.iconText}>?</Text>
           </View>
           <Text style={styles.title}>Esqueceu a Senha</Text>
           <Text style={styles.subtitle}>Enviaremos um código para você redefinir sua senha.</Text>
-        </View>
-        
-        <View style={styles.form}>
-          <Input 
-            label="E-mail" 
-            placeholder="seu@email.com" 
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          
-          <Button title="Enviar Código" onPress={handleSendCode} loading={loading} style={styles.sendButton} />
-        </View>
+        </Animated.View>
 
-        <View style={styles.footer}>
-          <Button 
-            title="Voltar para o Login" 
-            type="text" 
-            onPress={() => navigation.goBack()} 
-          />
-        </View>
+        <Animated.View style={cardAnim}>
+          <AuthCard>
+            <Input
+              label="Email"
+              placeholder="seu@email.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <Button title="Enviar Código" onPress={handleSendCode} loading={loading} style={styles.sendButton} />
+          </AuthCard>
+        </Animated.View>
+
+        <Animated.View style={[styles.footer, footerAnim]}>
+          <Button title="Voltar para o Login" type="text" underline onPress={() => navigation.goBack()} />
+        </Animated.View>
       </View>
     </Screen>
   );
@@ -66,22 +70,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxxl,
+    paddingVertical: Spacing.xxxl,
   },
   header: {
     alignItems: 'center',
-    marginBottom: Responsive.isSmallScreen ? Spacing.xxl : Spacing.xxxl,
-  },
-  iconContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.xxl,
   },
   icon: {
-    width: Heights.logo,
-    height: Heights.logo,
-    borderRadius: Heights.logo / 2,
     backgroundColor: Colors.warning,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: Spacing.xl,
     shadowColor: Colors.warning,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
@@ -89,34 +88,29 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   iconText: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.xxl : FontSizes.xxxl,
+    fontSize: FontSizes.xxxl,
     fontWeight: FontWeights.extrabold,
     color: '#FFFFFF',
   },
   title: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.xxxl : FontSizes.huge,
+    fontSize: FontSizes.xxxl,
     fontWeight: FontWeights.extrabold,
     color: Colors.text.primary,
     marginBottom: Spacing.md,
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.md,
     color: Colors.text.tertiary,
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
-    lineHeight: 24,
-  },
-  form: {
-    marginBottom: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxl,
+    lineHeight: 22,
   },
   sendButton: {
     marginTop: Spacing.sm,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginTop: Spacing.xxl,
   },
 });

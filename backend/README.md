@@ -62,56 +62,83 @@ O seed cria um administrador usando as variaveis do `.env`:
 
 Troque esses valores antes de usar fora do ambiente local.
 
-## Rotas principais
+## Referência da API
 
-### Autenticacao
+Abaixo está a documentação completa dos endpoints, útil para integração do frontend/mobile e entendimento sem necessidade de analisar o código-fonte.
 
-- `POST /auth/register`
-- `POST /auth/verify-email`
-- `POST /auth/resend-code`
-- `POST /auth/login`
-- `POST /auth/forgot-password`
-- `POST /auth/reset-password`
-- `GET /auth/me`
+**Regras Gerais:**
+- Rotas autenticadas exigem o cabeçalho `Authorization: Bearer <TOKEN>`.
+- O prefixo da API base depende do ambiente (ex: `http://localhost:3000`).
 
-### Usuarios
+### 1. Autenticação (`/auth`)
 
-- `PATCH /users/me`
-- `GET /users` admin
-- `PATCH /users/:id/level` admin
-- `DELETE /users/:id` admin, soft delete
+| Método | Rota | Autenticação | Corpo da Requisição (JSON) | Descrição |
+|--------|------|--------------|-----------------------------|-----------|
+| POST | `/auth/register` | Pública | `{ name (min: 2), email, password (min: 8), user_photo? }` | Registra um novo usuário. |
+| POST | `/auth/verify-email` | Pública | `{ email, code (6 dígitos) }` | Verifica o email do usuário. |
+| POST | `/auth/resend-code` | Pública | `{ email }` | Reenvia o código de verificação. |
+| POST | `/auth/login` | Pública | `{ email, password }` | Retorna o token JWT e dados do usuário. |
+| POST | `/auth/forgot-password` | Pública | `{ email }` | Solicita reset de senha. |
+| POST | `/auth/reset-password` | Pública | `{ email, code, password }` | Define uma nova senha usando o código. |
+| GET | `/auth/me` | Bearer Token | - | Retorna os dados do usuário autenticado. |
 
-### Salas
+### 2. Usuários (`/users`)
 
-- `GET /rooms`
-- `POST /rooms` admin
-- `GET /rooms/:id`
-- `PATCH /rooms/:id` admin
-- `DELETE /rooms/:id` admin
-- `POST /rooms/:id/handshake` ESP32
-- `GET /rooms/:roomId/commands?mac_address=AA:BB:CC:DD:EE:FF` ESP32
+| Método | Rota | Autenticação | Corpo da Requisição (JSON) / FormData | Descrição |
+|--------|------|--------------|----------------------------------------|-----------|
+| PATCH | `/users/me` | Bearer Token | `{ name?, user_photo? }` | Atualiza o próprio perfil. |
+| POST | `/users/me/photo` | Bearer Token | `FormData: { photo: arquivo }` | Atualiza/Adiciona a foto de perfil. |
+| DELETE | `/users/me/photo` | Bearer Token | - | Remove a foto de perfil. |
+| GET | `/users` | Admin | - | Lista todos os usuários. |
+| PATCH | `/users/:id/level` | Admin | `{ user_level: "USER" \| "ADMIN" }` | Altera o nível de acesso do usuário. |
+| DELETE | `/users/:id` | Admin | - | Soft delete de um usuário. |
 
-### Colaboradores
+### 3. Salas (`/rooms`)
 
-- `GET /rooms/:roomId/collaborators` admin
-- `POST /rooms/:roomId/collaborators` admin
-- `DELETE /rooms/:roomId/collaborators/:id` admin
+| Método | Rota | Autenticação | Corpo da Requisição (JSON) | Descrição |
+|--------|------|--------------|-----------------------------|-----------|
+| GET | `/rooms` | Bearer Token | - | Lista as salas disponíveis. |
+| POST | `/rooms` | Admin | `{ name, classroom_code, mac_address, room_photo_1?, room_photo_2?, room_photo_3? }` | Cria uma nova sala. |
+| GET | `/rooms/:id` | Bearer Token | - | Detalhes de uma sala. |
+| PATCH | `/rooms/:id` | Admin | Propriedades parciais de Room (ex: `name`) | Atualiza dados da sala. |
+| POST | `/rooms/:id/photos/:slot` | Admin | `FormData: { photo: arquivo }` (Slot: 1, 2, ou 3) | Atualiza foto no slot. |
+| DELETE | `/rooms/:id/photos/:slot` | Admin | - | Remove a foto do slot. |
+| DELETE | `/rooms/:id` | Admin | - | Exclui a sala. |
 
-### Sensores
+### 4. Colaboradores (`/rooms/:roomId/collaborators`)
 
-- `GET /sensors`
-- `POST /sensors` admin
-- `GET /sensors/:id`
-- `PATCH /sensors/:id` admin
-- `DELETE /sensors/:id` admin
-- `POST /sensors/:id/command` admin ou colaborador da sala
-- `POST /sensors/rooms/:roomId/:deviceKey/state` ESP32
+| Método | Rota | Autenticação | Corpo da Requisição (JSON) | Descrição |
+|--------|------|--------------|-----------------------------|-----------|
+| GET | `/rooms/:roomId/collaborators`| Admin | - | Lista colaboradores da sala. |
+| POST | `/rooms/:roomId/collaborators`| Admin | `{ user_id }` | Adiciona um colaborador. |
+| DELETE | `/rooms/:roomId/collaborators/:id`| Admin | - | Remove o colaborador da sala. |
 
-## Fluxo ESP32
+### 5. Sensores e Atuadores (`/sensors`)
 
-1. Ao ligar, o ESP32 chama `POST /rooms/:id/handshake` com `user_id`, `room_id` e `mac_address`.
-2. Para buscar comandos dos atuadores, chama `GET /rooms/:roomId/commands?mac_address=AA:BB:CC:DD:EE:FF`.
-3. Para atualizar leitura/estado de um dispositivo, chama `POST /sensors/rooms/:roomId/:deviceKey/state`.
+| Método | Rota | Autenticação | Corpo da Requisição (JSON) | Descrição |
+|--------|------|--------------|-----------------------------|-----------|
+| GET | `/sensors` | Bearer Token | - | Lista todos os sensores/atuadores. |
+| POST | `/sensors` | Admin | `{ room_id, name, device_key, direction ("INPUT"\|"OUTPUT"), type ("RELE"\|"SERVO"\|"PWM"\|"REED_SWITCH"), type_of_control ("DIGITAL"\|"ANALOGICO"), pin (0-39), pin_pwm?, current_state? }` | Cadastra novo sensor/atuador. |
+| GET | `/sensors/:id` | Bearer Token | - | Detalhes do sensor. |
+| PATCH | `/sensors/:id` | Admin | Propriedades parciais de Sensor | Atualiza cadastro do sensor. |
+| DELETE | `/sensors/:id` | Admin | - | Remove o sensor. |
+| POST | `/sensors/:id/command` | Admin ou Colaborador | `{ current_state (0-100) }` | Envia comando para o atuador/sensor. |
+
+### 6. Integração ESP32 (Hardware)
+
+Rotas geralmente consumidas diretamente pelo dispositivo de hardware (ESP32).
+
+| Método | Rota | Autenticação | Corpo / Query | Descrição |
+|--------|------|--------------|----------------|-----------|
+| POST | `/rooms/:id/handshake` | Pública | `{ user_id, room_id, mac_address }` | Handshake inicial do dispositivo. |
+| GET | `/rooms/:roomId/commands` | Pública | **Query**: `?mac_address=AA:BB:CC:DD:EE:FF` | Dispositivo busca comandos pendentes. |
+| POST | `/sensors/rooms/:roomId/:deviceKey/state`| Pública | `{ mac_address, current_state (0-100) }` | Dispositivo informa mudança no estado de um sensor. |
+
+## Fluxo ESP32 (Resumo Prático)
+
+1. **Ao ligar**, o ESP32 chama `POST /rooms/:id/handshake` com `user_id`, `room_id` e `mac_address`.
+2. **Para processar ações**, chama repetidamente `GET /rooms/:roomId/commands?mac_address=AA:BB:CC:DD:EE:FF` para ver se o backend registrou comandos (`POST /sensors/:id/command`).
+3. **Para reportar leituras** (ex: sensor de presença ou chave física), chama `POST /sensors/rooms/:roomId/:deviceKey/state`.
 
 ## E-mail em desenvolvimento
 
@@ -120,16 +147,6 @@ Se `SMTP_HOST` estiver vazio, o Nodemailer usa transporte JSON e imprime o e-mai
 ## Fotos
 
 As fotos são enviadas como `multipart/form-data`, no campo `photo`. São aceitos arquivos JPEG, PNG e WebP de até 5 MB. Os arquivos são armazenados em `UPLOAD_DIR` e disponibilizados pela URL retornada na resposta.
-
-### Fotos de usuários
-
-- `POST /users/me/photo` autenticado: adiciona ou substitui a foto de perfil.
-- `DELETE /users/me/photo` autenticado: remove a foto de perfil.
-
-### Fotos de salas
-
-- `POST /rooms/:id/photos/:slot` admin: adiciona ou substitui a foto do slot `1`, `2` ou `3`.
-- `DELETE /rooms/:id/photos/:slot` admin: remove a foto do slot `1`, `2` ou `3`.
 
 Exemplo com cURL:
 

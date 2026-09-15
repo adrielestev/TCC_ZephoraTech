@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Animated } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
+import { AuthCard } from '../../../components/AuthCard';
 import { ZephoraLogo } from '../../../components/ZephoraLogo';
 import { useAuth } from '../../../hooks/useAuth';
-import { Colors, Spacing, FontSizes, FontWeights, Responsive } from '../../../theme/constants';
+import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
+import { useResponsive } from '../../../hooks/useResponsive';
+import { Colors, Spacing, FontSizes, FontWeights } from '../../../theme/constants';
 
 export function LoginScreen({ navigation }) {
   const { login } = useAuth();
+  const { isSmallScreen } = useResponsive();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const headerAnim = useEntranceAnimation({ delay: 0 });
+  const cardAnim = useEntranceAnimation({ delay: 90 });
+  const footerAnim = useEntranceAnimation({ delay: 180 });
 
   const handleLogin = async () => {
     if (!email || !password) return;
@@ -28,48 +36,46 @@ export function LoginScreen({ navigation }) {
   return (
     <Screen scrollable>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <ZephoraLogo />
-          <Text style={styles.title}>Zephora</Text>
-          <Text style={styles.subtitle}>Bem-vindo de volta! Acesse suas salas.</Text>
-        </View>
-        
-        <View style={styles.form}>
-          <Input 
-            label="E-mail" 
-            placeholder="seu@email.com" 
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <Input 
-            label="Senha" 
-            placeholder="••••••••" 
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          
-          <View style={styles.forgotContainer}>
-            <Button 
-              title="Esqueceu a senha?" 
-              type="text" 
-              onPress={() => navigation.navigate('ForgotPassword')} 
+        <Animated.View style={[styles.header, headerAnim]}>
+          <ZephoraLogo variant="wordmark" size={isSmallScreen ? 56 : 64} />
+        </Animated.View>
+
+        <Animated.View style={cardAnim}>
+          <AuthCard>
+            <Text style={styles.cardTitle}>Login</Text>
+
+            <Input
+              label="Email"
+              placeholder="seu@email.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
             />
-          </View>
+            <Input
+              label="Senha"
+              placeholder="••••••••"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-          <Button title="Entrar" onPress={handleLogin} loading={loading} style={styles.loginButton} />
-        </View>
+            <Button title="Entrar" onPress={handleLogin} loading={loading} style={styles.loginButton} />
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Não tem uma conta?</Text>
-          <Button 
-            title="Criar agora" 
-            type="text" 
-            onPress={() => navigation.navigate('Register')} 
-          />
-        </View>
+            <Button
+              title="Esqueci a senha"
+              type="text"
+              underline
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={styles.forgotButton}
+            />
+          </AuthCard>
+        </Animated.View>
+
+        <Animated.View style={[styles.footer, footerAnim]}>
+          <Text style={styles.footerText}>Ainda não tem uma conta?</Text>
+          <Button title="Cadastrar-se" type="text" underline onPress={() => navigation.navigate('Register')} />
+        </Animated.View>
       </View>
     </Screen>
   );
@@ -79,45 +85,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxxl,
+    paddingVertical: Spacing.xxxl,
   },
   header: {
     alignItems: 'center',
-    marginBottom: Responsive.isSmallScreen ? Spacing.xxl : Spacing.xxxl,
+    marginBottom: Spacing.xxl,
   },
-  title: {
-    fontSize: Responsive.isSmallScreen ? FontSizes.xxxl : FontSizes.huge,
+  cardTitle: {
+    fontSize: FontSizes.xxxl,
     fontWeight: FontWeights.extrabold,
     color: Colors.text.primary,
-    marginBottom: Spacing.md,
-    letterSpacing: -1,
-  },
-  subtitle: {
-    fontSize: FontSizes.lg,
-    color: Colors.text.tertiary,
     textAlign: 'center',
-    paddingHorizontal: Spacing.lg,
-    lineHeight: 24,
-  },
-  form: {
-    marginBottom: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxl,
-  },
-  forgotContainer: {
-    alignItems: 'flex-end',
-    marginBottom: Responsive.isSmallScreen ? Spacing.xl : Spacing.xxl,
+    marginBottom: Spacing.xl,
+    letterSpacing: -0.5,
   },
   loginButton: {
     marginTop: Spacing.sm,
+  },
+  forgotButton: {
+    alignSelf: 'center',
+    marginTop: Spacing.xs,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginTop: Spacing.xxl,
   },
   footerText: {
     color: Colors.text.tertiary,
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.md,
     marginRight: Spacing.sm,
   },
 });
