@@ -30,6 +30,13 @@ export async function updateRoom(id, payload) {
   return updated ? findRoomById(id) : null;
 }
 
+export async function updateRoomPhoto(id, slot, photoUrl) {
+  const updated = await db("rooms")
+    .where({ id })
+    .update({ [`room_photo_${slot}`]: photoUrl });
+  return updated ? findRoomById(id) : null;
+}
+
 export function deleteRoom(id) {
   return db("rooms").where({ id }).delete();
 }

@@ -10,7 +10,7 @@ import {
   buildVerificationPatch,
   clearVerificationFields,
   generateCode,
-  hashCode
+  hashCode,
 } from "./verification.service.js";
 
 export async function register(payload) {
@@ -26,14 +26,14 @@ export async function register(payload) {
     email: payload.email,
     password_hash: await hashPassword(payload.password),
     user_photo: payload.user_photo ?? null,
-    ...buildVerificationPatch(code)
+    ...buildVerificationPatch(code),
   });
 
   await sendVerificationCode({
     to: user.email,
     name: user.name,
     code,
-    purpose: "email-verification"
+    purpose: "email-verification",
   });
 
   return sanitizeUser(user);
@@ -49,7 +49,7 @@ export async function verifyEmail(email, code) {
   await consumeCodeOrFail(user, code);
   await usersRepository.updateUser(user.id, {
     is_email_verified: 1,
-    ...clearVerificationFields()
+    ...clearVerificationFields(),
   });
 
   return "E-mail verificado com sucesso.";
@@ -70,7 +70,7 @@ export async function resendCode(email) {
     to: user.email,
     name: user.name,
     code,
-    purpose: "email-verification"
+    purpose: "email-verification",
   });
 }
 
@@ -88,7 +88,7 @@ export async function login(email, password) {
 
   return {
     token: signAccessToken(user),
-    user: sanitizeUser(user)
+    user: sanitizeUser(user),
   };
 }
 
@@ -107,7 +107,7 @@ export async function forgotPassword(email) {
     to: user.email,
     name: user.name,
     code,
-    purpose: "password-reset"
+    purpose: "password-reset",
   });
 }
 
@@ -121,7 +121,7 @@ export async function resetPassword(email, code, password) {
   await consumeCodeOrFail(user, code);
   await usersRepository.updateUser(user.id, {
     password_hash: await hashPassword(password),
-    ...clearVerificationFields()
+    ...clearVerificationFields(),
   });
 }
 

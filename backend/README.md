@@ -117,30 +117,24 @@ Troque esses valores antes de usar fora do ambiente local.
 
 Se `SMTP_HOST` estiver vazio, o Nodemailer usa transporte JSON e imprime o e-mail no console. Isso permite testar os codigos sem SMTP real.
 
-## ⚠️ Rotas de Fotos Ainda Não Implementadas
+## Fotos
 
-As funcionalidades relacionadas ao gerenciamento de fotos de usuários e salas ainda não foram implementadas completamente e devem ser consideradas **indisponíveis** nesta versão da API.
+As fotos são enviadas como `multipart/form-data`, no campo `photo`. São aceitos arquivos JPEG, PNG e WebP de até 5 MB. Os arquivos são armazenados em `UPLOAD_DIR` e disponibilizados pela URL retornada na resposta.
 
-### Funcionalidades pendentes
+### Fotos de usuários
 
-#### Fotos de Usuários
+- `POST /users/me/photo` autenticado: adiciona ou substitui a foto de perfil.
+- `DELETE /users/me/photo` autenticado: remove a foto de perfil.
 
-- Upload de foto de perfil;
-- Atualização de foto de perfil;
-- Remoção de foto de perfil;
-- Validação de tipo e tamanho dos arquivos;
-- Armazenamento seguro das imagens;
-- Disponibilização da URL da imagem para consumo pelo frontend.
+### Fotos de salas
 
-#### Fotos de Salas
+- `POST /rooms/:id/photos/:slot` admin: adiciona ou substitui a foto do slot `1`, `2` ou `3`.
+- `DELETE /rooms/:id/photos/:slot` admin: remove a foto do slot `1`, `2` ou `3`.
 
-- Upload das imagens da sala;
-- Atualização das imagens da sala;
-- Remoção das imagens da sala;
-- Validação de tipo e tamanho dos arquivos;
-- Armazenamento seguro das imagens;
-- Disponibilização da URL das imagens para consumo pelo frontend.
+Exemplo com cURL:
 
-### Observação
-
-A implementação deve incluir um mecanismo de upload de arquivos (ex.: **Multer**) e uma estratégia adequada de armazenamento
+```bash
+curl -X POST http://localhost:3000/users/me/photo \
+	-H "Authorization: Bearer SEU_TOKEN" \
+	-F "photo=@perfil.jpg"
+```

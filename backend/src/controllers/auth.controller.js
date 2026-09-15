@@ -6,7 +6,7 @@ export async function register(req, res) {
 
   res.status(201).json({
     message: "Usuario criado. Verifique seu e-mail para ativar a conta.",
-    user
+    user,
   });
 }
 
@@ -31,7 +31,11 @@ export async function forgotPassword(req, res) {
 }
 
 export async function resetPassword(req, res) {
-  await authService.resetPassword(req.body.email, req.body.code, req.body.password);
+  await authService.resetPassword(
+    req.body.email,
+    req.body.code,
+    req.body.password,
+  );
   res.json({ message: "Senha redefinida com sucesso." });
 }
 

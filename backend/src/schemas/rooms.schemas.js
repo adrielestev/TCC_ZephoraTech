@@ -7,7 +7,7 @@ export const roomSchema = z.object({
   mac_address: macAddressSchema,
   room_photo_1: z.string().url().nullable().optional(),
   room_photo_2: z.string().url().nullable().optional(),
-  room_photo_3: z.string().url().nullable().optional()
+  room_photo_3: z.string().url().nullable().optional(),
 });
 
 export const updateRoomSchema = roomSchema.partial();
@@ -15,9 +15,9 @@ export const updateRoomSchema = roomSchema.partial();
 export const handshakeSchema = z.object({
   user_id: z.coerce.number().int().positive(),
   room_id: z.coerce.number().int().positive(),
-  mac_address: macAddressSchema
+  mac_address: macAddressSchema,
 });
 
 export const commandsQuerySchema = z.object({
-  mac_address: macAddressSchema
+  mac_address: macAddressSchema,
 });

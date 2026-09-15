@@ -9,7 +9,11 @@ export function listSensorsForUser(user) {
 
   if (user.user_level !== "ADMIN") {
     query
-      .join("room_collaborators", "room_collaborators.room_id", "sensors.room_id")
+      .join(
+        "room_collaborators",
+        "room_collaborators.room_id",
+        "sensors.room_id",
+      )
       .where("room_collaborators.user_id", user.id);
   }
 
@@ -21,7 +25,9 @@ export function findSensorById(id) {
 }
 
 export function findSensorByRoomAndDeviceKey(roomId, deviceKey) {
-  return db("sensors").where({ room_id: roomId, device_key: deviceKey }).first();
+  return db("sensors")
+    .where({ room_id: roomId, device_key: deviceKey })
+    .first();
 }
 
 export function listSensorsByRoom(roomId) {
@@ -30,7 +36,16 @@ export function listSensorsByRoom(roomId) {
 
 export function listRoomOutputCommands(roomId) {
   return db("sensors")
-    .select("id", "device_key", "direction", "type", "type_of_control", "pin", "pin_pwm", "current_state")
+    .select(
+      "id",
+      "device_key",
+      "direction",
+      "type",
+      "type_of_control",
+      "pin",
+      "pin_pwm",
+      "current_state",
+    )
     .where({ room_id: roomId, direction: "OUTPUT" })
     .orderBy("device_key");
 }

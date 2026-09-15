@@ -20,6 +20,23 @@ export async function updateRoom(req, res) {
   res.json({ room });
 }
 
+export async function updateRoomPhoto(req, res) {
+  const room = await roomsService.updateRoomPhoto(
+    req.params.id,
+    Number(req.params.slot),
+    req.file,
+  );
+  res.json({ room });
+}
+
+export async function removeRoomPhoto(req, res) {
+  await roomsService.removeRoomPhoto(
+    req.params.id,
+    Number(req.params.slot),
+  );
+  res.status(204).send();
+}
+
 export async function deleteRoom(req, res) {
   await roomsService.deleteRoom(req.params.id);
   res.status(204).send();
@@ -31,6 +48,9 @@ export async function handshake(req, res) {
 }
 
 export async function listCommands(req, res) {
-  const data = await roomsService.listCommands(req.params.roomId, req.query.mac_address);
+  const data = await roomsService.listCommands(
+    req.params.roomId,
+    req.query.mac_address,
+  );
   res.json(data);
 }

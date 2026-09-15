@@ -15,6 +15,6 @@ export async function seed(knex) {
     email: env.INITIAL_ADMIN_EMAIL,
     password_hash: await hashPassword(env.INITIAL_ADMIN_PASSWORD),
     is_email_verified: 1,
-    user_level: "ADMIN"
+    user_level: "ADMIN",
   });
 }

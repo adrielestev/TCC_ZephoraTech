@@ -26,7 +26,11 @@ export async function deleteSensor(req, res) {
 }
 
 export async function commandSensor(req, res) {
-  const sensor = await sensorsService.commandSensor(req.user, req.params.id, req.body.current_state);
+  const sensor = await sensorsService.commandSensor(
+    req.user,
+    req.params.id,
+    req.body.current_state,
+  );
   res.json({ sensor });
 }
 
@@ -35,7 +39,7 @@ export async function reportSensorState(req, res) {
     req.params.roomId,
     req.params.deviceKey,
     req.body.mac_address,
-    req.body.current_state
+    req.body.current_state,
   );
 
   res.json({ sensor });

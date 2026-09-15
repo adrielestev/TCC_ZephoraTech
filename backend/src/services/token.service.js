@@ -5,10 +5,10 @@ export function signAccessToken(user) {
   return jwt.sign(
     {
       sub: String(user.id),
-      userLevel: user.user_level
+      userLevel: user.user_level,
     },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN }
+    { expiresIn: env.JWT_EXPIRES_IN },
   );
 }
 

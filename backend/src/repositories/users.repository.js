@@ -9,7 +9,7 @@ const safeColumns = [
   "user_photo",
   "deleted_at",
   "created_at",
-  "updated_at"
+  "updated_at",
 ];
 
 export function findUserById(id) {
@@ -38,6 +38,10 @@ export async function updateUser(id, payload) {
   return findUserById(id);
 }
 
+export async function updateUserPhoto(id, userPhoto) {
+  return updateUser(id, { user_photo: userPhoto });
+}
+
 export function incrementVerificationAttempts(id) {
   return db("users").where({ id }).increment("verification_attempts", 1);
 }
@@ -47,10 +51,16 @@ export function listUsers() {
 }
 
 export async function updateActiveUser(id, payload) {
-  const updated = await db("users").where({ id }).whereNull("deleted_at").update(payload);
+  const updated = await db("users")
+    .where({ id })
+    .whereNull("deleted_at")
+    .update(payload);
   return updated ? findUserById(id) : null;
 }
 
 export function softDeleteUser(id, deletedAt) {
-  return db("users").where({ id }).whereNull("deleted_at").update({ deleted_at: deletedAt });
+  return db("users")
+    .where({ id })
+    .whereNull("deleted_at")
+    .update({ deleted_at: deletedAt });
 }

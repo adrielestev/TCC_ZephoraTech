@@ -19,6 +19,7 @@
         "base_url": "http://localhost:3000",
         "token": "",
         "room_id": "1",
+        "room_photo_slot": "1",
         "sensor_id": "1",
         "collaborator_id": "1",
         "user_id": "1",
@@ -30,6 +31,7 @@
           "base_url",
           "token",
           "room_id",
+          "room_photo_slot",
           "sensor_id",
           "collaborator_id",
           "user_id",
@@ -298,6 +300,50 @@
       "metaSortKey": 220
     },
     {
+      "_id": "req_users_photo_upload",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Upload My Photo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/users/me/photo",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "id": "pair_users_photo",
+            "name": "photo",
+            "type": "file",
+            "fileName": ""
+          }
+        ]
+      },
+      "authentication": {},
+      "metaSortKey": 225
+    },
+    {
+      "_id": "req_users_photo_delete",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Delete My Photo",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/users/me/photo",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 226
+    },
+    {
       "_id": "req_users_delete",
       "_type": "request",
       "parentId": "fld_users",
@@ -412,6 +458,50 @@
       "body": {},
       "authentication": {},
       "metaSortKey": 340
+    },
+    {
+      "_id": "req_rooms_photo_upload",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Upload Room Photo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/photos/{{ _.room_photo_slot }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "id": "pair_room_photo",
+            "name": "photo",
+            "type": "file",
+            "fileName": ""
+          }
+        ]
+      },
+      "authentication": {},
+      "metaSortKey": 345
+    },
+    {
+      "_id": "req_rooms_photo_delete",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Delete Room Photo",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/photos/{{ _.room_photo_slot }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 346
     },
     {
       "_id": "req_collaborators_list",

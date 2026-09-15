@@ -17,18 +17,24 @@ export async function createCollaborator(roomId, userId, addedBy) {
   }
 
   if (!user.is_email_verified) {
-    throw new ApiError(400, "Usuario precisa verificar o e-mail antes de colaborar.");
+    throw new ApiError(
+      400,
+      "Usuario precisa verificar o e-mail antes de colaborar.",
+    );
   }
 
   return collaboratorsRepository.createRoomCollaborator({
     room_id: roomId,
     user_id: userId,
-    added_by: addedBy
+    added_by: addedBy,
   });
 }
 
 export async function deleteCollaborator(roomId, collaboratorId) {
-  const deleted = await collaboratorsRepository.deleteRoomCollaborator(collaboratorId, roomId);
+  const deleted = await collaboratorsRepository.deleteRoomCollaborator(
+    collaboratorId,
+    roomId,
+  );
 
   if (!deleted) {
     throw notFound("Colaborador");

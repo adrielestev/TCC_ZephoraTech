@@ -47,7 +47,10 @@ export async function requireRoomOperator(req, _res, next) {
       throw new ApiError(400, "Sala nao informada para checagem de permissao.");
     }
 
-    const collaborator = await collaboratorsRepository.findRoomCollaborator(roomId, req.user.id);
+    const collaborator = await collaboratorsRepository.findRoomCollaborator(
+      roomId,
+      req.user.id,
+    );
 
     if (!collaborator) {
       throw new ApiError(403, "Voce nao tem permissao para operar esta sala.");

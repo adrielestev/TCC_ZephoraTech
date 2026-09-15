@@ -4,6 +4,7 @@ import * as sensorsRepository from "../repositories/sensors.repository.js";
 import * as usersRepository from "../repositories/users.repository.js";
 import { nowIso } from "../utils/datetime.js";
 import { ApiError, notFound } from "../utils/errors.js";
+import * as fileStorage from "./file-storage.service.js";
 
 export function listRooms(user) {
   return roomsRepository.listRoomsForUser(user);
@@ -35,6 +36,25 @@ export async function updateRoom(roomId, payload) {
   return room;
 }
 
+export async function updateRoomPhoto(roomId, slot, file) {
+  const room = await roomsRepository.findRoomById(roomId);
+  if (!room) throw notFound("Sala");
+
+  const photoUrl = await fileStorage.saveImage(file, "rooms");
+  await roomsRepository.updateRoomPhoto(roomId, slot, photoUrl);
+  await fileStorage.removeImage(room[`room_photo_${slot}`]);
+
+  return { ...room, [`room_photo_${slot}`]: photoUrl };
+}
+
+export async function removeRoomPhoto(roomId, slot) {
+  const room = await roomsRepository.findRoomById(roomId);
+  if (!room) throw notFound("Sala");
+
+  await roomsRepository.updateRoomPhoto(roomId, slot, null);
+  await fileStorage.removeImage(room[`room_photo_${slot}`]);
+}
+
 export async function deleteRoom(roomId) {
   const deleted = await roomsRepository.deleteRoom(roomId);
 
@@ -48,14 +68,20 @@ export async function handshake(routeRoomId, payload) {
     throw new ApiError(400, "room_id do corpo deve ser igual ao id da rota.");
   }
 
-  const room = await roomsRepository.findRoomByIdAndMac(routeRoomId, payload.mac_address);
+  const room = await roomsRepository.findRoomByIdAndMac(
+    routeRoomId,
+    payload.mac_address,
+  );
   if (!room) {
     throw new ApiError(403, "Sala ou MAC address invalido.");
   }
 
   const user = await usersRepository.findActiveUserById(payload.user_id);
   if (!user) {
-    throw new ApiError(403, "Usuario informado no handshake nao existe ou esta desativado.");
+    throw new ApiError(
+      403,
+      "Usuario informado no handshake nao existe ou esta desativado.",
+    );
   }
 
   await roomsRepository.touchRoomLastSeen(room.id, nowIso());
@@ -66,9 +92,9 @@ export async function handshake(routeRoomId, payload) {
     room: {
       id: room.id,
       name: room.name,
-      classroom_code: room.classroom_code
+      classroom_code: room.classroom_code,
     },
-    sensors
+    sensors,
   };
 }
 
@@ -98,7 +124,10 @@ export async function assertRoomExists(roomId) {
 export async function assertCanReadRoom(user, roomId) {
   if (user.user_level === "ADMIN") return;
 
-  const collaborator = await collaboratorsRepository.findRoomCollaborator(roomId, user.id);
+  const collaborator = await collaboratorsRepository.findRoomCollaborator(
+    roomId,
+    user.id,
+  );
 
   if (!collaborator) {
     throw new ApiError(403, "Voce nao tem acesso a esta sala.");

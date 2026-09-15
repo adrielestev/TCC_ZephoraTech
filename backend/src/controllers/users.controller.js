@@ -5,13 +5,26 @@ export async function updateMe(req, res) {
   res.json({ user });
 }
 
+export async function updateMyPhoto(req, res) {
+  const user = await usersService.updateMyPhoto(req.user.id, req.file);
+  res.json({ user });
+}
+
+export async function removeMyPhoto(req, res) {
+  await usersService.removeMyPhoto(req.user.id);
+  res.status(204).send();
+}
+
 export async function listUsers(_req, res) {
   const users = await usersService.listUsers();
   res.json({ users });
 }
 
 export async function updateUserLevel(req, res) {
-  const user = await usersService.updateUserLevel(req.params.id, req.body.user_level);
+  const user = await usersService.updateUserLevel(
+    req.params.id,
+    req.body.user_level,
+  );
   res.json({ user });
 }
 

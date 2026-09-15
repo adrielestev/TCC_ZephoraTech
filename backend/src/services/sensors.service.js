@@ -15,7 +15,7 @@ export async function createSensor(payload) {
   return sensorsRepository.createSensor({
     ...payload,
     pin_pwm: payload.pin_pwm ?? null,
-    current_state: payload.current_state ?? 0
+    current_state: payload.current_state ?? 0,
   });
 }
 
@@ -51,22 +51,32 @@ export async function commandSensor(user, sensorId, currentState) {
     throw new ApiError(400, "Apenas sensores OUTPUT recebem comandos.");
   }
 
-  return sensorsRepository.updateSensor(sensor.id, { current_state: currentState });
+  return sensorsRepository.updateSensor(sensor.id, {
+    current_state: currentState,
+  });
 }
 
-export async function reportSensorState(roomId, deviceKey, macAddress, currentState) {
+export async function reportSensorState(
+  roomId,
+  deviceKey,
+  macAddress,
+  currentState,
+) {
   const room = await roomsRepository.findRoomByIdAndMac(roomId, macAddress);
   if (!room) {
     throw new ApiError(403, "Sala ou MAC address invalido.");
   }
 
-  const sensor = await sensorsRepository.findSensorByRoomAndDeviceKey(room.id, deviceKey);
+  const sensor = await sensorsRepository.findSensorByRoomAndDeviceKey(
+    room.id,
+    deviceKey,
+  );
   if (!sensor) {
     throw notFound("Sensor");
   }
 
   const updatedSensor = await sensorsRepository.updateSensor(sensor.id, {
-    current_state: currentState
+    current_state: currentState,
   });
   await roomsRepository.touchRoomLastSeen(room.id, nowIso());
 
@@ -86,7 +96,10 @@ async function findSensorOrFail(sensorId) {
 async function assertCanReadSensor(user, sensor) {
   if (user.user_level === "ADMIN") return;
 
-  const collaborator = await collaboratorsRepository.findRoomCollaborator(sensor.room_id, user.id);
+  const collaborator = await collaboratorsRepository.findRoomCollaborator(
+    sensor.room_id,
+    user.id,
+  );
 
   if (!collaborator) {
     throw new ApiError(403, "Voce nao tem acesso a este sensor.");
@@ -96,7 +109,10 @@ async function assertCanReadSensor(user, sensor) {
 async function assertCanOperateRoom(user, roomId) {
   if (user.user_level === "ADMIN") return;
 
-  const collaborator = await collaboratorsRepository.findRoomCollaborator(roomId, user.id);
+  const collaborator = await collaboratorsRepository.findRoomCollaborator(
+    roomId,
+    user.id,
+  );
 
   if (!collaborator) {
     throw new ApiError(403, "Voce nao tem permissao para operar esta sala.");

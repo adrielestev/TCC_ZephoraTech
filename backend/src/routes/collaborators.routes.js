@@ -8,16 +8,23 @@ import { validate } from "../utils/validators.js";
 
 export const collaboratorsRouter = Router({ mergeParams: true });
 
-collaboratorsRouter.use(authenticate, requireAdmin, validate(roomIdParamSchema, "params"));
+collaboratorsRouter.use(
+  authenticate,
+  requireAdmin,
+  validate(roomIdParamSchema, "params"),
+);
 
-collaboratorsRouter.get("/", asyncHandler(collaboratorsController.listCollaborators));
+collaboratorsRouter.get(
+  "/",
+  asyncHandler(collaboratorsController.listCollaborators),
+);
 collaboratorsRouter.post(
   "/",
   validate(collaboratorSchema),
-  asyncHandler(collaboratorsController.createCollaborator)
+  asyncHandler(collaboratorsController.createCollaborator),
 );
 collaboratorsRouter.delete(
   "/:id",
   validate(idParamSchema, "params"),
-  asyncHandler(collaboratorsController.deleteCollaborator)
+  asyncHandler(collaboratorsController.deleteCollaborator),
 );

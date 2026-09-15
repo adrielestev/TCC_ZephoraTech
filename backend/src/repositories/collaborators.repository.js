@@ -1,7 +1,9 @@
 import { db } from "../db/connection.js";
 
 export function findRoomCollaborator(roomId, userId) {
-  return db("room_collaborators").where({ room_id: roomId, user_id: userId }).first();
+  return db("room_collaborators")
+    .where({ room_id: roomId, user_id: userId })
+    .first();
 }
 
 export function listRoomCollaborators(roomId) {
@@ -16,7 +18,7 @@ export function listRoomCollaborators(roomId) {
       "room_collaborators.created_at",
       "users.name",
       "users.email",
-      "admins.name as added_by_name"
+      "admins.name as added_by_name",
     )
     .orderBy("users.name");
 }

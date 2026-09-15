@@ -5,7 +5,7 @@ export function validate(schema, source = "body") {
       return next({
         statusCode: 400,
         message: "Dados invalidos.",
-        details: result.error.flatten()
+        details: result.error.flatten(),
       });
     }
     if (source === "body") {

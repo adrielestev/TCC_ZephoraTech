@@ -20,7 +20,7 @@ export function buildVerificationPatch(code) {
       .toISOString()
       .replace(/\.\d{3}Z$/, "Z"),
     verification_attempts: 0,
-    last_code_sent_at: nowIso()
+    last_code_sent_at: nowIso(),
   };
 }
 
@@ -30,7 +30,7 @@ export function assertCanSendCode(user) {
   if (elapsed < env.VERIFICATION_RESEND_COOLDOWN_SECONDS) {
     throw new ApiError(
       429,
-      `Aguarde ${env.VERIFICATION_RESEND_COOLDOWN_SECONDS - elapsed}s antes de solicitar outro codigo.`
+      `Aguarde ${env.VERIFICATION_RESEND_COOLDOWN_SECONDS - elapsed}s antes de solicitar outro codigo.`,
     );
   }
 }
@@ -45,7 +45,10 @@ export function assertValidCodeState(user) {
   }
 
   if (user.verification_attempts >= env.MAX_VERIFICATION_ATTEMPTS) {
-    throw new ApiError(429, "Limite de tentativas excedido. Solicite um novo codigo.");
+    throw new ApiError(
+      429,
+      "Limite de tentativas excedido. Solicite um novo codigo.",
+    );
   }
 }
 
@@ -53,6 +56,6 @@ export function clearVerificationFields() {
   return {
     verification_code_hash: null,
     verification_expires_at: null,
-    verification_attempts: 0
+    verification_attempts: 0,
   };
 }

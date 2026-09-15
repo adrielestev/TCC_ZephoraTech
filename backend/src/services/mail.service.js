@@ -13,9 +13,9 @@ function createTransporter() {
     auth: env.SMTP_USER
       ? {
           user: env.SMTP_USER,
-          pass: env.SMTP_PASS
+          pass: env.SMTP_PASS,
         }
-      : undefined
+      : undefined,
   });
 }
 
@@ -33,14 +33,14 @@ export async function sendVerificationCode({ to, name, code, purpose }) {
     `Seu codigo do ${env.APP_NAME} e: ${code}`,
     `Ele expira em ${env.VERIFICATION_CODE_TTL_MINUTES} minutos.`,
     "",
-    "Se voce nao solicitou este codigo, ignore este e-mail."
+    "Se voce nao solicitou este codigo, ignore este e-mail.",
   ].join("\n");
 
   const info = await transporter.sendMail({
     from: env.MAIL_FROM,
     to,
     subject,
-    text
+    text,
   });
 
   if (!env.SMTP_HOST && info.message) {
