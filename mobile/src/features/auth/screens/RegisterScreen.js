@@ -8,7 +8,12 @@ import { ZephoraLogo } from '../../../components/ZephoraLogo';
 import { AuthService } from '../services/auth.service';
 import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
 import { useResponsive } from '../../../hooks/useResponsive';
-import { Colors, Spacing, FontSizes, FontWeights } from '../../../theme/constants';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+} from '../../../theme/constants';
 
 export function RegisterScreen({ navigation }) {
   const { isSmallScreen } = useResponsive();
@@ -40,14 +45,21 @@ export function RegisterScreen({ navigation }) {
       <View style={styles.container}>
         <Animated.View style={[styles.header, headerAnim]}>
           <ZephoraLogo variant="wordmark" size={isSmallScreen ? 56 : 64} />
-          <Text style={styles.subtitle}>Junte-se ao Zephora para automatizar seu mundo.</Text>
+          <Text style={styles.subtitle}>
+            Junte-se ao Zephora para automatizar seu mundo.
+          </Text>
         </Animated.View>
 
         <Animated.View style={cardAnim}>
           <AuthCard>
             <Text style={styles.cardTitle}>Criar Conta</Text>
 
-            <Input label="Nome Completo" placeholder="Seu nome completo" value={name} onChangeText={setName} />
+            <Input
+              label="Nome Completo"
+              placeholder="Seu nome completo"
+              value={name}
+              onChangeText={setName}
+            />
             <Input
               label="Email"
               placeholder="seu@email.com"
@@ -64,13 +76,23 @@ export function RegisterScreen({ navigation }) {
               onChangeText={setPassword}
             />
 
-            <Button title="Criar Conta" onPress={handleRegister} loading={loading} style={styles.registerButton} />
+            <Button
+              title="Criar Conta"
+              onPress={handleRegister}
+              loading={loading}
+              style={styles.registerButton}
+            />
           </AuthCard>
         </Animated.View>
 
         <Animated.View style={[styles.footer, footerAnim]}>
           <Text style={styles.footerText}>Já possui conta?</Text>
-          <Button title="Fazer Login" type="text" underline onPress={() => navigation.goBack()} />
+          <Button
+            title="Fazer Login"
+            type="text"
+            underline
+            onPress={() => navigation.goBack()}
+          />
         </Animated.View>
       </View>
     </Screen>

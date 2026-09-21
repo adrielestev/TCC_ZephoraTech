@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { DeviceEventEmitter } from 'react-native';
 import { AuthService } from '../features/auth/services/auth.service';
 
 export const AuthContext = createContext({});
@@ -11,32 +12,36 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     async function loadStorageData() {
       try {
-        const storedToken = await AsyncStorage.getItem('@Zephora:token');
-        
+        const storedToken = await SecureStore.getItemAsync('Zephora_token');
+
         if (storedToken) {
           const response = await AuthService.getMe();
-          setUser(response); // response = userData dependendo de como a API envia
+          setUser(response);
         }
       } catch (error) {
         console.error('Falha ao restaurar sessão', error);
-        await AsyncStorage.removeItem('@Zephora:token');
+        await SecureStore.deleteItemAsync('Zephora_token');
       } finally {
         setLoading(false);
       }
     }
 
     loadStorageData();
+
+    const listener = DeviceEventEmitter.addListener('on401', () => {
+      logout();
+    });
+
+    return () => listener.remove();
   }, []);
 
   const login = async (credentials) => {
     const response = await AuthService.login(credentials);
-    // Supondo que a resposta traz { token, user } ou similar
-    // Ajustaremos conforme o schema da API se necessário, mas o padrão é JWT.
+
     if (response.token) {
-       await AsyncStorage.setItem('@Zephora:token', response.token);
+      await SecureStore.setItemAsync('Zephora_token', response.token);
     }
-    // Caso a API retorne os dados do usuário logo no login, podemos setar. 
-    // Se não retornar, podemos chamar getMe().
+
     if (response.user) {
       setUser(response.user);
     } else {
@@ -46,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('@Zephora:token');
+    await SecureStore.deleteItemAsync('Zephora_token');
     setUser(null);
   };
 
@@ -55,7 +60,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ signed: !!user, user, loading, login, logout, updateUserData }}>
+    <AuthContext.Provider
+      value={{ signed: !!user, user, loading, login, logout, updateUserData }}
+    >
       {children}
     </AuthContext.Provider>
   );

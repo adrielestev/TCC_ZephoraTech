@@ -14,5 +14,5 @@ export const CollaboratorsService = {
   async deleteCollaborator(roomId, id) {
     const response = await api.delete(`/rooms/${roomId}/collaborators/${id}`);
     return response.data;
-  }
+  },
 };

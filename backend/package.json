@@ -13,7 +13,8 @@
     "knex": "knex",
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback",
-    "seed": "knex seed:run"
+    "seed": "knex seed:run",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -31,6 +32,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "eslint": "^9.17.0"
+    "eslint": "^9.17.0",
+    "prettier": "^3.9.8"
   }
 }

@@ -8,39 +8,30 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "../schemas/auth.schemas.js";
-import { asyncHandler } from "../utils/async-handler.js";
 import { validate } from "../utils/validators.js";
 
 export const authRouter = Router();
 
-authRouter.post(
-  "/register",
-  validate(registerSchema),
-  asyncHandler(authController.register),
-);
+authRouter.post("/register", validate(registerSchema), authController.register);
 authRouter.post(
   "/verify-email",
   validate(codeSchema),
-  asyncHandler(authController.verifyEmail),
+  authController.verifyEmail,
 );
 authRouter.post(
   "/resend-code",
   validate(emailSchema),
-  asyncHandler(authController.resendCode),
+  authController.resendCode,
 );
-authRouter.post(
-  "/login",
-  validate(loginSchema),
-  asyncHandler(authController.login),
-);
+authRouter.post("/login", validate(loginSchema), authController.login);
 authRouter.post(
   "/forgot-password",
   validate(emailSchema),
-  asyncHandler(authController.forgotPassword),
+  authController.forgotPassword,
 );
 authRouter.post(
   "/reset-password",
   validate(resetPasswordSchema),
-  asyncHandler(authController.resetPassword),
+  authController.resetPassword,
 );
-authRouter.get("/me", authenticate, asyncHandler(authController.me));
+authRouter.get("/me", authenticate, authController.me);

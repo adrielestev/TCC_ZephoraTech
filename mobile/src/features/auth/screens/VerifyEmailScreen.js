@@ -6,7 +6,13 @@ import { Button } from '../../../components/Button';
 import { AuthCard } from '../../../components/AuthCard';
 import { AuthService } from '../services/auth.service';
 import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
-import { Colors, Spacing, FontSizes, FontWeights, Heights } from '../../../theme/constants';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  Heights,
+} from '../../../theme/constants';
 
 export function VerifyEmailScreen({ route, navigation }) {
   const { email } = route.params || {};
@@ -18,7 +24,8 @@ export function VerifyEmailScreen({ route, navigation }) {
   const cardAnim = useEntranceAnimation({ delay: 90 });
 
   const handleVerify = async () => {
-    if (!code || code.length !== 6) return Alert.alert('Aviso', 'Digite o código de 6 dígitos.');
+    if (!code || code.length !== 6)
+      return Alert.alert('Aviso', 'Digite o código de 6 dígitos.');
     setLoading(true);
     try {
       await AuthService.verifyEmail({ email, code });
@@ -47,7 +54,16 @@ export function VerifyEmailScreen({ route, navigation }) {
     <Screen scrollable>
       <View style={styles.container}>
         <Animated.View style={[styles.header, headerAnim]}>
-          <View style={[styles.icon, { width: Heights.logo, height: Heights.logo, borderRadius: Heights.logo / 2 }]}>
+          <View
+            style={[
+              styles.icon,
+              {
+                width: Heights.logo,
+                height: Heights.logo,
+                borderRadius: Heights.logo / 2,
+              },
+            ]}
+          >
             <Text style={styles.iconText}>✓</Text>
           </View>
           <Text style={styles.title}>Verificar E-mail</Text>
@@ -64,14 +80,30 @@ export function VerifyEmailScreen({ route, navigation }) {
               maxLength={6}
               value={code}
               onChangeText={setCode}
-              style={{ textAlign: 'center', fontSize: FontSizes.xxxl, letterSpacing: 8, fontWeight: FontWeights.semibold }}
+              style={{
+                textAlign: 'center',
+                fontSize: FontSizes.xxxl,
+                letterSpacing: 8,
+                fontWeight: FontWeights.semibold,
+              }}
             />
 
-            <Button title="Verificar Conta" onPress={handleVerify} loading={loading} style={styles.verifyButton} />
+            <Button
+              title="Verificar Conta"
+              onPress={handleVerify}
+              loading={loading}
+              style={styles.verifyButton}
+            />
 
             <View style={styles.resendContainer}>
               <Text style={styles.resendText}>Não recebeu o código?</Text>
-              <Button title="Reenviar" type="text" underline onPress={handleResend} loading={resending} />
+              <Button
+                title="Reenviar"
+                type="text"
+                underline
+                onPress={handleResend}
+                loading={resending}
+              />
             </View>
           </AuthCard>
         </Animated.View>
@@ -91,11 +123,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
   },
   icon: {
-    backgroundColor: Colors.success,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
-    shadowColor: Colors.success,
+    shadowColor: Colors.primaryDark,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,

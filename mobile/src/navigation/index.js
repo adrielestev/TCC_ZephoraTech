@@ -4,7 +4,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { useAuth } from '../hooks/useAuth';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { Button } from '../components/Button';
-import { Colors, Navigation, Spacing, FontSizes, FontWeights } from '../theme/constants';
+import { Colors, Spacing, FontSizes, FontWeights } from '../theme/constants';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,15 +20,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator 
-      screenOptions={{
-        headerShown: Navigation.headerShown,
-        gestureEnabled: Navigation.gestureEnabled,
-        gestureDirection: Navigation.gestureDirection,
-        transitionSpec: Navigation.transitionSpec,
-        animationTypeForReplace: 'push',
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {signed ? (
         <Stack.Screen name="App" component={PlaceholderApp} />
       ) : (
@@ -47,7 +39,7 @@ const PlaceholderApp = () => {
       <Button title="Sair" onPress={logout} />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {

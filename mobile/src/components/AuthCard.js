@@ -4,10 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, BorderRadius, Spacing } from '../theme/constants';
 import { useResponsive } from '../hooks/useResponsive';
 
-/**
- * Cartão de vidro/gradiente usado como superfície principal das telas de
- * autenticação, no estilo da referência de design do login.
- */
 export const AuthCard = ({ children, style }) => {
   const { isSmallScreen } = useResponsive();
 
@@ -16,7 +12,11 @@ export const AuthCard = ({ children, style }) => {
       colors={Colors.gradient.card}
       start={{ x: 0.1, y: 0 }}
       end={{ x: 0.9, y: 1 }}
-      style={[styles.card, { padding: isSmallScreen ? Spacing.xl : Spacing.xxl }, style]}
+      style={[
+        styles.card,
+        { padding: isSmallScreen ? Spacing.xl : Spacing.xxl },
+        style,
+      ]}
     >
       {children}
     </LinearGradient>

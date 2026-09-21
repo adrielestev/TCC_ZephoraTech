@@ -6,7 +6,13 @@ import { Button } from '../../../components/Button';
 import { AuthCard } from '../../../components/AuthCard';
 import { AuthService } from '../services/auth.service';
 import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
-import { Colors, Spacing, FontSizes, FontWeights, Heights } from '../../../theme/constants';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  Heights,
+} from '../../../theme/constants';
 
 export function ResetPasswordScreen({ route, navigation }) {
   const { email } = route.params || {};
@@ -36,11 +42,22 @@ export function ResetPasswordScreen({ route, navigation }) {
     <Screen scrollable>
       <View style={styles.container}>
         <Animated.View style={[styles.header, headerAnim]}>
-          <View style={[styles.icon, { width: Heights.logo, height: Heights.logo, borderRadius: Heights.logo / 2 }]}>
+          <View
+            style={[
+              styles.icon,
+              {
+                width: Heights.logo,
+                height: Heights.logo,
+                borderRadius: Heights.logo / 2,
+              },
+            ]}
+          >
             <Text style={styles.iconText}>🔒</Text>
           </View>
           <Text style={styles.title}>Redefinir Senha</Text>
-          <Text style={styles.subtitle}>Digite o código que você recebeu e sua nova senha.</Text>
+          <Text style={styles.subtitle}>
+            Digite o código que você recebeu e sua nova senha.
+          </Text>
         </Animated.View>
 
         <Animated.View style={cardAnim}>
@@ -52,16 +69,37 @@ export function ResetPasswordScreen({ route, navigation }) {
               maxLength={6}
               value={code}
               onChangeText={setCode}
-              style={{ textAlign: 'center', fontSize: FontSizes.xxxl, letterSpacing: 8, fontWeight: FontWeights.semibold }}
+              style={{
+                textAlign: 'center',
+                fontSize: FontSizes.xxxl,
+                letterSpacing: 8,
+                fontWeight: FontWeights.semibold,
+              }}
             />
-            <Input label="Nova Senha" placeholder="Mínimo 8 caracteres" secureTextEntry value={password} onChangeText={setPassword} />
+            <Input
+              label="Nova Senha"
+              placeholder="Mínimo 8 caracteres"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
 
-            <Button title="Redefinir Senha" onPress={handleReset} loading={loading} style={styles.resetButton} />
+            <Button
+              title="Redefinir Senha"
+              onPress={handleReset}
+              loading={loading}
+              style={styles.resetButton}
+            />
           </AuthCard>
         </Animated.View>
 
         <Animated.View style={[styles.footer, footerAnim]}>
-          <Button title="Voltar para o Login" type="text" underline onPress={() => navigation.goBack()} />
+          <Button
+            title="Voltar para o Login"
+            type="text"
+            underline
+            onPress={() => navigation.goBack()}
+          />
         </Animated.View>
       </View>
     </Screen>

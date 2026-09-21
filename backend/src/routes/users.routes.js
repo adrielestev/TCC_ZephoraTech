@@ -6,37 +6,35 @@ import {
   updateMeSchema,
   updateUserLevelSchema,
 } from "../schemas/users.schemas.js";
-import { asyncHandler } from "../utils/async-handler.js";
 import { validate } from "../utils/validators.js";
-import { uploadImage, validateUploadedImage } from "../middlewares/image-upload.js";
+import {
+  uploadImage,
+  validateUploadedImage,
+} from "../middlewares/image-upload.js";
 
 export const usersRouter = Router();
 
 usersRouter.use(authenticate);
 
-usersRouter.patch(
-  "/me",
-  validate(updateMeSchema),
-  asyncHandler(usersController.updateMe),
-);
+usersRouter.patch("/me", validate(updateMeSchema), usersController.updateMe);
 usersRouter.post(
   "/me/photo",
   uploadImage,
   validateUploadedImage,
-  asyncHandler(usersController.updateMyPhoto),
+  usersController.updateMyPhoto,
 );
-usersRouter.delete("/me/photo", asyncHandler(usersController.removeMyPhoto));
-usersRouter.get("/", requireAdmin, asyncHandler(usersController.listUsers));
+usersRouter.delete("/me/photo", usersController.removeMyPhoto);
+usersRouter.get("/", requireAdmin, usersController.listUsers);
 usersRouter.patch(
   "/:id/level",
   requireAdmin,
   validate(idParamSchema, "params"),
   validate(updateUserLevelSchema),
-  asyncHandler(usersController.updateUserLevel),
+  usersController.updateUserLevel,
 );
 usersRouter.delete(
   "/:id",
   requireAdmin,
   validate(idParamSchema, "params"),
-  asyncHandler(usersController.deleteUser),
+  usersController.deleteUser,
 );

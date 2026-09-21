@@ -1,6 +1,20 @@
 import React, { useRef, useState } from 'react';
-import { TextInput, View, Text, StyleSheet, Animated, Platform } from 'react-native';
-import { Colors, Heights, BorderRadius, FontSizes, FontWeights, Spacing } from '../theme/constants';
+import {
+  TextInput,
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Platform,
+} from 'react-native';
+import {
+  Colors,
+  Heights,
+  BorderRadius,
+  FontSizes,
+  FontWeights,
+  Spacing,
+} from '../theme/constants';
 import { useResponsive } from '../hooks/useResponsive';
 
 export const Input = ({ label, error, onFocus, onBlur, style, ...props }) => {
@@ -10,19 +24,30 @@ export const Input = ({ label, error, onFocus, onBlur, style, ...props }) => {
 
   const handleFocus = (e) => {
     setFocused(true);
-    Animated.timing(focusAnim, { toValue: 1, duration: 180, useNativeDriver: false }).start();
+    Animated.timing(focusAnim, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: false,
+    }).start();
     onFocus?.(e);
   };
 
   const handleBlur = (e) => {
     setFocused(false);
-    Animated.timing(focusAnim, { toValue: 0, duration: 180, useNativeDriver: false }).start();
+    Animated.timing(focusAnim, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: false,
+    }).start();
     onBlur?.(e);
   };
 
   const borderColor = error
     ? Colors.error
-    : focusAnim.interpolate({ inputRange: [0, 1], outputRange: [Colors.border, Colors.primary] });
+    : focusAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [Colors.border, Colors.primary],
+      });
 
   const backgroundColor = focusAnim.interpolate({
     inputRange: [0, 1],
@@ -31,16 +56,35 @@ export const Input = ({ label, error, onFocus, onBlur, style, ...props }) => {
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, { fontSize: isSmallScreen ? FontSizes.sm : FontSizes.md }]}>{label}</Text>}
+      {label && (
+        <Text
+          style={[
+            styles.label,
+            { fontSize: isSmallScreen ? FontSizes.sm : FontSizes.md },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
       <Animated.View
         style={[
           styles.inputContainer,
-          { height: Heights.input, paddingHorizontal: isSmallScreen ? Spacing.md : Spacing.lg, borderColor, backgroundColor },
+          {
+            height: Heights.input,
+            paddingHorizontal: isSmallScreen ? Spacing.md : Spacing.lg,
+            borderColor,
+            backgroundColor,
+          },
           focused && styles.inputFocusedShadow,
         ]}
       >
         <TextInput
-          style={[styles.input, { fontSize: isSmallScreen ? FontSizes.md : FontSizes.lg }, Platform.OS === 'web' && styles.inputWeb, style]}
+          style={[
+            styles.input,
+            { fontSize: isSmallScreen ? FontSizes.md : FontSizes.lg },
+            Platform.OS === 'web' && styles.inputWeb,
+            style,
+          ]}
           placeholderTextColor={Colors.text.placeholder}
           onFocus={handleFocus}
           onBlur={handleBlur}

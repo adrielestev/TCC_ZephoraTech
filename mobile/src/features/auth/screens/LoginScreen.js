@@ -8,7 +8,12 @@ import { ZephoraLogo } from '../../../components/ZephoraLogo';
 import { useAuth } from '../../../hooks/useAuth';
 import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
 import { useResponsive } from '../../../hooks/useResponsive';
-import { Colors, Spacing, FontSizes, FontWeights } from '../../../theme/constants';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+} from '../../../theme/constants';
 
 export function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -27,7 +32,10 @@ export function LoginScreen({ navigation }) {
     try {
       await login({ email, password });
     } catch (err) {
-      Alert.alert('Erro', err.response?.data?.message || 'Não foi possível fazer login');
+      Alert.alert(
+        'Erro',
+        err.response?.data?.message || 'Não foi possível fazer login',
+      );
     } finally {
       setLoading(false);
     }
@@ -60,7 +68,12 @@ export function LoginScreen({ navigation }) {
               onChangeText={setPassword}
             />
 
-            <Button title="Entrar" onPress={handleLogin} loading={loading} style={styles.loginButton} />
+            <Button
+              title="Entrar"
+              onPress={handleLogin}
+              loading={loading}
+              style={styles.loginButton}
+            />
 
             <Button
               title="Esqueci a senha"
@@ -74,7 +87,12 @@ export function LoginScreen({ navigation }) {
 
         <Animated.View style={[styles.footer, footerAnim]}>
           <Text style={styles.footerText}>Ainda não tem uma conta?</Text>
-          <Button title="Cadastrar-se" type="text" underline onPress={() => navigation.navigate('Register')} />
+          <Button
+            title="Cadastrar-se"
+            type="text"
+            underline
+            onPress={() => navigation.navigate('Register')}
+          />
         </Animated.View>
       </View>
     </Screen>

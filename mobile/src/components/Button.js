@@ -1,13 +1,34 @@
 import React, { useRef } from 'react';
-import { Text, ActivityIndicator, StyleSheet, Animated, Pressable, Platform } from 'react-native';
+import {
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  Animated,
+  Pressable,
+  Platform,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Heights, BorderRadius, FontSizes, FontWeights, Spacing } from '../theme/constants';
+import {
+  Colors,
+  Heights,
+  BorderRadius,
+  FontSizes,
+  FontWeights,
+  Spacing,
+} from '../theme/constants';
 import { useResponsive } from '../hooks/useResponsive';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
 
-export const Button = ({ title, onPress, loading, type = 'primary', underline = false, style }) => {
+export const Button = ({
+  title,
+  onPress,
+  loading,
+  type = 'primary',
+  underline = false,
+  style,
+}) => {
   const { isSmallScreen } = useResponsive();
   const isPrimary = type === 'primary';
   const isOutline = type === 'outline';
@@ -15,10 +36,20 @@ export const Button = ({ title, onPress, loading, type = 'primary', underline = 
   const scale = useRef(new Animated.Value(1)).current;
 
   const pressIn = () => {
-    Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
+    Animated.spring(scale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 6,
+    }).start();
   };
   const pressOut = () => {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }).start();
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 6,
+    }).start();
   };
 
   const textStyle = [
@@ -30,7 +61,8 @@ export const Button = ({ title, onPress, loading, type = 'primary', underline = 
     underline && styles.textUnderline,
   ];
 
-  const webPointer = Platform.OS === 'web' ? { cursor: loading ? 'default' : 'pointer' } : null;
+  const webPointer =
+    Platform.OS === 'web' ? { cursor: loading ? 'default' : 'pointer' } : null;
 
   if (isPrimary) {
     return (
@@ -38,7 +70,13 @@ export const Button = ({ title, onPress, loading, type = 'primary', underline = 
         colors={Colors.gradient.button}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.base, styles.primaryShadow, { height: Heights.button, transform: [{ scale }] }, style, webPointer]}
+        style={[
+          styles.base,
+          styles.primaryShadow,
+          { height: Heights.button, transform: [{ scale }] },
+          style,
+          webPointer,
+        ]}
       >
         <Pressable
           onPress={onPress}
@@ -89,7 +127,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
     marginVertical: Spacing.sm,
-    width: '100%',
   },
   pressableFill: {
     flex: 1,

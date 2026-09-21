@@ -30,10 +30,7 @@ export async function updateRoomPhoto(req, res) {
 }
 
 export async function removeRoomPhoto(req, res) {
-  await roomsService.removeRoomPhoto(
-    req.params.id,
-    Number(req.params.slot),
-  );
+  await roomsService.removeRoomPhoto(req.params.id, Number(req.params.slot));
   res.status(204).send();
 }
 

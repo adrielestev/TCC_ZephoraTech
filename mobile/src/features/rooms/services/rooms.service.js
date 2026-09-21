@@ -36,5 +36,5 @@ export const RoomsService = {
   async deleteRoom(id) {
     const response = await api.delete(`/rooms/${id}`);
     return response.data;
-  }
+  },
 };

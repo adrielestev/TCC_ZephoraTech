@@ -12,28 +12,23 @@ import {
   sensorSchema,
   updateSensorSchema,
 } from "../schemas/sensors.schemas.js";
-import { asyncHandler } from "../utils/async-handler.js";
 import { validate } from "../utils/validators.js";
 
 export const sensorsRouter = Router();
 
-sensorsRouter.get(
-  "/",
-  authenticate,
-  asyncHandler(sensorsController.listSensors),
-);
+sensorsRouter.get("/", authenticate, sensorsController.listSensors);
 sensorsRouter.post(
   "/",
   authenticate,
   requireAdmin,
   validate(sensorSchema),
-  asyncHandler(sensorsController.createSensor),
+  sensorsController.createSensor,
 );
 sensorsRouter.get(
   "/:id",
   authenticate,
   validate(idParamSchema, "params"),
-  asyncHandler(sensorsController.getSensor),
+  sensorsController.getSensor,
 );
 sensorsRouter.patch(
   "/:id",
@@ -41,26 +36,26 @@ sensorsRouter.patch(
   requireAdmin,
   validate(idParamSchema, "params"),
   validate(updateSensorSchema),
-  asyncHandler(sensorsController.updateSensor),
+  sensorsController.updateSensor,
 );
 sensorsRouter.delete(
   "/:id",
   authenticate,
   requireAdmin,
   validate(idParamSchema, "params"),
-  asyncHandler(sensorsController.deleteSensor),
+  sensorsController.deleteSensor,
 );
 sensorsRouter.post(
   "/:id/command",
   authenticate,
   validate(idParamSchema, "params"),
   validate(commandSchema),
-  asyncHandler(sensorsController.commandSensor),
+  sensorsController.commandSensor,
 );
 sensorsRouter.post(
   "/rooms/:roomId/:deviceKey/state",
   validate(roomIdParamSchema, "params"),
   validate(deviceKeyParamSchema, "params"),
   validate(espStateSchema),
-  asyncHandler(sensorsController.reportSensorState),
+  sensorsController.reportSensorState,
 );

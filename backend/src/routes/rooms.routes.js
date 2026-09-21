@@ -8,9 +8,11 @@ import {
   roomSchema,
   updateRoomSchema,
 } from "../schemas/rooms.schemas.js";
-import { asyncHandler } from "../utils/async-handler.js";
 import { validate } from "../utils/validators.js";
-import { uploadImage, validateUploadedImage } from "../middlewares/image-upload.js";
+import {
+  uploadImage,
+  validateUploadedImage,
+} from "../middlewares/image-upload.js";
 import { z } from "zod";
 
 const photoParamsSchema = idParamSchema.extend({
@@ -19,19 +21,19 @@ const photoParamsSchema = idParamSchema.extend({
 
 export const roomsRouter = Router();
 
-roomsRouter.get("/", authenticate, asyncHandler(roomsController.listRooms));
+roomsRouter.get("/", authenticate, roomsController.listRooms);
 roomsRouter.post(
   "/",
   authenticate,
   requireAdmin,
   validate(roomSchema),
-  asyncHandler(roomsController.createRoom),
+  roomsController.createRoom,
 );
 roomsRouter.get(
   "/:id",
   authenticate,
   validate(idParamSchema, "params"),
-  asyncHandler(roomsController.getRoom),
+  roomsController.getRoom,
 );
 roomsRouter.patch(
   "/:id",
@@ -39,7 +41,7 @@ roomsRouter.patch(
   requireAdmin,
   validate(idParamSchema, "params"),
   validate(updateRoomSchema),
-  asyncHandler(roomsController.updateRoom),
+  roomsController.updateRoom,
 );
 roomsRouter.post(
   "/:id/photos/:slot",
@@ -48,31 +50,31 @@ roomsRouter.post(
   validate(photoParamsSchema, "params"),
   uploadImage,
   validateUploadedImage,
-  asyncHandler(roomsController.updateRoomPhoto),
+  roomsController.updateRoomPhoto,
 );
 roomsRouter.delete(
   "/:id/photos/:slot",
   authenticate,
   requireAdmin,
   validate(photoParamsSchema, "params"),
-  asyncHandler(roomsController.removeRoomPhoto),
+  roomsController.removeRoomPhoto,
 );
 roomsRouter.delete(
   "/:id",
   authenticate,
   requireAdmin,
   validate(idParamSchema, "params"),
-  asyncHandler(roomsController.deleteRoom),
+  roomsController.deleteRoom,
 );
 roomsRouter.post(
   "/:id/handshake",
   validate(idParamSchema, "params"),
   validate(handshakeSchema),
-  asyncHandler(roomsController.handshake),
+  roomsController.handshake,
 );
 roomsRouter.get(
   "/:roomId/commands",
   validate(roomIdParamSchema, "params"),
   validate(commandsQuerySchema, "query"),
-  asyncHandler(roomsController.listCommands),
+  roomsController.listCommands,
 );

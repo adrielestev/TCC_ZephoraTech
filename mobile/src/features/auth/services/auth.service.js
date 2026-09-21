@@ -5,7 +5,7 @@ export const AuthService = {
     const response = await api.post('/auth/register', data);
     return response.data;
   },
-  
+
   async verifyEmail(data) {
     const response = await api.post('/auth/verify-email', data);
     return response.data;
@@ -34,5 +34,5 @@ export const AuthService = {
   async getMe() {
     const response = await api.get('/auth/me');
     return response.data;
-  }
+  },
 };

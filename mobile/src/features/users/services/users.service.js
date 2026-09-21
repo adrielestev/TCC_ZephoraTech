@@ -5,7 +5,7 @@ export const UsersService = {
     const response = await api.patch('/users/me', data);
     return response.data;
   },
-  
+
   async updateMyPhoto(formData) {
     const response = await api.post('/users/me/photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -31,5 +31,5 @@ export const UsersService = {
   async deleteUser(id) {
     const response = await api.delete(`/users/${id}`);
     return response.data;
-  }
+  },
 };

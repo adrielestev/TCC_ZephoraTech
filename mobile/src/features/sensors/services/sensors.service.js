@@ -29,5 +29,5 @@ export const SensorsService = {
   async commandSensor(id, data) {
     const response = await api.post(`/sensors/${id}/command`, data);
     return response.data;
-  }
+  },
 };

@@ -1,16 +1,32 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Spacing } from '../theme/constants';
 import { useResponsive } from '../hooks/useResponsive';
 
-export const Screen = ({ children, scrollable = false, gradient = true, style, contentMaxWidth }) => {
+export const Screen = ({
+  children,
+  scrollable = false,
+  gradient = true,
+  style,
+  contentMaxWidth,
+}) => {
   const { horizontalPadding, contentMaxWidth: autoMaxWidth } = useResponsive();
   const maxWidth = contentMaxWidth ?? autoMaxWidth;
 
   const content = scrollable ? (
     <ScrollView
-      contentContainerStyle={[styles.scrollContainer, { paddingHorizontal: horizontalPadding }]}
+      contentContainerStyle={[
+        styles.scrollContainer,
+        { paddingHorizontal: horizontalPadding },
+      ]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
@@ -35,7 +51,11 @@ export const Screen = ({ children, scrollable = false, gradient = true, style, c
   );
 
   if (!gradient) {
-    return <View style={[styles.safeArea, { backgroundColor: Colors.background }]}>{body}</View>;
+    return (
+      <View style={[styles.safeArea, { backgroundColor: Colors.background }]}>
+        {body}
+      </View>
+    );
   }
 
   return (

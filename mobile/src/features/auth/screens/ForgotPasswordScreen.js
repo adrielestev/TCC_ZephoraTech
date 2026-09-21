@@ -7,7 +7,13 @@ import { AuthCard } from '../../../components/AuthCard';
 import { AuthService } from '../services/auth.service';
 import { useEntranceAnimation } from '../../../hooks/useEntranceAnimation';
 import { useResponsive } from '../../../hooks/useResponsive';
-import { Colors, Spacing, FontSizes, FontWeights, Heights } from '../../../theme/constants';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontWeights,
+  Heights,
+} from '../../../theme/constants';
 
 export function ForgotPasswordScreen({ navigation }) {
   const { isSmallScreen } = useResponsive();
@@ -26,7 +32,10 @@ export function ForgotPasswordScreen({ navigation }) {
       Alert.alert('Sucesso', 'Código enviado para seu e-mail.');
       navigation.navigate('ResetPassword', { email });
     } catch (err) {
-      Alert.alert('Erro', err.response?.data?.message || 'Falha ao enviar e-mail');
+      Alert.alert(
+        'Erro',
+        err.response?.data?.message || 'Falha ao enviar e-mail',
+      );
     } finally {
       setLoading(false);
     }
@@ -36,11 +45,22 @@ export function ForgotPasswordScreen({ navigation }) {
     <Screen scrollable>
       <View style={styles.container}>
         <Animated.View style={[styles.header, headerAnim]}>
-          <View style={[styles.icon, { width: Heights.logo, height: Heights.logo, borderRadius: Heights.logo / 2 }]}>
+          <View
+            style={[
+              styles.icon,
+              {
+                width: Heights.logo,
+                height: Heights.logo,
+                borderRadius: Heights.logo / 2,
+              },
+            ]}
+          >
             <Text style={styles.iconText}>?</Text>
           </View>
           <Text style={styles.title}>Esqueceu a Senha</Text>
-          <Text style={styles.subtitle}>Enviaremos um código para você redefinir sua senha.</Text>
+          <Text style={styles.subtitle}>
+            Enviaremos um código para você redefinir sua senha.
+          </Text>
         </Animated.View>
 
         <Animated.View style={cardAnim}>
@@ -54,12 +74,22 @@ export function ForgotPasswordScreen({ navigation }) {
               onChangeText={setEmail}
             />
 
-            <Button title="Enviar Código" onPress={handleSendCode} loading={loading} style={styles.sendButton} />
+            <Button
+              title="Enviar Código"
+              onPress={handleSendCode}
+              loading={loading}
+              style={styles.sendButton}
+            />
           </AuthCard>
         </Animated.View>
 
         <Animated.View style={[styles.footer, footerAnim]}>
-          <Button title="Voltar para o Login" type="text" underline onPress={() => navigation.goBack()} />
+          <Button
+            title="Voltar para o Login"
+            type="text"
+            underline
+            onPress={() => navigation.goBack()}
+          />
         </Animated.View>
       </View>
     </Screen>
@@ -77,11 +107,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
   },
   icon: {
-    backgroundColor: Colors.warning,
+    backgroundColor: Colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
-    shadowColor: Colors.warning,
+    shadowColor: Colors.primaryDark,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
