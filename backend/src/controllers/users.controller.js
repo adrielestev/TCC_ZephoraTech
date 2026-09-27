@@ -15,8 +15,8 @@ export async function removeMyPhoto(req, res) {
   res.status(204).send();
 }
 
-export async function listUsers(_req, res) {
-  const users = await usersService.listUsers();
+export async function listUsers(req, res) {
+  const users = await usersService.listUsers(req.query);
   res.json({ users });
 }
 

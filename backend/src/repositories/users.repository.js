@@ -46,8 +46,18 @@ export function incrementVerificationAttempts(id) {
   return db("users").where({ id }).increment("verification_attempts", 1);
 }
 
-export function listUsers() {
-  return db("users").select(safeColumns).orderBy("name");
+export function listUsers({ q, limit = 50, offset = 0 } = {}) {
+  const query = db("users").select(safeColumns).whereNull("deleted_at");
+
+  if (q) {
+    query.where((builder) => {
+      builder
+        .where("name", "like", `%${q}%`)
+        .orWhere("email", "like", `%${q}%`);
+    });
+  }
+
+  return query.orderBy("name").limit(limit).offset(offset);
 }
 
 export async function updateActiveUser(id, payload) {

@@ -40,8 +40,8 @@ export async function removeMyPhoto(userId) {
   await fileStorage.removeImage(user.user_photo);
 }
 
-export function listUsers() {
-  return usersRepository.listUsers();
+export function listUsers(filters) {
+  return usersRepository.listUsers(filters);
 }
 
 export async function updateUserLevel(userId, userLevel) {

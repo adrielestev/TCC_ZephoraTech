@@ -5,6 +5,7 @@ import { idParamSchema } from "../schemas/common.schemas.js";
 import {
   updateMeSchema,
   updateUserLevelSchema,
+  listUsersQuerySchema,
 } from "../schemas/users.schemas.js";
 import { validate } from "../utils/validators.js";
 import {
@@ -24,7 +25,12 @@ usersRouter.post(
   usersController.updateMyPhoto,
 );
 usersRouter.delete("/me/photo", usersController.removeMyPhoto);
-usersRouter.get("/", requireAdmin, usersController.listUsers);
+usersRouter.get(
+  "/",
+  requireAdmin,
+  validate(listUsersQuerySchema, "query"),
+  usersController.listUsers,
+);
 usersRouter.patch(
   "/:id/level",
   requireAdmin,

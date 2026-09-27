@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { deviceKeySchema, macAddressSchema } from "./common.schemas.js";
 
-export const sensorSchema = z.object({
+const sensorBaseSchema = z.object({
   room_id: z.coerce.number().int().positive(),
   name: z.string().trim().min(2).max(120),
   device_key: deviceKeySchema,
@@ -13,7 +13,36 @@ export const sensorSchema = z.object({
   current_state: z.coerce.number().min(0).max(100).optional(),
 });
 
-export const updateSensorSchema = sensorSchema
+export const sensorSchema = sensorBaseSchema.superRefine((sensor, context) => {
+  const rules = {
+    RELE: { direction: "OUTPUT", control: "DIGITAL", usesPwmPin: false },
+    SERVO: { direction: "OUTPUT", control: "ANALOGICO", usesPwmPin: false },
+    PWM: { direction: "OUTPUT", control: "ANALOGICO", usesPwmPin: true },
+    REED_SWITCH: { direction: "INPUT", control: "DIGITAL", usesPwmPin: false },
+  };
+  const rule = rules[sensor.type];
+
+  if (
+    sensor.direction !== rule.direction ||
+    sensor.type_of_control !== rule.control
+  ) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["type"],
+      message: "Tipo, direção e controle são incompatíveis.",
+    });
+  }
+
+  if (!rule.usesPwmPin && sensor.pin_pwm != null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["pin_pwm"],
+      message: "Este tipo de sensor não utiliza pino PWM.",
+    });
+  }
+});
+
+export const updateSensorSchema = sensorBaseSchema
   .omit({ room_id: true })
   .partial();
 

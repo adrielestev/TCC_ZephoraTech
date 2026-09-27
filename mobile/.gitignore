@@ -2,7 +2,6 @@
 
 # dependencies
 node_modules/
-package-lock.json
 
 # Expo
 .expo/
@@ -32,14 +31,12 @@ yarn-error.*
 *.pem
 
 # local env files
-.env
 .env*.local
-
-# keep .env.example for reference
-!.env.example
 
 # typescript
 *.tsbuildinfo
+
+example
 
 # generated native folders
 /ios

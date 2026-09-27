@@ -4,6 +4,7 @@ import * as sensorsRepository from "../repositories/sensors.repository.js";
 import { nowIso } from "../utils/datetime.js";
 import { ApiError, notFound } from "../utils/errors.js";
 import { assertRoomExists } from "./rooms.service.js";
+import { sensorSchema } from "../schemas/sensors.schemas.js";
 
 export function listSensors(user) {
   return sensorsRepository.listSensorsForUser(user);
@@ -26,6 +27,19 @@ export async function getSensor(user, sensorId) {
 }
 
 export async function updateSensor(sensorId, payload) {
+  const currentSensor = await sensorsRepository.findSensorById(sensorId);
+  if (!currentSensor) {
+    throw notFound("Sensor");
+  }
+
+  const validation = sensorSchema.safeParse({ ...currentSensor, ...payload });
+  if (!validation.success) {
+    throw new ApiError(
+      400,
+      "Tipo, direção, controle e pinos do sensor são incompatíveis.",
+    );
+  }
+
   const sensor = await sensorsRepository.updateSensor(sensorId, payload);
 
   if (!sensor) {
