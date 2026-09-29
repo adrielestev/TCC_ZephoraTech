@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Text, Pressable } from "react-native";
+import { Text, Pressable } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useAuth } from "../../../src/context/AuthContext";
@@ -10,6 +10,7 @@ import { Screen } from "../../../src/components/Screen";
 import { SurfaceCard } from "../../../src/components/SurfaceCard";
 import { colors, spacing } from "../../../src/theme/tokens";
 import { IconButton } from "../../../src/components/IconButton";
+import { confirmAction } from "../../../src/utils/confirm-action";
 
 export default function ProfileEditScreen() {
   const { user, refreshMe } = useAuth();
@@ -18,11 +19,14 @@ export default function ProfileEditScreen() {
   const [error, setError] = useState<string | null>(null);
 
   async function handlePickPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
     if (!result.canceled) {
       setLoading(true);
       try {
-        await usersApi.uploadMyPhoto(result.assets[0].uri);
+        await usersApi.uploadMyPhoto(result.assets[0]);
         await refreshMe();
       } catch {
         setError("Não foi possível atualizar a foto.");
@@ -32,25 +36,17 @@ export default function ProfileEditScreen() {
     }
   }
 
-  function handleDeletePhoto() {
-    Alert.alert("Excluir foto", "Deseja remover sua foto de perfil?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: async () => {
-          setLoading(true);
-          try {
-            await usersApi.deleteMyPhoto();
-            await refreshMe();
-          } catch {
-            setError("Não foi possível excluir a foto.");
-          } finally {
-            setLoading(false);
-          }
-        },
-      },
-    ]);
+  async function handleDeletePhoto() {
+    if (!(await confirmAction("Excluir foto", "Deseja remover sua foto de perfil?"))) return;
+    setLoading(true);
+    try {
+      await usersApi.deleteMyPhoto();
+      await refreshMe();
+    } catch {
+      setError("Não foi possível excluir a foto.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSave() {

@@ -1,4 +1,5 @@
 import { api, toPhotoFormData } from "./client";
+import type { ImagePickerAsset } from "expo-image-picker";
 import { Collaborator, Room, RoomPhotoSlot } from "../types";
 
 export const roomsApi = {
@@ -14,10 +15,11 @@ export const roomsApi = {
 
   remove: (roomId: number) => api.delete(`/rooms/${roomId}`),
 
-  uploadPhoto: (roomId: number, slot: RoomPhotoSlot, localUri: string) =>
-    api.post<{ room: Room }>(`/rooms/${roomId}/photos/${slot}`, toPhotoFormData(localUri), {
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
+  uploadPhoto: async (roomId: number, slot: RoomPhotoSlot, asset: ImagePickerAsset) =>
+    api.post<{ room: Room }>(
+      `/rooms/${roomId}/photos/${slot}`,
+      await toPhotoFormData(asset),
+    ),
 
   deletePhoto: (roomId: number, slot: RoomPhotoSlot) =>
     api.delete(`/rooms/${roomId}/photos/${slot}`),

@@ -1,4 +1,4 @@
-import { Alert, View, Text, FlatList, Pressable, RefreshControl } from "react-native";
+import { View, Text, FlatList, Pressable, RefreshControl } from "react-native";
 import { useDeferredValue, useEffect, useState } from "react";
 import { router } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { LoadingState } from "../../../src/components/LoadingState";
 import { ErrorState } from "../../../src/components/ErrorState";
 import { EmptyState } from "../../../src/components/EmptyState";
 import { FormField } from "../../../src/components/FormField";
+import { confirmAction } from "../../../src/utils/confirm-action";
 
 export default function AdminUsersScreen() {
   const queryClient = useQueryClient();
@@ -49,44 +50,27 @@ export default function AdminUsersScreen() {
     enabled: deferredSearch.length === 0 || deferredSearch.length >= 2,
   });
 
-  function confirmLevel(userId: number, currentLevel: UserLevel) {
+  async function confirmLevel(userId: number, currentLevel: UserLevel) {
     const nextLevel = currentLevel === "ADMIN" ? "USER" : "ADMIN";
-    Alert.alert("Alterar permissão", `Deseja alterar este usuário para ${nextLevel}?`, [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Confirmar",
-        onPress: () => {
-          setActionError(null);
-          updateLevel.mutate(
-            { userId, level: nextLevel },
-            {
-              onError: () => setActionError("Não foi possível alterar a permissão do usuário."),
-            },
-          );
-        },
-      },
-    ]);
+    if (!(await confirmAction("Alterar permissão", `Deseja alterar este usuário para ${nextLevel}?`))) return;
+    setActionError(null);
+    updateLevel.mutate(
+      { userId, level: nextLevel },
+      { onError: () => setActionError("Não foi possível alterar a permissão do usuário.") },
+    );
   }
 
-  function confirmDelete(userId: number) {
+  async function confirmDelete(userId: number) {
     if (user && userId === user.id) {
-      Alert.alert("Atenção", "Você não pode remover sua própria conta de administrador.");
+      setActionError("Você não pode remover sua própria conta de administrador.");
       return;
     }
 
-    Alert.alert("Remover usuário", "O usuário será desativado.", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Remover",
-        style: "destructive",
-        onPress: () => {
-          setActionError(null);
-          softDelete.mutate(userId, {
-            onError: () => setActionError("Não foi possível remover o usuário."),
-          });
-        },
-      },
-    ]);
+    if (!(await confirmAction("Remover usuário", "O usuário será desativado."))) return;
+    setActionError(null);
+    softDelete.mutate(userId, {
+      onError: () => setActionError("Não foi possível remover o usuário."),
+    });
   }
 
   const updateLevel = useMutation({

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, View, Text, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -15,6 +15,7 @@ import { Screen } from "../../../../src/components/Screen";
 import { SurfaceCard } from "../../../../src/components/SurfaceCard";
 import { colors, spacing } from "../../../../src/theme/tokens";
 import { IconButton } from "../../../../src/components/IconButton";
+import { confirmAction } from "../../../../src/utils/confirm-action";
 
 export default function RoomEditScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,10 +62,13 @@ export default function RoomEditScreen() {
 
   async function handlePickPhoto(slot: RoomPhotoSlot) {
     setError(null);
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
     if (!result.canceled) {
       uploadPhoto.mutate(
-        { slot, uri: result.assets[0].uri },
+        { slot, asset: result.assets[0] },
         {
           onError: () => setError("Não foi possível enviar a foto."),
         },
@@ -94,17 +98,10 @@ export default function RoomEditScreen() {
     }
   }
 
-  function handleDeletePhoto(slot: RoomPhotoSlot) {
+  async function handleDeletePhoto(slot: RoomPhotoSlot) {
     setError(null);
-    Alert.alert("Excluir foto", "Deseja remover esta foto da sala?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: () =>
-          deletePhoto.mutate(slot, { onError: () => setError("Não foi possível excluir a foto.") }),
-      },
-    ]);
+    if (!(await confirmAction("Excluir foto", "Deseja remover esta foto da sala?"))) return;
+    deletePhoto.mutate(slot, { onError: () => setError("Não foi possível excluir a foto.") });
   }
 
   return (

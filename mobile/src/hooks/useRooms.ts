@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { roomsApi } from "../api/rooms";
 import { RoomPhotoSlot } from "../types";
+import type { ImagePickerAsset } from "expo-image-picker";
 
 export function useRooms() {
   return useQuery({
@@ -51,8 +52,8 @@ export function useRemoveRoom() {
 export function useUploadRoomPhoto(roomId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ slot, uri }: { slot: RoomPhotoSlot; uri: string }) =>
-      roomsApi.uploadPhoto(roomId, slot, uri),
+    mutationFn: ({ slot, asset }: { slot: RoomPhotoSlot; asset: ImagePickerAsset }) =>
+      roomsApi.uploadPhoto(roomId, slot, asset),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms", roomId] });
     },

@@ -1,4 +1,4 @@
-import { Alert, View, Text, FlatList, Switch, Pressable, RefreshControl } from "react-native";
+import { View, Text, FlatList, Switch, Pressable, RefreshControl } from "react-native";
 import { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../../../src/context/AuthContext";
@@ -14,6 +14,7 @@ import { LoadingState } from "../../../../src/components/LoadingState";
 import { ErrorState } from "../../../../src/components/ErrorState";
 import { EmptyState } from "../../../../src/components/EmptyState";
 import { AnalogControl } from "../../../../src/components/AnalogControl";
+import { confirmAction } from "../../../../src/utils/confirm-action";
 
 export default function RoomDevicesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,18 +39,11 @@ export default function RoomDevicesScreen() {
   const isSensorPending = (sensorId: number) =>
     commandSensor.isPending && commandSensor.variables?.sensorId === sensorId;
 
-  function handleRemove(sensorId: number) {
-    Alert.alert("Excluir dispositivo", "Esta ação não pode ser desfeita.", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: () =>
-          removeSensor.mutate(sensorId, {
-            onError: () => setMutationError("Não foi possível excluir o dispositivo."),
-          }),
-      },
-    ]);
+  async function handleRemove(sensorId: number) {
+    if (!(await confirmAction("Excluir dispositivo", "Esta ação não pode ser desfeita."))) return;
+    removeSensor.mutate(sensorId, {
+      onError: () => setMutationError("Não foi possível excluir o dispositivo."),
+    });
   }
 
   function handleAnalogChange(sensorId: number, currentState: number, delta: number) {

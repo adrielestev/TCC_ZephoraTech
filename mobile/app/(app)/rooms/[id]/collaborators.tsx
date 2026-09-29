@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from "react";
-import { Alert, View, Text, FlatList, Pressable } from "react-native";
+import { View, Text, FlatList, Pressable } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { LoadingState } from "../../../../src/components/LoadingState";
 import { ErrorState } from "../../../../src/components/ErrorState";
 import { EmptyState } from "../../../../src/components/EmptyState";
+import { confirmAction } from "../../../../src/utils/confirm-action";
 
 export default function RoomCollaboratorsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -46,18 +47,11 @@ export default function RoomCollaboratorsScreen() {
     }
   }
 
-  function handleRemove(collaboratorId: number) {
-    Alert.alert("Remover colaborador", "Deseja remover este acesso à sala?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Remover",
-        style: "destructive",
-        onPress: () =>
-          removeCollaborator.mutate(collaboratorId, {
-            onError: () => setMessage("Não foi possível remover este colaborador."),
-          }),
-      },
-    ]);
+  async function handleRemove(collaboratorId: number) {
+    if (!(await confirmAction("Remover colaborador", "Deseja remover este acesso à sala?"))) return;
+    removeCollaborator.mutate(collaboratorId, {
+      onError: () => setMessage("Não foi possível remover este colaborador."),
+    });
   }
 
   const collaboratorIds = new Set(

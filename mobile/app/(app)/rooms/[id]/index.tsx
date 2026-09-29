@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, View, Text, Pressable, Image } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { Href, router, useLocalSearchParams } from "expo-router";
 import { useRemoveRoom, useRoom } from "../../../../src/hooks/useRooms";
 import { useAuth } from "../../../../src/context/AuthContext";
@@ -11,6 +11,7 @@ import { SurfaceCard } from "../../../../src/components/SurfaceCard";
 import { colors, radii, spacing } from "../../../../src/theme/tokens";
 import { LoadingState } from "../../../../src/components/LoadingState";
 import { ErrorState } from "../../../../src/components/ErrorState";
+import { confirmAction } from "../../../../src/utils/confirm-action";
 
 export default function RoomDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,22 +40,14 @@ export default function RoomDetailScreen() {
       : []),
   ] as const;
 
-  function handleDelete() {
-    Alert.alert("Excluir sala", "Esta ação não pode ser desfeita.", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await removeRoom.mutateAsync(roomId);
-            router.replace("/(app)");
-          } catch {
-            setDeleteError("Não foi possível excluir a sala.");
-          }
-        },
-      },
-    ]);
+  async function handleDelete() {
+    if (!(await confirmAction("Excluir sala", "Esta ação não pode ser desfeita."))) return;
+    try {
+      await removeRoom.mutateAsync(roomId);
+      router.replace("/(app)");
+    } catch {
+      setDeleteError("Não foi possível excluir a sala.");
+    }
   }
 
   return (

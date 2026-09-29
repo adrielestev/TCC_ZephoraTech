@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { authApi } from "../api/auth";
 import { TOKEN_KEY } from "../api/client";
 import { User } from "../types";
+import { deleteToken, getToken, setToken } from "../utils/token-storage";
 
 interface AuthContextValue {
   user: User | null;
@@ -31,24 +31,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const token = await SecureStore.getItemAsync(TOKEN_KEY);
-      if (token) {
-        console.log("Token found, refreshing user data...");
-        await refreshMe();
+      try {
+        const token = await getToken(TOKEN_KEY);
+        if (token) await refreshMe();
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     })();
   }, []);
 
   async function signIn(email: string, password: string) {
     const { data } = await authApi.login({ email, password });
-    await SecureStore.setItemAsync(TOKEN_KEY, data.token);
+    await setToken(TOKEN_KEY, data.token);
     await refreshMe();
     router.replace("/(app)");
   }
 
   async function signOut() {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await deleteToken(TOKEN_KEY);
     setUser(null);
   }
 

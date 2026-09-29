@@ -1,4 +1,5 @@
 import { api, toPhotoFormData } from "./client";
+import type { ImagePickerAsset } from "expo-image-picker";
 import { User, UserLevel } from "../types";
 
 export const usersApi = {
@@ -10,10 +11,8 @@ export const usersApi = {
   updateLevel: (userId: number, user_level: UserLevel) =>
     api.patch<{ user: User }>(`/users/${userId}/level`, { user_level }),
 
-  uploadMyPhoto: (localUri: string) =>
-    api.post<{ user: User }>("/users/me/photo", toPhotoFormData(localUri), {
-      headers: { "Content-Type": "multipart/form-data" },
-    }),
+  uploadMyPhoto: async (asset: ImagePickerAsset) =>
+    api.post<{ user: User }>("/users/me/photo", await toPhotoFormData(asset)),
 
   deleteMyPhoto: () => api.delete("/users/me/photo"),
 
