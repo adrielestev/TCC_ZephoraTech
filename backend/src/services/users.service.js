@@ -10,10 +10,14 @@ export function sanitizeUser(user) {
     verification_expires_at: _verificationExpiresAt,
     verification_attempts: _verificationAttempts,
     last_code_sent_at: _lastCodeSentAt,
+    deleted_at: _deletedAt,
     ...safeUser
   } = user;
 
-  return safeUser;
+  return {
+    ...safeUser,
+    user_photo: fileStorage.createSignedMediaUrl(safeUser.user_photo),
+  };
 }
 
 export async function updateMe(userId, payload) {
@@ -40,8 +44,9 @@ export async function removeMyPhoto(userId) {
   await fileStorage.removeImage(user.user_photo);
 }
 
-export function listUsers(filters) {
-  return usersRepository.listUsers(filters);
+export async function listUsers(filters) {
+  const users = await usersRepository.listUsers(filters);
+  return users.map(sanitizeUser);
 }
 
 export async function updateUserLevel(userId, userLevel) {

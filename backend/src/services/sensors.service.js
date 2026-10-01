@@ -23,7 +23,9 @@ export async function createSensor(payload) {
 export async function getSensor(user, sensorId) {
   const sensor = await findSensorOrFail(sensorId);
   await assertCanReadSensor(user, sensor);
-  return sensor;
+  return user.user_level === "ADMIN"
+    ? sensor
+    : sensorsRepository.toPublicSensor(sensor);
 }
 
 export async function updateSensor(sensorId, payload) {
@@ -65,22 +67,15 @@ export async function commandSensor(user, sensorId, currentState) {
     throw new ApiError(400, "Apenas sensores OUTPUT recebem comandos.");
   }
 
-  return sensorsRepository.updateSensor(sensor.id, {
+  const updatedSensor = await sensorsRepository.updateSensor(sensor.id, {
     current_state: currentState,
   });
+  return user.user_level === "ADMIN"
+    ? updatedSensor
+    : sensorsRepository.toPublicSensor(updatedSensor);
 }
 
-export async function reportSensorState(
-  roomId,
-  deviceKey,
-  macAddress,
-  currentState,
-) {
-  const room = await roomsRepository.findRoomByIdAndMac(roomId, macAddress);
-  if (!room) {
-    throw new ApiError(403, "Sala ou MAC address invalido.");
-  }
-
+export async function reportSensorState(room, deviceKey, currentState) {
   const sensor = await sensorsRepository.findSensorByRoomAndDeviceKey(
     room.id,
     deviceKey,
@@ -94,7 +89,12 @@ export async function reportSensorState(
   });
   await roomsRepository.touchRoomLastSeen(room.id, nowIso());
 
-  return updatedSensor;
+  return {
+    id: updatedSensor.id,
+    room_id: updatedSensor.room_id,
+    direction: updatedSensor.direction,
+    current_state: updatedSensor.current_state,
+  };
 }
 
 async function findSensorOrFail(sensorId) {

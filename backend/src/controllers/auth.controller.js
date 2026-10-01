@@ -2,11 +2,10 @@ import * as authService from "../services/auth.service.js";
 import { sanitizeUser } from "../services/users.service.js";
 
 export async function register(req, res) {
-  const user = await authService.register(req.body);
+  await authService.register(req.body);
 
-  res.status(201).json({
-    message: "Usuario criado. Verifique seu e-mail para ativar a conta.",
-    user,
+  res.status(202).json({
+    message: "Se o cadastro puder ser concluido, enviaremos as instrucoes por e-mail.",
   });
 }
 
@@ -17,7 +16,7 @@ export async function verifyEmail(req, res) {
 
 export async function resendCode(req, res) {
   await authService.resendCode(req.body.email);
-  res.json({ message: "Codigo reenviado." });
+  res.json({ message: "Se a conta puder receber um codigo, ele sera enviado." });
 }
 
 export async function login(req, res) {
@@ -27,7 +26,9 @@ export async function login(req, res) {
 
 export async function forgotPassword(req, res) {
   await authService.forgotPassword(req.body.email);
-  res.json({ message: "Codigo de redefinicao enviado." });
+  res.json({
+    message: "Se a conta puder receber instrucoes, elas serao enviadas por e-mail.",
+  });
 }
 
 export async function resetPassword(req, res) {

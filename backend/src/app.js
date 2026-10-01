@@ -10,16 +10,32 @@ import { roomsRouter } from "./routes/rooms.routes.js";
 import { sensorsRouter } from "./routes/sensors.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
+import { authorizeSignedMediaRequest } from "./services/file-storage.service.js";
 
 export const app = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
-app.use(morgan("dev"));
+app.use(
+  morgan((tokens, req, res) =>
+    [
+      tokens.method(req, res),
+      req.path,
+      tokens.status(req, res),
+      tokens.res(req, res, "content-length"),
+      `- ${tokens["response-time"](req, res)} ms`,
+    ].join(" "),
+  ),
+);
 app.use(
   "/uploads",
-  express.static(path.resolve(process.cwd(), env.UPLOAD_DIR)),
+  authorizeSignedMediaRequest,
+  express.static(path.resolve(process.cwd(), env.UPLOAD_DIR), {
+    setHeaders(res) {
+      res.setHeader("Cache-Control", "private, max-age=300");
+    },
+  }),
 );
 
 app.get("/health", (_req, res) => {

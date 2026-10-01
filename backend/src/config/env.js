@@ -3,7 +3,8 @@ import { z } from "zod";
 
 dotenv.config();
 
-const envSchema = z.object({
+const envSchema = z
+  .object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
@@ -33,6 +34,47 @@ const envSchema = z.object({
   INITIAL_ADMIN_NAME: z.string().default("Administrador"),
   INITIAL_ADMIN_EMAIL: z.string().email().default("admin@zephora.local"),
   INITIAL_ADMIN_PASSWORD: z.string().min(8).default("Admin@123456"),
-});
+  })
+  .superRefine((configuration, context) => {
+    if (configuration.NODE_ENV !== "production") return;
+
+    if (
+      configuration.JWT_SECRET.length < 32 ||
+      /change-me|replace-me|dev-secret|example/i.test(configuration.JWT_SECRET)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["JWT_SECRET"],
+        message: "Em produção, JWT_SECRET deve ser exclusivo e ter ao menos 32 caracteres.",
+      });
+    }
+
+    if (
+      configuration.INITIAL_ADMIN_PASSWORD.length < 12 ||
+      configuration.INITIAL_ADMIN_PASSWORD === "Admin@123456"
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["INITIAL_ADMIN_PASSWORD"],
+        message: "Em produção, defina uma senha inicial exclusiva com ao menos 12 caracteres.",
+      });
+    }
+
+    if (configuration.INITIAL_ADMIN_EMAIL === "admin@zephora.local") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["INITIAL_ADMIN_EMAIL"],
+        message: "Defina um e-mail administrativo exclusivo em produção.",
+      });
+    }
+
+    if (!configuration.APP_URL.startsWith("https://")) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["APP_URL"],
+        message: "APP_URL deve usar HTTPS em produção.",
+      });
+    }
+  });
 
 export const env = envSchema.parse(process.env);

@@ -7,7 +7,6 @@ const safeColumns = [
   "is_email_verified",
   "user_level",
   "user_photo",
-  "deleted_at",
   "created_at",
   "updated_at",
 ];

@@ -14,7 +14,7 @@ Project ZephoraDB {
 
   Escopo desta versão: uma escola só, um ESP32 por sala.
 
-  Protocolo de comunicação: HTTP puro. O ESP32 fala diretamente com a API REST
+  Protocolo de comunicação: HTTP(S). O ESP32 fala diretamente com a API REST
   (POST/GET), sem broker MQTT. Comando de atuador é "modelo de polling": a API
   grava o valor desejado e o firmware busca em GET /rooms/:roomId/commands
   periodicamente.
@@ -118,8 +118,9 @@ Table users {
     pode ter vários sensores e atuadores conectados a ele.
 
     Comunicação é HTTP direto (sem broker): o firmware faz POST/GET nas rotas
-    REST da API. Handshake ao ligar: envia user_id, room_id e mac_address;
-    a API responde confirmando e devolvendo a lista de sensores da sala.
+    REST da API. O handshake e as rotas do dispositivo autenticam MAC mais
+    credencial secreta armazenada em hash nesta tabela. O segredo é entregue
+    uma única vez ao administrador durante a geração/rotação.
 
     A sala NÃO tem dono fixo (não existe rooms.user_id). É um recurso
     administrado por ADMIN; quem pode operar os aparelhos dela é definido
@@ -143,6 +144,10 @@ Table rooms {
     not null,
     unique,
     note: "Endereço MAC do ESP32 da sala, formato AA:BB:CC:DD:EE:FF em maiúsculas. Identificador único do controlador."
+  ]
+
+  device_credential_hash text [
+    note: "Hash SHA-256 da credencial aleatória exclusiva do ESP32 desta sala. Nunca retornar pela API. NULL até provisionamento."
   ]
 
   last_seen_at text [

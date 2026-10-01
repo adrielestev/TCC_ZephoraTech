@@ -39,15 +39,18 @@ export async function deleteRoom(req, res) {
   res.status(204).send();
 }
 
+export async function generateDeviceCredential(req, res) {
+  const credential = await roomsService.generateDeviceCredential(req.params.id);
+  res.set("Cache-Control", "no-store");
+  res.json({ credential });
+}
+
 export async function handshake(req, res) {
-  const data = await roomsService.handshake(req.params.id, req.body);
+  const data = await roomsService.handshake(req.deviceRoom);
   res.json(data);
 }
 
 export async function listCommands(req, res) {
-  const data = await roomsService.listCommands(
-    req.params.roomId,
-    req.query.mac_address,
-  );
+  const data = await roomsService.listCommands(req.deviceRoom);
   res.json(data);
 }

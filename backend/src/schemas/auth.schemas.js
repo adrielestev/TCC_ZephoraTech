@@ -17,7 +17,7 @@ export const codeSchema = emailSchema.extend({
 
 export const loginSchema = z.object({
   email: z.string().trim().email().toLowerCase(),
-  password: z.string().min(1),
+  password: z.string().min(1).max(128),
 });
 
 export const resetPasswordSchema = codeSchema.extend({

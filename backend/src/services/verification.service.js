@@ -37,18 +37,15 @@ export function assertCanSendCode(user) {
 
 export function assertValidCodeState(user) {
   if (!user.verification_code_hash || !user.verification_expires_at) {
-    throw new ApiError(400, "Nenhum codigo ativo para este usuario.");
+    throw invalidCodeError();
   }
 
   if (new Date(user.verification_expires_at).getTime() < Date.now()) {
-    throw new ApiError(400, "Codigo expirado. Solicite um novo codigo.");
+    throw invalidCodeError();
   }
 
   if (user.verification_attempts >= env.MAX_VERIFICATION_ATTEMPTS) {
-    throw new ApiError(
-      429,
-      "Limite de tentativas excedido. Solicite um novo codigo.",
-    );
+    throw invalidCodeError();
   }
 }
 
@@ -58,4 +55,8 @@ export function clearVerificationFields() {
     verification_expires_at: null,
     verification_attempts: 0,
   };
+}
+
+function invalidCodeError() {
+  return new ApiError(400, "Codigo invalido ou expirado.");
 }

@@ -24,7 +24,8 @@
         "collaborator_id": "1",
         "user_id": "1",
         "device_key": "lampada",
-        "mac_address": "AA:BB:CC:DD:EE:FF"
+        "mac_address": "AA:BB:CC:DD:EE:FF",
+        "device_credential": ""
       },
       "dataPropertyOrder": {
         "&": [
@@ -36,7 +37,8 @@
           "collaborator_id",
           "user_id",
           "device_key",
-          "mac_address"
+          "mac_address",
+          "device_credential"
         ]
       },
       "color": null,
@@ -419,6 +421,23 @@
       "metaSortKey": 320
     },
     {
+      "_id": "req_rooms_device_credential",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "Generate or Rotate ESP32 Credential",
+      "method": "POST",
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/device-credential",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "body": {},
+      "authentication": {},
+      "metaSortKey": 315
+    },
+    {
       "_id": "req_rooms_update",
       "_type": "request",
       "parentId": "fld_rooms",
@@ -693,14 +712,15 @@
       "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/handshake",
       "headers": [
         {
-          "name": "Content-Type",
-          "value": "application/json"
+          "name": "X-Device-MAC",
+          "value": "{{ _.mac_address }}"
+        },
+        {
+          "name": "X-Device-Credential",
+          "value": "{{ _.device_credential }}"
         }
       ],
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"user_id\": 1,\n  \"room_id\": 1,\n  \"mac_address\": \"AA:BB:CC:DD:EE:FF\"\n}"
-      },
+      "body": {},
       "authentication": {},
       "metaSortKey": 600
     },
@@ -710,8 +730,17 @@
       "parentId": "fld_esp32",
       "name": "Get Commands",
       "method": "GET",
-      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/commands?mac_address={{ _.mac_address }}",
-      "headers": [],
+      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/commands",
+      "headers": [
+        {
+          "name": "X-Device-MAC",
+          "value": "{{ _.mac_address }}"
+        },
+        {
+          "name": "X-Device-Credential",
+          "value": "{{ _.device_credential }}"
+        }
+      ],
       "body": {},
       "authentication": {},
       "metaSortKey": 610
@@ -727,11 +756,19 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "X-Device-MAC",
+          "value": "{{ _.mac_address }}"
+        },
+        {
+          "name": "X-Device-Credential",
+          "value": "{{ _.device_credential }}"
         }
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"mac_address\": \"AA:BB:CC:DD:EE:FF\",\n  \"current_state\": 1\n}"
+        "text": "{\n  \"current_state\": 1\n}"
       },
       "authentication": {},
       "metaSortKey": 620

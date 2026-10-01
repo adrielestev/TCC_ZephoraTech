@@ -4,7 +4,7 @@ import multer from "multer";
 export function notFoundHandler(req, _res, next) {
   next({
     statusCode: 404,
-    message: `Rota ${req.method} ${req.originalUrl} nao encontrada.`,
+    message: "Rota nao encontrada.",
   });
 }
 
@@ -26,16 +26,19 @@ export function errorHandler(error, _req, res, _next) {
 
   const statusCode = error.statusCode || 500;
 
-  if (error.code === "SQLITE_CONSTRAINT") {
+  if (String(error.code).startsWith("SQLITE_CONSTRAINT")) {
     return res.status(409).json({
       error:
         "Registro viola uma regra de unicidade, relacionamento ou validacao do banco.",
-      details: error.message,
     });
+  }
+
+  if (statusCode >= 500) {
+    console.error("Erro interno da API:", error);
   }
 
   return res.status(statusCode).json({
     error: statusCode >= 500 ? "Erro interno do servidor." : error.message,
-    details: error.details,
+    ...(statusCode < 500 && error.details ? { details: error.details } : {}),
   });
 }

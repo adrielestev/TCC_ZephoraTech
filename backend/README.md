@@ -62,6 +62,26 @@ O seed cria um administrador usando as variaveis do `.env`:
 
 Troque esses valores antes de usar fora do ambiente local.
 
+Em `NODE_ENV=production`, a API rejeita a configuração se `JWT_SECRET` não tiver
+ao menos 32 caracteres, se a senha inicial do administrador continuar no valor
+padrão ou tiver menos de 12 caracteres, ou se `APP_URL` não usar HTTPS. Os
+valores padrão do `.env.example` são apenas para desenvolvimento.
+
+## Exposição e autorização de dados
+
+- Rotas de usuário, sala e sensor autenticam com Bearer Token; operações de
+	cadastro/administração exigem papel ADMIN e leitura de salas/sensores é
+	filtrada pela associação do colaborador.
+- Respostas a colaboradores omitem o MAC das salas e os identificadores/pinos
+	internos dos sensores. Administradores mantêm acesso às configurações.
+- O hash da credencial ESP32, hashes de senha e de verificação, campos de
+	controle de verificação e `deleted_at` não são retornados pelas rotas comuns.
+- Fotos de perfil e sala usam URLs assinadas com validade de uma hora. Solicite
+	novamente os dados autenticados para obter outra URL após a expiração.
+- Mensagens públicas de cadastro, login, reenvio e recuperação não confirmam
+	se um endereço de e-mail existe. Detalhes de erros internos ficam somente no
+	log do servidor.
+
 ## Referência da API
 
 Abaixo está a documentação completa dos endpoints, útil para integração do frontend/mobile e entendimento sem necessidade de analisar o código-fonte.
@@ -75,7 +95,7 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 
 | Método | Rota                    | Autenticação | Corpo da Requisição (JSON)                                 | Descrição                                |
 | ------ | ----------------------- | ------------ | ---------------------------------------------------------- | ---------------------------------------- |
-| POST   | `/auth/register`        | Pública      | `{ name (min: 2), email, password (min: 8), user_photo? }` | Registra um novo usuário.                |
+| POST   | `/auth/register`        | Pública      | `{ name (min: 2), email, password (min: 8), user_photo? }` | Aceita o pedido e envia instruções quando aplicável (HTTP 202; resposta genérica). |
 | POST   | `/auth/verify-email`    | Pública      | `{ email, code (6 dígitos) }`                              | Verifica o email do usuário.             |
 | POST   | `/auth/resend-code`     | Pública      | `{ email }`                                                | Reenvia o código de verificação.         |
 | POST   | `/auth/login`           | Pública      | `{ email, password }`                                      | Retorna o token JWT e dados do usuário.  |
@@ -102,6 +122,7 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 | POST   | `/rooms`                  | Admin        | `{ name, classroom_code, mac_address, room_photo_1?, room_photo_2?, room_photo_3? }` | Cria uma nova sala.         |
 | GET    | `/rooms/:id`              | Bearer Token | -                                                                                    | Detalhes de uma sala.       |
 | PATCH  | `/rooms/:id`              | Admin        | Propriedades parciais de Room (ex: `name`)                                           | Atualiza dados da sala.     |
+| POST   | `/rooms/:id/device-credential` | Admin com Bearer Token | - | Gera/rotaciona a credencial do ESP32; o segredo é retornado uma única vez. |
 | POST   | `/rooms/:id/photos/:slot` | Admin        | `FormData: { photo: arquivo }` (Slot: 1, 2, ou 3)                                    | Atualiza foto no slot.      |
 | DELETE | `/rooms/:id/photos/:slot` | Admin        | -                                                                                    | Remove a foto do slot.      |
 | DELETE | `/rooms/:id`              | Admin        | -                                                                                    | Exclui a sala.              |
@@ -129,17 +150,21 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 
 Rotas geralmente consumidas diretamente pelo dispositivo de hardware (ESP32).
 
-| Método | Rota                                      | Autenticação | Corpo / Query                               | Descrição                                           |
-| ------ | ----------------------------------------- | ------------ | ------------------------------------------- | --------------------------------------------------- |
-| POST   | `/rooms/:id/handshake`                    | Pública      | `{ user_id, room_id, mac_address }`         | Handshake inicial do dispositivo.                   |
-| GET    | `/rooms/:roomId/commands`                 | Pública      | **Query**: `?mac_address=AA:BB:CC:DD:EE:FF` | Dispositivo busca comandos pendentes.               |
-| POST   | `/sensors/rooms/:roomId/:deviceKey/state` | Pública      | `{ mac_address, current_state (0-100) }`    | Dispositivo informa mudança no estado de um sensor. |
+| Método | Rota                                      | Autenticação | Corpo / Query                    | Descrição                                           |
+| ------ | ----------------------------------------- | ------------ | -------------------------------- | --------------------------------------------------- |
+| POST   | `/rooms/:id/handshake`                    | MAC + credencial nos headers | - | Handshake inicial e configuração dos sensores. |
+| GET    | `/rooms/:roomId/commands`                 | MAC + credencial nos headers | - | Dispositivo busca comandos pendentes. |
+| POST   | `/sensors/rooms/:roomId/:deviceKey/state` | MAC + credencial nos headers | `{ current_state (0-100) }` | Dispositivo reporta estado do sensor/atuador. |
 
 ## Fluxo ESP32 (Resumo Prático)
 
-1. **Ao ligar**, o ESP32 chama `POST /rooms/:id/handshake` com `user_id`, `room_id` e `mac_address`.
-2. **Para processar ações**, chama repetidamente `GET /rooms/:roomId/commands?mac_address=AA:BB:CC:DD:EE:FF` para ver se o backend registrou comandos (`POST /sensors/:id/command`).
-3. **Para reportar leituras** (ex: sensor de presença ou chave física), chama `POST /sensors/rooms/:roomId/:deviceKey/state`.
+1. Um administrador chama `POST /rooms/:id/device-credential` com Bearer Token e injeta o segredo retornado no ESP32. O segredo é aleatório, único por sala, armazenado somente como hash e exibido apenas nessa resposta; chame novamente para revogá-lo e gerar outro.
+2. Em cada requisição do ESP32, envie `X-Device-MAC: AA:BB:CC:DD:EE:FF` e `X-Device-Credential: <segredo>` nos headers. Use HTTPS e nunca envie o segredo em URL/query string.
+3. **Ao ligar**, o ESP32 chama `POST /rooms/:id/handshake` sem body.
+4. **Para processar ações**, consulta `GET /rooms/:roomId/commands` periodicamente.
+5. **Para reportar estado**, chama `POST /sensors/rooms/:roomId/:deviceKey/state` com `{ "current_state": 0 }`. A autenticação é por sala; a rota permite reportar tanto sensores INPUT quanto OUTPUT.
+
+Salas existentes ficam sem credencial após a migração e não podem usar rotas ESP32 até um administrador gerar a credencial. Rotacionar a credencial invalida imediatamente a anterior.
 
 ## E-mail em desenvolvimento
 

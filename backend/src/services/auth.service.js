@@ -16,9 +16,7 @@ import {
 export async function register(payload) {
   const existing = await usersRepository.findUserByEmail(payload.email);
 
-  if (existing && !existing.deleted_at) {
-    throw new ApiError(409, "E-mail ja cadastrado.");
-  }
+  if (existing) return;
 
   const code = generateCode();
   const user = await usersRepository.createUser({
@@ -36,14 +34,14 @@ export async function register(payload) {
     purpose: "email-verification",
   });
 
-  return sanitizeUser(user);
 }
 
 export async function verifyEmail(email, code) {
-  const user = await findActiveUserByEmailOrFail(email);
+  const user = await usersRepository.findActiveUserByEmail(email);
+  if (!user) throw invalidVerificationCode();
 
   if (user.is_email_verified) {
-    return "E-mail ja verificado.";
+    return "Se os dados forem validos, a verificacao sera concluida.";
   }
 
   await consumeCodeOrFail(user, code);
@@ -52,17 +50,13 @@ export async function verifyEmail(email, code) {
     ...clearVerificationFields(),
   });
 
-  return "E-mail verificado com sucesso.";
+  return "Se os dados forem validos, a verificacao sera concluida.";
 }
 
 export async function resendCode(email) {
-  const user = await findActiveUserByEmailOrFail(email);
+  const user = await usersRepository.findActiveUserByEmail(email);
+  if (!user || user.is_email_verified || !canSendCode(user)) return;
 
-  if (user.is_email_verified) {
-    throw new ApiError(400, "E-mail ja verificado.");
-  }
-
-  assertCanSendCode(user);
   const code = generateCode();
   await usersRepository.updateUser(user.id, buildVerificationPatch(code));
 
@@ -75,14 +69,15 @@ export async function resendCode(email) {
 }
 
 export async function login(email, password) {
-  const user = await findActiveUserByEmailOrFail(email);
-
-  if (!user.is_email_verified) {
-    throw new ApiError(403, "Verifique seu e-mail antes de entrar.");
+  const user = await usersRepository.findActiveUserByEmail(email);
+  let passwordMatches = false;
+  if (user) {
+    passwordMatches = await verifyPassword(password, user.password_hash);
+  } else {
+    await hashPassword(password);
   }
 
-  const passwordMatches = await verifyPassword(password, user.password_hash);
-  if (!passwordMatches) {
+  if (!user || !user.is_email_verified || !passwordMatches) {
     throw new ApiError(401, "E-mail ou senha invalidos.");
   }
 
@@ -93,13 +88,9 @@ export async function login(email, password) {
 }
 
 export async function forgotPassword(email) {
-  const user = await findActiveUserByEmailOrFail(email);
+  const user = await usersRepository.findActiveUserByEmail(email);
+  if (!user || !user.is_email_verified || !canSendCode(user)) return;
 
-  if (!user.is_email_verified) {
-    throw new ApiError(403, "E-mail ainda nao verificado.");
-  }
-
-  assertCanSendCode(user);
   const code = generateCode();
   await usersRepository.updateUser(user.id, buildVerificationPatch(code));
 
@@ -112,11 +103,8 @@ export async function forgotPassword(email) {
 }
 
 export async function resetPassword(email, code, password) {
-  const user = await findActiveUserByEmailOrFail(email);
-
-  if (!user.is_email_verified) {
-    throw new ApiError(403, "E-mail ainda nao verificado.");
-  }
+  const user = await usersRepository.findActiveUserByEmail(email);
+  if (!user || !user.is_email_verified) throw invalidVerificationCode();
 
   await consumeCodeOrFail(user, code);
   await usersRepository.updateUser(user.id, {
@@ -125,21 +113,25 @@ export async function resetPassword(email, code, password) {
   });
 }
 
-async function findActiveUserByEmailOrFail(email) {
-  const user = await usersRepository.findActiveUserByEmail(email);
-
-  if (!user) {
-    throw new ApiError(404, "Usuario nao encontrado.");
-  }
-
-  return user;
-}
-
 async function consumeCodeOrFail(user, code) {
   assertValidCodeState(user);
 
   if (user.verification_code_hash !== hashCode(code)) {
     await usersRepository.incrementVerificationAttempts(user.id);
-    throw new ApiError(400, "Codigo invalido.");
+    throw invalidVerificationCode();
   }
+}
+
+function canSendCode(user) {
+  try {
+    assertCanSendCode(user);
+    return true;
+  } catch (error) {
+    if (error.statusCode === 429) return false;
+    throw error;
+  }
+}
+
+function invalidVerificationCode() {
+  return new ApiError(400, "Codigo invalido ou expirado.");
 }

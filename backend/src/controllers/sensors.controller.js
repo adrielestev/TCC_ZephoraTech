@@ -36,9 +36,8 @@ export async function commandSensor(req, res) {
 
 export async function reportSensorState(req, res) {
   const sensor = await sensorsService.reportSensorState(
-    req.params.roomId,
+    req.deviceRoom,
     req.params.deviceKey,
-    req.body.mac_address,
     req.body.current_state,
   );
 

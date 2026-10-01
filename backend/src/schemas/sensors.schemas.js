@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { deviceKeySchema, macAddressSchema } from "./common.schemas.js";
+import { deviceKeySchema } from "./common.schemas.js";
 
 const sensorBaseSchema = z.object({
   room_id: z.coerce.number().int().positive(),
@@ -51,6 +51,5 @@ export const commandSchema = z.object({
 });
 
 export const espStateSchema = z.object({
-  mac_address: macAddressSchema,
   current_state: z.coerce.number().min(0).max(100),
 });

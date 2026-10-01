@@ -1,9 +1,23 @@
 import { db } from "../db/connection.js";
 
 export function listSensorsForUser(user) {
+  const sensorColumns =
+    user.user_level === "ADMIN"
+      ? ["sensors.*"]
+      : [
+          "sensors.id",
+          "sensors.room_id",
+          "sensors.name",
+          "sensors.direction",
+          "sensors.type",
+          "sensors.type_of_control",
+          "sensors.current_state",
+          "sensors.created_at",
+          "sensors.updated_at",
+        ];
   const query = db("sensors")
     .join("rooms", "rooms.id", "sensors.room_id")
-    .select("sensors.*", "rooms.name as room_name", "rooms.classroom_code")
+    .select(...sensorColumns, "rooms.name as room_name", "rooms.classroom_code")
     .orderBy("rooms.name")
     .orderBy("sensors.name");
 
@@ -48,6 +62,16 @@ export function listRoomOutputCommands(roomId) {
     )
     .where({ room_id: roomId, direction: "OUTPUT" })
     .orderBy("device_key");
+}
+
+export function toPublicSensor(sensor) {
+  const {
+    device_key: _deviceKey,
+    pin: _pin,
+    pin_pwm: _pinPwm,
+    ...publicSensor
+  } = sensor;
+  return publicSensor;
 }
 
 export async function createSensor(payload) {
