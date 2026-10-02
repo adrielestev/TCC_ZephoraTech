@@ -1,18 +1,13 @@
 import multer from "multer";
 import { fileTypeFromBuffer } from "file-type";
 import { ApiError } from "../utils/errors.js";
-
-const allowedTypes = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-]);
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES } from "../config/constants.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  limits: { fileSize: MAX_IMAGE_SIZE_BYTES, files: 1 },
   fileFilter: (_req, file, callback) => {
-    callback(null, allowedTypes.has(file.mimetype));
+    callback(null, ALLOWED_IMAGE_TYPES.has(file.mimetype));
   },
 });
 
@@ -25,7 +20,7 @@ export async function validateUploadedImage(req, _res, next) {
     }
 
     const detectedType = await fileTypeFromBuffer(req.file.buffer);
-    const extension = detectedType && allowedTypes.get(detectedType.mime);
+    const extension = detectedType && ALLOWED_IMAGE_TYPES.get(detectedType.mime);
 
     if (!extension || detectedType.mime !== req.file.mimetype) {
       throw new ApiError(400, "Arquivo de imagem invalido.");

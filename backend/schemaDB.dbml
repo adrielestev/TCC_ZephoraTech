@@ -98,7 +98,7 @@ Table users {
     note: "NULL = conta ativa. ISO-8601 UTC quando a conta for desativada (soft delete). Usuários com deleted_at preenchido não podem autenticar, solicitar redefinição de senha nem receber novos códigos."
   ]
 
-   text [
+   created_at text [
     not null,
     note: "ISO-8601 UTC. No schema.sql: DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))"
   ]

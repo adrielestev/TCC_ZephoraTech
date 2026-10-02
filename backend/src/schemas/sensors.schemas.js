@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { deviceKeySchema } from "./common.schemas.js";
+import { SENSOR_RULES } from "../config/constants.js";
 
 const sensorBaseSchema = z.object({
   room_id: z.coerce.number().int().positive(),
@@ -14,13 +15,7 @@ const sensorBaseSchema = z.object({
 });
 
 export const sensorSchema = sensorBaseSchema.superRefine((sensor, context) => {
-  const rules = {
-    RELE: { direction: "OUTPUT", control: "DIGITAL", usesPwmPin: false },
-    SERVO: { direction: "OUTPUT", control: "ANALOGICO", usesPwmPin: false },
-    PWM: { direction: "OUTPUT", control: "ANALOGICO", usesPwmPin: true },
-    REED_SWITCH: { direction: "INPUT", control: "DIGITAL", usesPwmPin: false },
-  };
-  const rule = rules[sensor.type];
+  const rule = SENSOR_RULES[sensor.type];
 
   if (
     sensor.direction !== rule.direction ||

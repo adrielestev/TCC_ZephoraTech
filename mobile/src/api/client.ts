@@ -2,14 +2,15 @@ import { create } from "axios";
 import { router } from "expo-router";
 import type { ImagePickerAsset } from "expo-image-picker";
 import { deleteToken, getToken } from "../utils/token-storage";
+import { TOKEN_KEY, API_TIMEOUT_MS } from "../config/constants";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
-export const TOKEN_KEY = "zephora_token";
+export { TOKEN_KEY };
 
 export const api = create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: API_TIMEOUT_MS,
 });
 
 export function resolveMediaUrl(url: string | null | undefined) {

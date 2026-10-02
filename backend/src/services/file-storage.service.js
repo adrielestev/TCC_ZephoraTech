@@ -2,9 +2,9 @@ import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { env } from "../config/env.js";
+import { SIGNED_URL_LIFETIME_SECONDS } from "../config/constants.js";
 
 const uploadRoot = path.resolve(process.cwd(), env.UPLOAD_DIR);
-const signedUrlLifetimeSeconds = 60 * 60;
 
 export function createSignedMediaUrl(imageUrl) {
   if (!imageUrl) return imageUrl;
@@ -19,7 +19,7 @@ export function createSignedMediaUrl(imageUrl) {
   if (parsedUrl.origin !== new URL(env.APP_URL).origin) return imageUrl;
   if (!parsedUrl.pathname.startsWith("/uploads/")) return imageUrl;
 
-  const expiresAt = Math.floor(Date.now() / 1000) + signedUrlLifetimeSeconds;
+  const expiresAt = Math.floor(Date.now() / 1000) + SIGNED_URL_LIFETIME_SECONDS;
   const signature = signMediaPath(parsedUrl.pathname, expiresAt);
   parsedUrl.searchParams.set("expires", String(expiresAt));
   parsedUrl.searchParams.set("signature", signature);
@@ -35,7 +35,7 @@ export function authorizeSignedMediaRequest(req, res, next) {
   if (
     !Number.isInteger(expiresAt) ||
     expiresAt <= now ||
-    expiresAt > now + signedUrlLifetimeSeconds ||
+    expiresAt > now + SIGNED_URL_LIFETIME_SECONDS ||
     typeof signature !== "string"
   ) {
     return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });

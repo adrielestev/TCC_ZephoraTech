@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { roomsApi } from "../api/rooms";
 import { RoomPhotoSlot } from "../types";
 import type { ImagePickerAsset } from "expo-image-picker";
+import { API_REFETCH_INTERVAL_MS } from "../config/constants";
 
 export function useRooms() {
   return useQuery({
     queryKey: ["rooms"],
     queryFn: async () => (await roomsApi.list()).data.rooms,
-    refetchInterval: 15000,
+    refetchInterval: API_REFETCH_INTERVAL_MS,
     refetchIntervalInBackground: false,
   });
 }
@@ -17,7 +18,7 @@ export function useRoom(roomId: number) {
     queryKey: ["rooms", roomId],
     queryFn: async () => (await roomsApi.get(roomId)).data.room,
     enabled: !!roomId,
-    refetchInterval: 15000,
+    refetchInterval: API_REFETCH_INTERVAL_MS,
     refetchIntervalInBackground: false,
   });
 }

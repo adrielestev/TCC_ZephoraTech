@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import multer from "multer";
+import { MAX_IMAGE_SIZE_BYTES } from "../config/constants.js";
 
 export function notFoundHandler(req, _res, next) {
   next({
@@ -12,7 +13,7 @@ export function errorHandler(error, _req, res, _next) {
   if (error instanceof multer.MulterError) {
     const message =
       error.code === "LIMIT_FILE_SIZE"
-        ? "A imagem deve ter no maximo 5 MB."
+        ? `A imagem deve ter no maximo ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)} MB.`
         : "Upload de imagem invalido.";
     return res.status(400).json({ error: message });
   }
