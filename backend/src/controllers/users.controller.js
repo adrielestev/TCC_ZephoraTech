@@ -22,6 +22,7 @@ export async function listUsers(req, res) {
 
 export async function updateUserLevel(req, res) {
   const user = await usersService.updateUserLevel(
+    req.user.id,
     req.params.id,
     req.body.user_level,
   );

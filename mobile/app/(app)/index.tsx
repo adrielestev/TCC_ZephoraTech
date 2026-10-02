@@ -1,10 +1,10 @@
-import { Text, FlatList, Pressable, RefreshControl } from "react-native";
+import { Text, FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
 import { useRooms } from "../../src/hooks/useRooms";
 import { useAuth } from "../../src/context/AuthContext";
 import { getRoomStatus, getRoomStatusLabel } from "../../src/utils/roomStatus";
-import { colors, radii, spacing } from "../../src/theme/tokens";
+import { colors, layout, radii, shadows, spacing, typography } from "../../src/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { LoadingState } from "../../src/components/LoadingState";
 import { ErrorState } from "../../src/components/ErrorState";
@@ -42,19 +42,30 @@ export default function RoomsListScreen() {
             onRefresh={handleRefresh}
           />
         }
+        ListHeaderComponentStyle={{
+          width: "100%",
+          maxWidth: layout.contentMaxWidth,
+          alignSelf: "center",
+        }}
         ListHeaderComponent={
           isAdmin ? (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Criar nova sala"
               onPress={() => router.push("/(app)/rooms/create")}
-              style={{
+              style={({ pressed, hovered }) => ({
                 backgroundColor: colors.primary,
-                padding: 15,
+                minHeight: layout.minTouchTarget + 4,
+                paddingHorizontal: spacing.md,
                 borderRadius: radii.button,
+                justifyContent: "center",
                 alignItems: "center",
                 marginBottom: spacing.sm,
-              }}
+                opacity: pressed ? 0.86 : hovered ? 0.94 : 1,
+                ...shadows.button,
+              })}
             >
-              <Text style={{ color: colors.white, fontWeight: "800" }}>Nova sala</Text>
+              <Text style={{ ...typography.bodyStrong, color: colors.white }}>Nova sala</Text>
             </Pressable>
           ) : null
         }
@@ -62,32 +73,51 @@ export default function RoomsListScreen() {
         contentContainerStyle={{ padding: spacing.md, gap: spacing.sm, paddingBottom: 32 }}
         renderItem={({ item }) => (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Abrir sala ${item.name}`}
             onPress={() => router.push(`/(app)/rooms/${item.id}`)}
-            style={({ pressed }) => ({
+            style={({ pressed, hovered }) => ({
+              width: "100%",
+              maxWidth: layout.contentMaxWidth,
+              alignSelf: "center",
               borderWidth: 1,
-              borderColor: colors.border,
+              borderColor: hovered || pressed ? colors.borderStrong : colors.border,
               borderRadius: radii.card,
-              padding: spacing.md,
-              backgroundColor: colors.surface,
-              opacity: pressed ? 0.76 : 1,
-              shadowColor: "#31516D",
-              shadowOpacity: 0.12,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 2,
+              padding: spacing.lg,
+              backgroundColor: hovered ? colors.surfaceAccent : colors.surface,
+              transform: [{ scale: pressed ? 0.985 : 1 }],
+              ...shadows.card,
             })}
           >
-            <Text style={{ fontSize: 17, fontWeight: "800", color: colors.ink }}>{item.name}</Text>
-            <Text style={{ color: colors.muted, marginTop: 4 }}>{item.classroom_code}</Text>
-            <Text
+            <View style={{ gap: spacing.xs }}>
+              <Text style={{ ...typography.section, color: colors.ink }}>{item.name}</Text>
+              <Text style={{ ...typography.caption, color: colors.muted }}>
+                {item.classroom_code}
+              </Text>
+            </View>
+            <View
               style={{
-                color: getRoomStatus(item.last_seen_at) === "online" ? colors.success : "#A15C00",
-                fontWeight: "700",
-                marginTop: 8,
+                alignSelf: "flex-start",
+                marginTop: spacing.sm,
+                paddingHorizontal: spacing.sm,
+                paddingVertical: 5,
+                borderRadius: radii.pill,
+                backgroundColor:
+                  getRoomStatus(item.last_seen_at) === "online"
+                    ? colors.successSoft
+                    : colors.warningSoft,
               }}
             >
-              {getRoomStatusLabel(getRoomStatus(item.last_seen_at))}
-            </Text>
+              <Text
+                style={{
+                  ...typography.caption,
+                  color:
+                    getRoomStatus(item.last_seen_at) === "online" ? colors.success : colors.warning,
+                }}
+              >
+                {getRoomStatusLabel(getRoomStatus(item.last_seen_at))}
+              </Text>
+            </View>
           </Pressable>
         )}
         ListEmptyComponent={<EmptyState icon="business-outline" message="Nenhuma sala ainda." />}

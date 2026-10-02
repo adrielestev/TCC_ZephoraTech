@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, PressableProps, Text } from "react-native";
-import { colors, radii } from "../theme/tokens";
+import { colors, layout, radii, shadows, typography } from "../theme/tokens";
 
 interface PrimaryButtonProps extends PressableProps {
   label: string;
@@ -15,25 +15,21 @@ export function PrimaryButton({ label, loading = false, disabled, ...props }: Pr
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
         {
-          minHeight: 52,
+          minHeight: layout.minTouchTarget + 8,
           paddingHorizontal: 18,
           borderRadius: radii.button,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: pressed ? colors.primaryPressed : colors.primary,
           opacity: disabled || loading ? 0.55 : 1,
-          shadowColor: "#244D70",
-          shadowOpacity: 0.18,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: 3,
+          ...shadows.button,
         },
       ]}
     >
       {loading ? (
         <ActivityIndicator color="#fff" />
       ) : (
-        <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>{label}</Text>
+        <Text style={{ ...typography.bodyStrong, color: colors.white }}>{label}</Text>
       )}
     </Pressable>
   );

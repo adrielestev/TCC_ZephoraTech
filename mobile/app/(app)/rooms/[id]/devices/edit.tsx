@@ -7,8 +7,9 @@ import { FormField } from "../../../../../src/components/FormField";
 import { PrimaryButton } from "../../../../../src/components/PrimaryButton";
 import { Screen } from "../../../../../src/components/Screen";
 import { SurfaceCard } from "../../../../../src/components/SurfaceCard";
-import { colors, spacing } from "../../../../../src/theme/tokens";
+import { colors, layout, radii, spacing, typography } from "../../../../../src/theme/tokens";
 import { getSensorRule, isValidSensorConfiguration } from "../../../../../src/utils/sensorRules";
+import { FeedbackMessage } from "../../../../../src/components/FeedbackMessage";
 
 const sensorTypes: SensorType[] = ["RELE", "SERVO", "PWM", "REED_SWITCH"];
 
@@ -157,8 +158,13 @@ export default function SensorEditScreen() {
             keyboardType="number-pad"
           />
         )}
-        <Text>Tipo</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        <Text style={{ ...typography.label, color: colors.text }}>Tipo de dispositivo</Text>
+        <View
+          accessible
+          accessibilityRole="radiogroup"
+          accessibilityLabel="Tipo de dispositivo"
+          style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}
+        >
           {sensorTypes.map((value) => (
             <Pressable
               key={value}
@@ -171,26 +177,33 @@ export default function SensorEditScreen() {
               }}
               accessibilityRole="radio"
               accessibilityState={{ selected: type === value }}
-              style={{
+              style={({ pressed }) => ({
+                minHeight: layout.minTouchTarget,
+                paddingHorizontal: spacing.md,
+                justifyContent: "center",
                 borderWidth: 1,
-                borderRadius: 8,
-                padding: 10,
-                backgroundColor: type === value ? "#DCEEFF" : "transparent",
-              }}
+                borderRadius: radii.button,
+                borderColor: type === value ? colors.primary : colors.border,
+                backgroundColor: type === value ? colors.primarySoft : colors.surfaceMuted,
+                opacity: pressed ? 0.78 : 1,
+              })}
             >
-              <Text>{value}</Text>
+              <Text
+                style={{
+                  ...typography.caption,
+                  color: type === value ? colors.primary : colors.text,
+                }}
+              >
+                {value}
+              </Text>
             </Pressable>
           ))}
         </View>
-        <Text style={{ color: colors.muted }}>
+        <Text style={{ ...typography.caption, color: colors.muted }}>
           Configuração: {direction} · {control}
           {getSensorRule(type).usesPwmPin ? " · PWM" : ""}
         </Text>
-        {error && (
-          <Text accessibilityRole="alert" style={{ color: colors.error, fontWeight: "600" }}>
-            {error}
-          </Text>
-        )}
+        {error && <FeedbackMessage message={error} />}
         <PrimaryButton label="Salvar" onPress={handleSave} loading={pending} />
       </SurfaceCard>
     </Screen>

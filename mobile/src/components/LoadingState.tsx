@@ -1,5 +1,5 @@
 import { ActivityIndicator, Text, View } from "react-native";
-import { colors, spacing } from "../theme/tokens";
+import { colors, radii, spacing, typography } from "../theme/tokens";
 
 export function LoadingState({ label = "Carregando..." }: { label?: string }) {
   return (
@@ -14,8 +14,19 @@ export function LoadingState({ label = "Carregando..." }: { label?: string }) {
         padding: spacing.lg,
       }}
     >
-      <ActivityIndicator color={colors.primary} />
-      <Text style={{ color: colors.muted }}>{label}</Text>
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: radii.card,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.surfaceAccent,
+        }}
+      >
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+      <Text style={{ ...typography.body, color: colors.muted }}>{label}</Text>
     </View>
   );
 }

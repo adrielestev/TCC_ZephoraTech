@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-import { colors, spacing } from "../theme/tokens";
+import { colors, radii, spacing, typography } from "../theme/tokens";
 
 export function EmptyState({
   icon = "file-tray-outline",
@@ -18,8 +18,21 @@ export function EmptyState({
         padding: spacing.xl,
       }}
     >
-      <Ionicons name={icon} size={30} color={colors.muted} accessibilityLabel="Nenhum item" />
-      <Text style={{ color: colors.muted, textAlign: "center" }}>{message}</Text>
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: radii.card,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.surfaceAccent,
+        }}
+      >
+        <Ionicons name={icon} size={30} color={colors.primary} accessibilityLabel="Nenhum item" />
+      </View>
+      <Text style={{ ...typography.body, color: colors.muted, textAlign: "center" }}>
+        {message}
+      </Text>
     </View>
   );
 }

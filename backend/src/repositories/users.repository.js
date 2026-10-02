@@ -59,6 +59,14 @@ export function listUsers({ q, limit = 50, offset = 0 } = {}) {
   return query.orderBy("name").limit(limit).offset(offset);
 }
 
+export function countActiveAdmins() {
+  return db("users")
+    .where({ user_level: "ADMIN" })
+    .whereNull("deleted_at")
+    .count({ count: "id" })
+    .first();
+}
+
 export async function updateActiveUser(id, payload) {
   const updated = await db("users")
     .where({ id })

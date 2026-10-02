@@ -3,8 +3,9 @@ import { Pressable, Text, TextInput, TextInputProps, View } from "react-native";
 import { colors, radii, spacing } from "../theme/tokens";
 
 export const FormField = forwardRef<TextInput, TextInputProps & { label: string }>(
-  ({ label, style, secureTextEntry, ...props }, ref) => {
+  ({ label, style, secureTextEntry, onFocus, onBlur, ...props }, ref) => {
     const [isVisible, setIsVisible] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const hasPasswordToggle = secureTextEntry === true;
 
     return (
@@ -14,18 +15,27 @@ export const FormField = forwardRef<TextInput, TextInputProps & { label: string 
           <TextInput
             ref={ref}
             {...props}
+            onFocus={(event) => {
+              setIsFocused(true);
+              onFocus?.(event);
+            }}
+            onBlur={(event) => {
+              setIsFocused(false);
+              onBlur?.(event);
+            }}
             secureTextEntry={hasPasswordToggle ? !isVisible : secureTextEntry}
             style={[
               {
                 minHeight: 52,
-                borderWidth: 1,
-                borderColor: colors.border,
+                borderColor: isFocused ? colors.borderFocus : colors.border,
+                borderWidth: isFocused ? 2 : 1,
                 borderRadius: radii.field,
                 paddingHorizontal: spacing.md,
                 paddingRight: hasPasswordToggle ? 88 : spacing.md,
                 color: colors.ink,
-                backgroundColor: "rgba(255, 255, 255, 0.82)",
+                backgroundColor: colors.surfaceSolid,
                 fontSize: 16,
+                ...(isFocused ? { paddingHorizontal: spacing.md - 1 } : {}),
               },
               style,
             ]}

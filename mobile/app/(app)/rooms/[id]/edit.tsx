@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -13,8 +13,10 @@ import { FormField } from "../../../../src/components/FormField";
 import { PrimaryButton } from "../../../../src/components/PrimaryButton";
 import { Screen } from "../../../../src/components/Screen";
 import { SurfaceCard } from "../../../../src/components/SurfaceCard";
-import { colors, spacing } from "../../../../src/theme/tokens";
+import { resolveMediaUrl } from "../../../../src/api/client";
+import { colors, radii, spacing, typography } from "../../../../src/theme/tokens";
 import { IconButton } from "../../../../src/components/IconButton";
+import { FeedbackMessage } from "../../../../src/components/FeedbackMessage";
 import { confirmAction } from "../../../../src/utils/confirm-action";
 
 export default function RoomEditScreen() {
@@ -133,28 +135,70 @@ export default function RoomEditScreen() {
           autoCapitalize="characters"
         />
 
-        <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
           {[1, 2, 3].map((slot) => {
             const slotNumber = slot as RoomPhotoSlot;
             const photo = getPhoto(slotNumber);
             const isBusy = uploadPhoto.isPending || deletePhoto.isPending;
 
             return (
-              <View key={slot} style={{ flex: 1, gap: 8 }}>
+              <View
+                key={slot}
+                style={{
+                  flexGrow: 1,
+                  flexBasis: 96,
+                  minWidth: 82,
+                  maxWidth: "31%",
+                  gap: spacing.xs,
+                }}
+              >
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${photo ? "Substituir" : "Adicionar"} foto ${slot}`}
                   onPress={() => handlePickPhoto(slotNumber)}
                   disabled={isBusy}
-                  style={{
+                  style={({ pressed, hovered }) => ({
+                    aspectRatio: 1,
+                    overflow: "hidden",
                     borderWidth: 1,
-                    borderRadius: 8,
-                    padding: 16,
+                    borderColor: hovered || pressed ? colors.borderStrong : colors.border,
+                    borderRadius: radii.field,
                     alignItems: "center",
-                    opacity: isBusy ? 0.6 : 1,
-                  }}
+                    justifyContent: "center",
+                    backgroundColor: photo ? colors.surfaceMuted : colors.surfaceAccent,
+                    opacity: isBusy ? 0.6 : pressed ? 0.8 : 1,
+                  })}
                 >
-                  <Text>
-                    {photo ? "Substituir" : "Adicionar"} foto {slot}
-                  </Text>
+                  {photo ? (
+                    <Image
+                      source={{ uri: resolveMediaUrl(photo) ?? undefined }}
+                      accessibilityLabel={`Preview da foto ${slot}`}
+                      resizeMode="cover"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <Text
+                      style={{ ...typography.caption, color: colors.primary, textAlign: "center" }}
+                    >
+                      Adicionar foto {slot}
+                    </Text>
+                  )}
+                  {photo && (
+                    <View
+                      pointerEvents="none"
+                      style={{
+                        position: "absolute",
+                        right: spacing.xs,
+                        bottom: spacing.xs,
+                        paddingHorizontal: spacing.xs,
+                        paddingVertical: 3,
+                        borderRadius: radii.pill,
+                        backgroundColor: "rgba(17, 24, 39, 0.72)",
+                      }}
+                    >
+                      <Text style={{ ...typography.caption, color: colors.white }}>Substituir</Text>
+                    </View>
+                  )}
                 </Pressable>
 
                 {photo && (
@@ -171,11 +215,7 @@ export default function RoomEditScreen() {
             );
           })}
         </View>
-        {error && (
-          <Text accessibilityRole="alert" style={{ color: colors.error, fontWeight: "600" }}>
-            {error}
-          </Text>
-        )}
+        {error && <FeedbackMessage message={error} />}
 
         <PrimaryButton
           label="Salvar"

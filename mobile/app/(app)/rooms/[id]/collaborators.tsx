@@ -15,6 +15,7 @@ import { LoadingState } from "../../../../src/components/LoadingState";
 import { ErrorState } from "../../../../src/components/ErrorState";
 import { EmptyState } from "../../../../src/components/EmptyState";
 import { confirmAction } from "../../../../src/utils/confirm-action";
+import { FeedbackMessage } from "../../../../src/components/FeedbackMessage";
 
 export default function RoomCollaboratorsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -117,20 +118,12 @@ export default function RoomCollaboratorsScreen() {
             {deferredSearch.length >= 2 && !usersLoading && matches.length === 0 && (
               <Text style={{ color: colors.muted }}>Nenhum usuário encontrado.</Text>
             )}
-            {usersError && (
-              <Text accessibilityRole="alert" style={{ color: colors.error }}>
-                Não foi possível buscar usuários.
-              </Text>
-            )}
+            {usersError && <FeedbackMessage message="Não foi possível buscar usuários." />}
             {message && (
-              <Text
-                style={{
-                  color: message.includes("não") ? colors.error : colors.success,
-                  fontWeight: "600",
-                }}
-              >
-                {message}
-              </Text>
+              <FeedbackMessage
+                message={message}
+                variant={message === "Colaborador adicionado." ? "success" : "error"}
+              />
             )}
           </View>
         }

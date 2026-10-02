@@ -3,9 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useAuth } from "../../src/context/AuthContext";
-import { colors } from "../../src/theme/tokens";
+import { colors, layout, typography } from "../../src/theme/tokens";
 
-const desktopBreakpoint = 960;
+const desktopBreakpoint = layout.desktopBreakpoint;
 
 function SidebarLink({
   href,
@@ -30,7 +30,11 @@ function SidebarLink({
           gap: 12,
           paddingHorizontal: 14,
           borderRadius: 12,
-          backgroundColor: active ? "#E8F2FB" : hovered || pressed ? "#F3F7FA" : "transparent",
+          backgroundColor: active
+            ? colors.primarySoft
+            : hovered || pressed
+              ? colors.surfaceMuted
+              : "transparent",
         })}
       >
         <Ionicons name={icon} size={20} color={active ? colors.primary : colors.muted} />
@@ -77,7 +81,7 @@ function WebSidebar({ isAdmin }: { isAdmin: boolean }) {
             contentFit="contain"
             style={{ width: 38, height: 34 }}
           />
-          <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "900", letterSpacing: 1 }}>
+          <Text style={{ ...typography.section, color: colors.ink, letterSpacing: 1 }}>
             ZEPHORA
           </Text>
         </View>
@@ -88,7 +92,7 @@ function WebSidebar({ isAdmin }: { isAdmin: boolean }) {
               paddingHorizontal: 14,
               marginBottom: 4,
               color: colors.muted,
-              fontSize: 11,
+              ...typography.caption,
               fontWeight: "800",
               letterSpacing: 1.1,
               textTransform: "uppercase",
@@ -133,7 +137,7 @@ function WebSidebar({ isAdmin }: { isAdmin: boolean }) {
             gap: 12,
             paddingHorizontal: 14,
             borderRadius: 12,
-            backgroundColor: hovered || pressed ? "#FFF3F1" : "transparent",
+            backgroundColor: hovered || pressed ? colors.errorSoft : "transparent",
           })}
         >
           <Ionicons name="log-out-outline" size={20} color={colors.error} />
@@ -151,7 +155,7 @@ function TabIcon({ name, focused }: { name: keyof typeof Ionicons.glyphMap; focu
     <Ionicons
       name={focused ? name : (`${name}-outline` as keyof typeof Ionicons.glyphMap)}
       size={focused ? 24 : 22}
-      color={focused ? "#2F6FAD" : "#667085"}
+      color={focused ? colors.primary : colors.muted}
     />
   );
 }
@@ -162,26 +166,26 @@ export default function AppLayout() {
   const showSidebar = Platform.OS === "web" && width >= desktopBreakpoint;
 
   return (
-    <View style={{ flex: 1, flexDirection: "row", backgroundColor: "#F7F8FA" }}>
+    <View style={{ flex: 1, flexDirection: "row", backgroundColor: colors.surfaceMuted }}>
       {showSidebar && <WebSidebar isAdmin={isAdmin} />}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Tabs
           screenOptions={{
             headerShown: true,
-            headerStyle: { backgroundColor: "#F7F8FA" },
-            headerTintColor: "#111827",
+            headerStyle: { backgroundColor: colors.surfaceMuted },
+            headerTintColor: colors.ink,
             headerTitleStyle: { fontWeight: "800" },
             headerShadowVisible: false,
-            tabBarActiveTintColor: "#2F6FAD",
-            tabBarInactiveTintColor: "#667085",
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.muted,
             tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 4 },
             tabBarItemStyle: { paddingTop: 5 },
             tabBarStyle: {
               display: showSidebar ? "none" : "flex",
               height: 68,
               paddingTop: 4,
-              backgroundColor: "rgba(251, 253, 255, 0.98)",
-              borderTopColor: "#D6E0EA",
+              backgroundColor: colors.surfaceSolid,
+              borderTopColor: colors.border,
               elevation: 8,
               shadowColor: "#31516D",
               shadowOpacity: 0.08,

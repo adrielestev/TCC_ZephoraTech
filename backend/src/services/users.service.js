@@ -1,6 +1,6 @@
 import * as usersRepository from "../repositories/users.repository.js";
 import { nowIso } from "../utils/datetime.js";
-import { notFound } from "../utils/errors.js";
+import { ApiError, notFound } from "../utils/errors.js";
 import * as fileStorage from "./file-storage.service.js";
 
 export function sanitizeUser(user) {
@@ -49,7 +49,29 @@ export async function listUsers(filters) {
   return users.map(sanitizeUser);
 }
 
-export async function updateUserLevel(userId, userLevel) {
+export async function updateUserLevel(actorId, userId, userLevel) {
+  if (actorId === userId && userLevel !== "ADMIN") {
+    throw new ApiError(
+      403,
+      "Você não pode remover seus próprios privilégios de administrador.",
+    );
+  }
+
+  const currentUser = await usersRepository.findActiveUserById(userId);
+  if (!currentUser) {
+    throw notFound("Usuário");
+  }
+
+  if (currentUser.user_level === "ADMIN" && userLevel !== "ADMIN") {
+    const adminCount = await usersRepository.countActiveAdmins();
+    if (Number(adminCount?.count ?? 0) <= 1) {
+      throw new ApiError(
+        409,
+        "O sistema precisa manter pelo menos um administrador ativo.",
+      );
+    }
+  }
+
   const user = await usersRepository.updateActiveUser(userId, {
     user_level: userLevel,
   });

@@ -1,31 +1,47 @@
+import { useState } from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { router } from "expo-router";
 import { useAuth } from "../../../src/context/AuthContext";
 import { resolveMediaUrl } from "../../../src/api/client";
 import { Screen } from "../../../src/components/Screen";
 import { SurfaceCard } from "../../../src/components/SurfaceCard";
-import { colors, radii, spacing } from "../../../src/theme/tokens";
+import { ImageViewerModal } from "../../../src/components/ImageViewerModal";
+import { colors, layout, radii, spacing, typography } from "../../../src/theme/tokens";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const [isPhotoViewerVisible, setIsPhotoViewerVisible] = useState(false);
+  const photoUri = user?.user_photo ? resolveMediaUrl(user.user_photo) : null;
 
   return (
     <Screen contentContainerStyle={{ justifyContent: "center", gap: spacing.lg }}>
       <SurfaceCard>
         <View style={{ alignItems: "center", gap: spacing.sm }}>
-          {user?.user_photo ? (
-            <Image
-              source={{ uri: resolveMediaUrl(user.user_photo) ?? undefined }}
-              accessibilityLabel="Foto de perfil"
-              style={{ width: 96, height: 96, borderRadius: 48 }}
-            />
+          {photoUri ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Ampliar foto de perfil"
+              onPress={() => setIsPhotoViewerVisible(true)}
+              style={({ pressed }) => ({
+                borderRadius: 52,
+                padding: 4,
+                backgroundColor: colors.primarySoft,
+                opacity: pressed ? 0.82 : 1,
+              })}
+            >
+              <Image
+                source={{ uri: photoUri }}
+                accessibilityLabel="Foto de perfil"
+                style={{ width: 96, height: 96, borderRadius: 48 }}
+              />
+            </Pressable>
           ) : (
             <View
               style={{
                 width: 96,
                 height: 96,
                 borderRadius: 48,
-                backgroundColor: "#DCECFB",
+                backgroundColor: colors.primarySoft,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -35,8 +51,8 @@ export default function ProfileScreen() {
               </Text>
             </View>
           )}
-          <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>{user?.name}</Text>
-          <Text style={{ color: colors.muted }}>{user?.email}</Text>
+          <Text style={{ ...typography.title, color: colors.ink }}>{user?.name}</Text>
+          <Text style={{ ...typography.body, color: colors.muted }}>{user?.email}</Text>
         </View>
 
         <Pressable
@@ -45,7 +61,9 @@ export default function ProfileScreen() {
             borderWidth: 1,
             borderColor: colors.border,
             borderRadius: radii.button,
-            padding: 15,
+            minHeight: layout.minTouchTarget,
+            paddingHorizontal: spacing.md,
+            justifyContent: "center",
             alignItems: "center",
           }}
         >
@@ -56,15 +74,23 @@ export default function ProfileScreen() {
           onPress={signOut}
           style={{
             borderWidth: 1,
-            borderColor: "#F1C8C4",
+            borderColor: colors.errorSoft,
             borderRadius: radii.button,
-            padding: 15,
+            minHeight: layout.minTouchTarget,
+            paddingHorizontal: spacing.md,
+            justifyContent: "center",
             alignItems: "center",
             marginTop: spacing.sm,
           }}
         >
           <Text style={{ color: colors.error, fontWeight: "800" }}>Sair</Text>
         </Pressable>
+        <ImageViewerModal
+          visible={isPhotoViewerVisible}
+          uri={photoUri}
+          label="Foto de perfil ampliada"
+          onClose={() => setIsPhotoViewerVisible(false)}
+        />
       </SurfaceCard>
     </Screen>
   );

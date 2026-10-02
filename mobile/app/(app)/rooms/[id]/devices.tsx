@@ -7,7 +7,7 @@ import {
   useRoomSensors,
   useCommandSensor,
 } from "../../../../src/hooks/useSensors";
-import { colors, radii, spacing } from "../../../../src/theme/tokens";
+import { colors, layout, radii, shadows, spacing, typography } from "../../../../src/theme/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { IconButton } from "../../../../src/components/IconButton";
 import { LoadingState } from "../../../../src/components/LoadingState";
@@ -15,6 +15,7 @@ import { ErrorState } from "../../../../src/components/ErrorState";
 import { EmptyState } from "../../../../src/components/EmptyState";
 import { AnalogControl } from "../../../../src/components/AnalogControl";
 import { confirmAction } from "../../../../src/utils/confirm-action";
+import { FeedbackMessage } from "../../../../src/components/FeedbackMessage";
 
 export default function RoomDevicesScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -86,23 +87,24 @@ export default function RoomDevicesScreen() {
         renderItem={({ item }) => (
           <View
             style={{
+              width: "100%",
+              maxWidth: layout.contentMaxWidth,
+              alignSelf: "center",
               flexDirection: "row",
+              flexWrap: "wrap",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-start",
               borderWidth: 1,
               borderColor: colors.border,
               borderRadius: radii.card,
-              padding: 16,
+              padding: spacing.lg,
               backgroundColor: colors.surface,
-              shadowOpacity: 0.12,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 2,
+              ...shadows.card,
             }}
           >
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: "800", color: colors.ink }}>{item.name}</Text>
-              <Text style={{ color: colors.muted, marginTop: 4 }}>{item.type}</Text>
+            <View style={{ flex: 1, minWidth: 150, gap: spacing.xs }}>
+              <Text style={{ ...typography.section, color: colors.ink }}>{item.name}</Text>
+              <Text style={{ ...typography.caption, color: colors.muted }}>{item.type}</Text>
               {isAdmin && (
                 <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
                   <IconButton
@@ -125,11 +127,16 @@ export default function RoomDevicesScreen() {
             </View>
 
             {item.direction === "INPUT" ? (
-              <Text style={{ color: colors.muted, fontWeight: "700" }}>
+              <Text style={{ ...typography.bodyStrong, color: colors.muted }}>
                 Leitura: {item.current_state}
               </Text>
             ) : item.type_of_control === "DIGITAL" ? (
               <Switch
+                accessibilityLabel={`Ativar ou desativar ${item.name}`}
+                accessibilityState={{
+                  disabled: isSensorPending(item.id),
+                  checked: item.current_state === 1,
+                }}
                 value={item.current_state === 1}
                 disabled={isSensorPending(item.id)}
                 onValueChange={(value) => {
@@ -158,35 +165,42 @@ export default function RoomDevicesScreen() {
             )}
           </View>
         )}
+        ListHeaderComponentStyle={{
+          width: "100%",
+          maxWidth: layout.contentMaxWidth,
+          alignSelf: "center",
+        }}
         ListHeaderComponent={
           isAdmin ? (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Criar novo dispositivo"
               onPress={() => router.push(`/(app)/rooms/${roomId}/devices/edit` as never)}
-              style={{
+              style={({ pressed, hovered }) => ({
                 backgroundColor: colors.primary,
-                padding: 15,
+                minHeight: layout.minTouchTarget + 4,
+                paddingHorizontal: spacing.md,
                 borderRadius: radii.button,
+                justifyContent: "center",
                 alignItems: "center",
                 marginBottom: spacing.sm,
-              }}
+                opacity: pressed ? 0.86 : hovered ? 0.94 : 1,
+                ...shadows.button,
+              })}
             >
-              <Text style={{ color: colors.white, fontWeight: "800" }}>Novo dispositivo</Text>
+              <Text style={{ ...typography.bodyStrong, color: colors.white }}>
+                Novo dispositivo
+              </Text>
             </Pressable>
           ) : null
         }
         ListFooterComponent={
           commandSensor.error ? (
-            <Text accessibilityRole="alert" style={{ color: colors.error, paddingTop: 8 }}>
-              Não foi possível enviar o comando. Verifique se o dispositivo está online.
-            </Text>
+            <FeedbackMessage message="Não foi possível enviar o comando. Verifique se o dispositivo está online." />
           ) : mutationError ? (
-            <Text accessibilityRole="alert" style={{ color: colors.error, paddingTop: 8 }}>
-              {mutationError}
-            </Text>
+            <FeedbackMessage message={mutationError} />
           ) : commandSensor.isSuccess ? (
-            <Text style={{ color: colors.success, paddingTop: 8, fontWeight: "700" }}>
-              Estado atualizado.
-            </Text>
+            <FeedbackMessage message="Estado atualizado." variant="success" />
           ) : null
         }
         ListEmptyComponent={

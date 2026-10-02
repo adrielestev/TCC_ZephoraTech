@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleProp, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors } from "../theme/tokens";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { colors, layout } from "../theme/tokens";
 
 interface ScreenProps {
   children: ReactNode;
@@ -13,7 +14,13 @@ export function Screen({ children, scroll = true, contentContainerStyle }: Scree
   const content = scroll ? (
     <ScrollView
       contentContainerStyle={[
-        { flexGrow: 1, padding: 20, alignItems: "center" },
+        {
+          flexGrow: 1,
+          width: "100%",
+          maxWidth: layout.contentMaxWidth,
+          alignSelf: "center",
+          padding: layout.screenPadding,
+        },
         contentContainerStyle,
       ]}
       keyboardShouldPersistTaps="handled"
@@ -27,12 +34,14 @@ export function Screen({ children, scroll = true, contentContainerStyle }: Scree
 
   return (
     <LinearGradient colors={[colors.backgroundTop, colors.backgroundBottom]} style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        {content}
-      </KeyboardAvoidingView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          {content}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }

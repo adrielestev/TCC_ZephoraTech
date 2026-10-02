@@ -10,6 +10,7 @@ import { Screen } from "../../../src/components/Screen";
 import { SurfaceCard } from "../../../src/components/SurfaceCard";
 import { colors, spacing } from "../../../src/theme/tokens";
 import { IconButton } from "../../../src/components/IconButton";
+import { FeedbackMessage } from "../../../src/components/FeedbackMessage";
 import { confirmAction } from "../../../src/utils/confirm-action";
 
 export default function ProfileEditScreen() {
@@ -94,11 +95,7 @@ export default function ProfileEditScreen() {
           onSubmitEditing={handleSave}
         />
         <Text style={{ color: colors.muted }}>{user?.email}</Text>
-        {error && (
-          <Text accessibilityRole="alert" style={{ color: colors.error, fontWeight: "600" }}>
-            {error}
-          </Text>
-        )}
+        {error && <FeedbackMessage message={error} />}
 
         <PrimaryButton label="Salvar" onPress={handleSave} loading={loading} />
       </SurfaceCard>
