@@ -15,6 +15,10 @@ export const roomsApi = {
 
   remove: (roomId: number) => api.delete(`/rooms/${roomId}`),
 
+  /** Gera ou rotaciona a credencial do ESP32. O segredo só é devolvido nesta resposta. */
+  generateDeviceCredential: (roomId: number) =>
+    api.post<{ credential: string }>(`/rooms/${roomId}/device-credential`),
+
   uploadPhoto: async (roomId: number, slot: RoomPhotoSlot, asset: ImagePickerAsset) =>
     api.post<{ room: Room }>(
       `/rooms/${roomId}/photos/${slot}`,

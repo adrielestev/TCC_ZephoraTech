@@ -123,9 +123,15 @@ export async function listCommands(room) {
 
 function toPublicRoom(room, user = { user_level: "ADMIN" }) {
   if (!room) return room;
-  const publicRoom = { ...room };
+  const publicRoom = {
+    ...room,
+    has_device_credential: Boolean(room.device_credential_hash),
+  };
   delete publicRoom.device_credential_hash;
-  if (user.user_level !== "ADMIN") delete publicRoom.mac_address;
+  if (user.user_level !== "ADMIN") {
+    delete publicRoom.mac_address;
+    delete publicRoom.has_device_credential;
+  }
   for (const photoField of ["room_photo_1", "room_photo_2", "room_photo_3"]) {
     publicRoom[photoField] = fileStorage.createSignedMediaUrl(publicRoom[photoField]);
   }

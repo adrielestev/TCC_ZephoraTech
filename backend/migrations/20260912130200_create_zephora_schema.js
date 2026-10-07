@@ -32,6 +32,7 @@ export async function up(knex) {
     table.text("name").notNullable();
     table.text("classroom_code").notNullable().unique();
     table.text("mac_address").notNullable().unique();
+    table.text("device_credential_hash").nullable();
     table.text("last_seen_at");
     table.text("room_photo_1").defaultTo(null);
     table.text("room_photo_2").defaultTo(null);

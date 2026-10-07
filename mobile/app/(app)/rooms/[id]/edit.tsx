@@ -13,6 +13,7 @@ import { FormField } from "../../../../src/components/FormField";
 import { PrimaryButton } from "../../../../src/components/PrimaryButton";
 import { Screen } from "../../../../src/components/Screen";
 import { SurfaceCard } from "../../../../src/components/SurfaceCard";
+import { DeviceCredentialSection } from "../../../../src/components/DeviceCredentialSection";
 import { resolveMediaUrl } from "../../../../src/api/client";
 import { colors, radii, spacing, typography } from "../../../../src/theme/tokens";
 import { IconButton } from "../../../../src/components/IconButton";
@@ -223,6 +224,12 @@ export default function RoomEditScreen() {
           loading={updateRoom.isPending || uploadPhoto.isPending || deletePhoto.isPending}
         />
       </SurfaceCard>
+
+      <DeviceCredentialSection
+        roomId={roomId}
+        macAddress={room.mac_address}
+        hasCredential={room.has_device_credential ?? false}
+      />
     </Screen>
   );
 }

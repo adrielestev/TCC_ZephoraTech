@@ -41,6 +41,10 @@ export function authorizeSignedMediaRequest(req, res, next) {
     return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });
   }
 
+  if (!/^[a-f0-9]+$/i.test(signature)) {
+    return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });
+  }
+
   const expected = Buffer.from(signMediaPath(pathname, expiresAt), "hex");
   const received = Buffer.from(signature, "hex");
   if (received.length !== expected.length || !timingSafeEqual(received, expected)) {

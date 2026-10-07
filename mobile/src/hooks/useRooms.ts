@@ -50,6 +50,19 @@ export function useRemoveRoom() {
   });
 }
 
+export function useGenerateDeviceCredential(roomId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => (await roomsApi.generateDeviceCredential(roomId)).data.credential,
+    // O segredo não entra no cache do React Query: quem chama recebe e descarta.
+    gcTime: 0,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms", roomId] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+    },
+  });
+}
+
 export function useUploadRoomPhoto(roomId: number) {
   const queryClient = useQueryClient();
   return useMutation({

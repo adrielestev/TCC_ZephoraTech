@@ -87,6 +87,19 @@ export default function RoomDetailScreen() {
         <Text style={{ ...typography.bodyStrong, color: colors.text }}>
           {sensors?.length ?? 0} dispositivo(s) vinculado(s)
         </Text>
+        {isAdmin && room.has_device_credential === false && (
+          <View
+            style={{
+              padding: spacing.sm,
+              borderRadius: radii.field,
+              backgroundColor: colors.warningSoft,
+            }}
+          >
+            <Text style={{ ...typography.body, color: colors.warning }}>
+              O ESP32 desta sala ainda não tem credencial. Gere uma em Editar sala.
+            </Text>
+          </View>
+        )}
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
           {[room.room_photo_1, room.room_photo_2, room.room_photo_3].map((photo, index) =>

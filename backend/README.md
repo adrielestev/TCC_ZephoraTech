@@ -122,7 +122,7 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 | POST   | `/rooms`                  | Admin        | `{ name, classroom_code, mac_address, room_photo_1?, room_photo_2?, room_photo_3? }` | Cria uma nova sala.         |
 | GET    | `/rooms/:id`              | Bearer Token | -                                                                                    | Detalhes de uma sala.       |
 | PATCH  | `/rooms/:id`              | Admin        | Propriedades parciais de Room (ex: `name`)                                           | Atualiza dados da sala.     |
-| POST   | `/rooms/:id/device-credential` | Admin com Bearer Token | - | Gera/rotaciona a credencial do ESP32; o segredo é retornado uma única vez. |
+| POST   | `/rooms/:id/device-credential` | Admin com Bearer Token | - | Gera/rotaciona a credencial do ESP32; o segredo é retornado uma única vez. Para admins, `GET /rooms` e `GET /rooms/:id` expõem `has_device_credential` (boolean), nunca o hash. |
 | POST   | `/rooms/:id/photos/:slot` | Admin        | `FormData: { photo: arquivo }` (Slot: 1, 2, ou 3)                                    | Atualiza foto no slot.      |
 | DELETE | `/rooms/:id/photos/:slot` | Admin        | -                                                                                    | Remove a foto do slot.      |
 | DELETE | `/rooms/:id`              | Admin        | -                                                                                    | Exclui a sala.              |

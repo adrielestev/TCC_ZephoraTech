@@ -1,8 +1,10 @@
 node_modules/
-package-lock.json
 uploads/
 .env
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
 npm-debug.log*
+.vscode/
+.idea/
+insomnia/

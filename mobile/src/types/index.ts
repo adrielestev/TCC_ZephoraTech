@@ -13,6 +13,8 @@ export interface Room {
   name: string;
   classroom_code: string;
   mac_address: string;
+  /** Só vem preenchido para ADMIN. Indica se o ESP32 da sala já tem credencial gerada. */
+  has_device_credential?: boolean;
   last_seen_at: string | null;
   room_photo_1: string | null;
   room_photo_2: string | null;
