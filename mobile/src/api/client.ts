@@ -1,10 +1,35 @@
 import { create } from "axios";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import type { ImagePickerAsset } from "expo-image-picker";
+import { Platform } from "react-native";
 import { deleteToken, getToken } from "../utils/token-storage";
 import { TOKEN_KEY, API_TIMEOUT_MS } from "../config/constants";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+function detectApiBaseUrl() {
+  let hostname: string | undefined;
+
+  if (Platform.OS === "web") {
+    hostname = globalThis.location?.hostname;
+  } else {
+    const hostUri = Constants.expoConfig?.hostUri;
+    if (hostUri) {
+      try {
+        hostname = new URL(`http://${hostUri}`).hostname;
+      } catch {
+        hostname = undefined;
+      }
+    }
+  }
+
+  if (!hostname || hostname === "localhost" || hostname === "127.0.0.1") {
+    hostname = Platform.OS === "android" ? "10.0.2.2" : "localhost";
+  }
+
+  return `http://${hostname}:3000`;
+}
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || detectApiBaseUrl();
 
 export { TOKEN_KEY };
 

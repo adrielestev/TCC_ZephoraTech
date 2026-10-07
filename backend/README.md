@@ -43,6 +43,9 @@ npm run dev
 
 A API sobe em `http://localhost:3000`.
 
+O acesso do navegador é habilitado com a configuração padrão do middleware CORS.
+`APP_URL` é a URL pública da API, usada nos links de mídia assinados.
+
 ## Insomnia
 
 Importe a colecao em:

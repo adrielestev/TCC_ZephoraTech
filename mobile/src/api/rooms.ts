@@ -20,10 +20,7 @@ export const roomsApi = {
     api.post<{ credential: string }>(`/rooms/${roomId}/device-credential`),
 
   uploadPhoto: async (roomId: number, slot: RoomPhotoSlot, asset: ImagePickerAsset) =>
-    api.post<{ room: Room }>(
-      `/rooms/${roomId}/photos/${slot}`,
-      await toPhotoFormData(asset),
-    ),
+    api.post<{ room: Room }>(`/rooms/${roomId}/photos/${slot}`, await toPhotoFormData(asset)),
 
   deletePhoto: (roomId: number, slot: RoomPhotoSlot) =>
     api.delete(`/rooms/${roomId}/photos/${slot}`),

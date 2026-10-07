@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, Animated } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { colors, radii, spacing, typography } from "../theme/tokens";
 
 type FeedbackVariant = "error" | "success" | "info";
@@ -31,21 +31,21 @@ const variantStyles = {
   },
 } as const;
 
-export function FeedbackMessage({ 
-  message, 
-  variant = "error", 
-  autoDismiss = true, 
-  duration = 3000, 
-  onDismiss 
+export function FeedbackMessage({
+  message,
+  variant = "error",
+  autoDismiss = true,
+  duration = 3000,
+  onDismiss,
 }: FeedbackMessageProps) {
   const style = variantStyles[variant];
   const [isVisible, setIsVisible] = useState(true);
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(10)).current;
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(() => new Animated.Value(10));
 
   useEffect(() => {
     setIsVisible(true);
-    
+
     // Animação de entrada
     Animated.parallel([
       Animated.timing(opacity, {
@@ -60,7 +60,7 @@ export function FeedbackMessage({
       }),
     ]).start();
 
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     if (autoDismiss) {
       timeout = setTimeout(() => {
         // Animação de saída
@@ -85,7 +85,7 @@ export function FeedbackMessage({
     return () => {
       if (timeout) clearTimeout(timeout);
     };
-  }, [message, variant, autoDismiss, duration]);
+  }, [message, variant, autoDismiss, duration, onDismiss, opacity, translateY]);
 
   if (!isVisible) return null;
 
