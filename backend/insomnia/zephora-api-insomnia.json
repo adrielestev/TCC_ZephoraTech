@@ -25,7 +25,8 @@
         "user_id": "1",
         "device_key": "lampada",
         "mac_address": "AA:BB:CC:DD:EE:FF",
-        "device_credential": ""
+        "device_credential": "",
+        "device_token": ""
       },
       "dataPropertyOrder": {
         "&": [
@@ -38,7 +39,8 @@
           "user_id",
           "device_key",
           "mac_address",
-          "device_credential"
+          "device_credential",
+          "device_token"
         ]
       },
       "color": null,
@@ -709,7 +711,7 @@
       "parentId": "fld_esp32",
       "name": "Handshake",
       "method": "POST",
-      "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/handshake",
+      "url": "{{ _.base_url }}/rooms/handshake",
       "headers": [
         {
           "name": "X-Device-MAC",
@@ -733,12 +735,8 @@
       "url": "{{ _.base_url }}/rooms/{{ _.room_id }}/commands",
       "headers": [
         {
-          "name": "X-Device-MAC",
-          "value": "{{ _.mac_address }}"
-        },
-        {
-          "name": "X-Device-Credential",
-          "value": "{{ _.device_credential }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.device_token }}"
         }
       ],
       "body": {},
@@ -758,12 +756,8 @@
           "value": "application/json"
         },
         {
-          "name": "X-Device-MAC",
-          "value": "{{ _.mac_address }}"
-        },
-        {
-          "name": "X-Device-Credential",
-          "value": "{{ _.device_credential }}"
+          "name": "Authorization",
+          "value": "Bearer {{ _.device_token }}"
         }
       ],
       "body": {

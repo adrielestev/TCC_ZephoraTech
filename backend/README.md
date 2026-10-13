@@ -155,19 +155,19 @@ Rotas geralmente consumidas diretamente pelo dispositivo de hardware (ESP32).
 
 | Método | Rota                                      | Autenticação | Corpo / Query                    | Descrição                                           |
 | ------ | ----------------------------------------- | ------------ | -------------------------------- | --------------------------------------------------- |
-| POST   | `/rooms/:id/handshake`                    | MAC + credencial nos headers | - | Handshake inicial e configuração dos sensores. |
-| GET    | `/rooms/:roomId/commands`                 | MAC + credencial nos headers | - | Dispositivo busca comandos pendentes. |
-| POST   | `/sensors/rooms/:roomId/:deviceKey/state` | MAC + credencial nos headers | `{ current_state (0-100) }` | Dispositivo reporta estado do sensor/atuador. |
+| POST   | `/rooms/handshake`                        | MAC + credencial nos headers | - | Localiza a sala pelo MAC, autentica o dispositivo e retorna configuração e JWT curto. |
+| GET    | `/rooms/:roomId/commands`                 | `Authorization: Bearer <JWT do dispositivo>` | - | Dispositivo busca comandos pendentes. |
+| POST   | `/sensors/rooms/:roomId/:deviceKey/state` | `Authorization: Bearer <JWT do dispositivo>` | `{ current_state (0-100) }` | Dispositivo reporta estado do sensor/atuador. |
 
 ## Fluxo ESP32 (Resumo Prático)
 
 1. Um administrador chama `POST /rooms/:id/device-credential` com Bearer Token e injeta o segredo retornado no ESP32. O segredo é aleatório, único por sala, armazenado somente como hash e exibido apenas nessa resposta; chame novamente para revogá-lo e gerar outro.
-2. Em cada requisição do ESP32, envie `X-Device-MAC: AA:BB:CC:DD:EE:FF` e `X-Device-Credential: <segredo>` nos headers. Use HTTPS e nunca envie o segredo em URL/query string.
-3. **Ao ligar**, o ESP32 chama `POST /rooms/:id/handshake` sem body.
-4. **Para processar ações**, consulta `GET /rooms/:roomId/commands` periodicamente.
-5. **Para reportar estado**, chama `POST /sensors/rooms/:roomId/:deviceKey/state` com `{ "current_state": 0 }`. A autenticação é por sala; a rota permite reportar tanto sensores INPUT quanto OUTPUT.
+2. **Ao ligar ou quando o JWT expirar**, o ESP32 chama `POST /rooms/handshake` sem body nem ID de sala, enviando `X-Device-MAC: AA:BB:CC:DD:EE:FF` e `X-Device-Credential: <segredo>`. O backend encontra a única sala associada ao MAC e valida a credencial dessa sala. A resposta inclui `room.id`, `access_token`, `token_type: "Bearer"` e `expires_in` em segundos, além da configuração dos sensores.
+3. Nas chamadas seguintes, envie `Authorization: Bearer <access_token>` em vez da credencial permanente e do MAC. O token dura `DEVICE_JWT_EXPIRES_IN` (padrão: 15 minutos); ao expirar, faça outro handshake.
+4. **Para processar ações**, consulta `GET /rooms/:roomId/commands` periodicamente com o JWT.
+5. **Para reportar estado**, chama `POST /sensors/rooms/:roomId/:deviceKey/state` com `{ "current_state": 0 }` e o JWT. A autenticação é por sala; a rota permite reportar tanto sensores INPUT quanto OUTPUT.
 
-Salas existentes ficam sem credencial após a migração e não podem usar rotas ESP32 até um administrador gerar a credencial. Rotacionar a credencial invalida imediatamente a anterior.
+Salas existentes ficam sem credencial após a migração e não podem usar rotas ESP32 até um administrador gerar a credencial. Rotacionar a credencial invalida imediatamente a anterior e todos os JWTs emitidos com ela.
 
 ## E-mail em desenvolvimento
 

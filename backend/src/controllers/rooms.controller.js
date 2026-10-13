@@ -1,4 +1,5 @@
 import * as roomsService from "../services/rooms.service.js";
+import { signDeviceAccessToken } from "../services/token.service.js";
 
 export async function listRooms(req, res) {
   const rooms = await roomsService.listRooms(req.user);
@@ -47,7 +48,14 @@ export async function generateDeviceCredential(req, res) {
 
 export async function handshake(req, res) {
   const data = await roomsService.handshake(req.deviceRoom);
-  res.json(data);
+  const { token, expiresIn } = signDeviceAccessToken(req.deviceRoom);
+  res.set("Cache-Control", "no-store");
+  res.json({
+    ...data,
+    access_token: token,
+    token_type: "Bearer",
+    expires_in: expiresIn,
+  });
 }
 
 export async function listCommands(req, res) {

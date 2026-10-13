@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as sensorsController from "../controllers/sensors.controller.js";
 import { authenticate, requireAdmin } from "../middlewares/auth.js";
-import { authenticateDevice } from "../middlewares/device-auth.js";
+import { authenticateDeviceToken } from "../middlewares/device-auth.js";
 import {
   deviceKeyParamSchema,
   idParamSchema,
@@ -57,7 +57,7 @@ sensorsRouter.post(
   "/rooms/:roomId/:deviceKey/state",
   validate(roomIdParamSchema, "params"),
   validate(deviceKeyParamSchema, "params"),
-  authenticateDevice,
+  authenticateDeviceToken,
   validate(espStateSchema),
   sensorsController.reportSensorState,
 );

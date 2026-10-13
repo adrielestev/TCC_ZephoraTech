@@ -4,6 +4,7 @@ import * as roomsRepository from "../repositories/rooms.repository.js";
 import * as sensorsRepository from "../repositories/sensors.repository.js";
 import { nowIso } from "../utils/datetime.js";
 import { ApiError, notFound } from "../utils/errors.js";
+import { getDeviceCredentialVersion } from "./token.service.js";
 import * as fileStorage from "./file-storage.service.js";
 
 export function listRooms(user) {
@@ -70,8 +71,8 @@ export async function deleteRoom(roomId) {
   }
 }
 
-export async function authenticateDevice(roomId, macAddress, credential) {
-  const room = await roomsRepository.findRoomById(roomId);
+export async function authenticateDevice(macAddress, credential) {
+  const room = await roomsRepository.findRoomByMac(macAddress);
   const credentialHash = room?.device_credential_hash;
   const providedHash = createHash("sha256").update(credential).digest();
   const storedHash = credentialHash ? Buffer.from(credentialHash, "hex") : null;
@@ -79,8 +80,32 @@ export async function authenticateDevice(roomId, macAddress, credential) {
     storedHash?.length === providedHash.length &&
     timingSafeEqual(storedHash, providedHash);
 
-  if (!room || room.mac_address !== macAddress || !credentialMatches) {
+  if (!room || !credentialMatches) {
     throw new ApiError(401, "Credenciais do dispositivo invalidas.");
+  }
+
+  return room;
+}
+
+export async function authenticateDeviceToken(roomId, payload) {
+  const room = await roomsRepository.findRoomById(roomId);
+  const currentVersion = room?.device_credential_hash
+    ? getDeviceCredentialVersion(room.device_credential_hash)
+    : "";
+  const providedVersion = payload?.credentialVersion ?? "";
+  const credentialVersionMatches =
+    currentVersion.length === providedVersion.length &&
+    currentVersion.length > 0 &&
+    timingSafeEqual(Buffer.from(currentVersion), Buffer.from(providedVersion));
+
+  if (
+    !room ||
+    payload?.tokenType !== "device" ||
+    Number(payload.sub) !== room.id ||
+    payload.macAddress !== room.mac_address ||
+    !credentialVersionMatches
+  ) {
+    throw new ApiError(401, "Token do dispositivo invalido.");
   }
 
   return room;

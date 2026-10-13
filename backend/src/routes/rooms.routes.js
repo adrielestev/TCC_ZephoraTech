@@ -1,7 +1,10 @@
 import { Router } from "express";
 import * as roomsController from "../controllers/rooms.controller.js";
 import { authenticate, requireAdmin } from "../middlewares/auth.js";
-import { authenticateDevice } from "../middlewares/device-auth.js";
+import {
+  authenticateDevice,
+  authenticateDeviceToken,
+} from "../middlewares/device-auth.js";
 import { idParamSchema, roomIdParamSchema } from "../schemas/common.schemas.js";
 import { roomSchema, updateRoomSchema } from "../schemas/rooms.schemas.js";
 import { validate } from "../utils/validators.js";
@@ -70,14 +73,13 @@ roomsRouter.post(
   roomsController.generateDeviceCredential,
 );
 roomsRouter.post(
-  "/:id/handshake",
-  validate(idParamSchema, "params"),
+  "/handshake",
   authenticateDevice,
   roomsController.handshake,
 );
 roomsRouter.get(
   "/:roomId/commands",
   validate(roomIdParamSchema, "params"),
-  authenticateDevice,
+  authenticateDeviceToken,
   roomsController.listCommands,
 );

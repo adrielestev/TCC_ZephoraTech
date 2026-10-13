@@ -12,6 +12,7 @@ const envSchema = z
   DATABASE_URL: z.string().default("./zephora.sqlite"),
   JWT_SECRET: z.string().min(16).default("dev-secret-change-me"),
   JWT_EXPIRES_IN: z.string().default("8h"),
+  DEVICE_JWT_EXPIRES_IN: z.string().default("15m"),
   APP_NAME: z.string().default("Zephora"),
   APP_URL: z.string().url().default("http://localhost:3000"),
   UPLOAD_DIR: z.string().min(1).default("uploads"),
