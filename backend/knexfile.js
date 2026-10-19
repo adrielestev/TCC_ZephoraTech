@@ -1,10 +1,8 @@
-import dotenv from "dotenv";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import { env } from "./src/config/env.js";
 
-dotenv.config();
-
-const databaseUrl = process.env.DATABASE_URL || "./zephora.sqlite";
+const databaseUrl = env.DATABASE_URL;
 
 try {
   mkdirSync(path.dirname(path.resolve(databaseUrl)), { recursive: true });

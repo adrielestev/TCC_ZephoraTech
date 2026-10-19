@@ -5,10 +5,10 @@ O firmware acompanha a configuração de dispositivos cadastrada no backend. Ap�
 ## Compilar para uma placa real
 
 1. Instale o Arduino IDE, o pacote **esp32 by Espressif Systems 3.x** e as bibliotecas em `ZephoraESP32/libraries.txt`.
-2. Configure `API_BASE_URL` em `ZephoraESP32/config.h` (copie `config.example.h` como ponto de partida). Em HTTPS, adicione também o certificado raiz em `API_ROOT_CA`; o firmware recusa HTTPS sem validar o certificado.
+2. Para configurar por arquivo, copie `config.example.h` para `ZephoraESP32/config.h` e informe `WIFI_SSID`, `WIFI_PASSWORD`, `API_BASE_URL`, `DEVICE_CREDENTIAL` e, se necessário, `API_ROOT_CA`. Quando `config.h` existe, o firmware usa os dados dele em cada inicialização. Em HTTPS, informe a CA raiz; o firmware recusa HTTPS sem validar o certificado.
 3. Abra `ZephoraESP32/ZephoraESP32.ino`, selecione ESP32 Dev Module, envie o firmware e abra o Monitor Serial em **115200 baud**.
-4. Na primeira inicialização, o Monitor Serial mostra o MAC Wi-Fi e solicita SSID, senha e credencial gerada para a sala no app. Cadastre o MAC exibido na sala. A senha pode ficar vazia para rede aberta.
-5. Os dados ficam salvos na memória NVS do ESP32. Para alterá-los, reinicie e envie `c` seguido de Enter nos primeiros cinco segundos. Na reconfiguração, Enter mantém o valor atual; digite `<vazio>` para limpar um campo (por exemplo, remover a senha do Wi-Fi).
+4. Se `config.h` existir, os dados de rede e a credencial vêm desse arquivo. Sem `config.h`, na primeira inicialização o Monitor Serial mostra o MAC Wi-Fi e solicita SSID, senha e credencial da sala. Cadastre o MAC exibido no app; a senha pode ficar vazia para rede aberta.
+5. Sem `config.h`, os dados informados pelo Monitor Serial ficam salvos na memória NVS do ESP32. Para alterá-los, reinicie e envie `c` seguido de Enter nos primeiros cinco segundos. Na reconfiguração, Enter mantém o valor atual; digite `<vazio>` para limpar um campo.
 
 Para compilar os binários do Wokwi local, instale o Arduino CLI e, dentro de `esp32/ZephoraESP32`, execute `arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build .`.
 
@@ -20,7 +20,7 @@ Para ligação física, conecte o PIR em VCC, GND e OUT ao GPIO cadastrado. Para
 
 O arquivo `Zephora-Wokwi.zip` contém o sketch, diagrama, bibliotecas e configuração para importar para um projeto ESP32. O circuito simula uma lâmpada LED no GPIO 23 e um PIR no GPIO 27. Durante a simulação, clique no PIR e escolha **Simulate Motion**.
 
-No Wokwi, adicione `config.h` a partir de `config.example.h` e cole a credencial da sala. Cadastre a sala com MAC `24:0A:C4:00:01:10`. No app, crie:
+No Wokwi, adicione `config.h` a partir de `config.example.h`, configure `WIFI_SSID` como `Wokwi-GUEST`, deixe `WIFI_PASSWORD` vazio e cole a credencial da sala em `DEVICE_CREDENTIAL`. Cadastre a sala com MAC `24:0A:C4:00:01:10`. No app, crie:
 
 | Nome | `device_key` | Tipo | Direção | Controle | GPIO |
 | --- | --- | --- | --- | --- | ---: |
@@ -39,4 +39,4 @@ O Wokwi precisa do Private IoT Gateway para chegar a uma API na rede local; ness
 
 O projeto usa Arduino-ESP32 3.x. HTTP está previsto para simulação local; para uso real, configure HTTPS com a CA confiável.
 
-SSID, senha e credencial são armazenados na memória persistente do ESP32 e enviados apenas ao dispositivo durante a configuração serial. A URL da API e a CA HTTPS continuam definidas em `config.h` antes de compilar.
+Com `config.h`, SSID, senha e credencial são lidos do arquivo a cada inicialização. Sem esse arquivo, são solicitados no Monitor Serial e armazenados na memória persistente do ESP32. A URL da API e a CA HTTPS são definidas em `config.h` antes de compilar.

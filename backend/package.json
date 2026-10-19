@@ -5,13 +5,16 @@
   "type": "module",
   "main": "src/server.js",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
+  },
+  "allowScripts": {
+    "sqlite3@6.0.1": true
   },
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "postinstall": "knex migrate:latest && knex seed:run",
     "knex": "knex",
+    "db:setup": "knex migrate:latest && knex seed:run",
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback",
     "seed": "knex seed:run",

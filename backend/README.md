@@ -41,6 +41,61 @@ npm run seed
 npm run dev
 ```
 
+`npm install` instala as dependências sem executar operações no banco. Para criar
+as tabelas e carregar os dados iniciais, rode as migrações e seeds explicitamente
+como acima (ou use `npm run db:setup`). O `package.json` autoriza o script de
+instalação do `sqlite3@6.0.1`, necessário para compilar/baixar o binário nativo.
+Se você já instalou as dependências antes dessa autorização e o SQLite falhar com
+`Could not locate the bindings file`, rode:
+
+```powershell
+npm rebuild sqlite3
+npm run db:setup
+```
+
+## Publicar no Azure App Service
+
+O perfil de nuvem usa **App Service Linux com runtime Node 24**, implantando o
+conteúdo desta pasta (`backend`) como raiz do aplicativo. O App Service fornece a
+porta em `PORT`; o servidor já escuta nessa porta e em `0.0.0.0`. Ative a
+automação de build no deploy com `SCM_DO_BUILD_DURING_DEPLOYMENT=true` para que o
+Azure instale as dependências no Linux e prepare o binário do SQLite para esse
+ambiente.
+
+Configure estas variáveis em **App Service > Settings > Environment variables**
+(não publique segredos no repositório):
+
+| Nome | Valor |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | `/home/data/zephora.sqlite` |
+| `UPLOAD_DIR` | `/home/uploads` |
+| `APP_URL` | `https://<nome-do-app>.azurewebsites.net` |
+| `JWT_SECRET` | Segredo aleatório exclusivo, com pelo menos 32 caracteres |
+| `INITIAL_ADMIN_NAME` | Nome do administrador inicial |
+| `INITIAL_ADMIN_EMAIL` | E-mail exclusivo do administrador inicial |
+| `INITIAL_ADMIN_PASSWORD` | Senha exclusiva com pelo menos 12 caracteres |
+
+Defina também `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` e
+`MAIL_FROM` se o backend precisar enviar e-mails. O modo sem SMTP continua
+disponível para demonstração.
+
+Em **Configuration > General settings**, selecione Node 24 e use o plano Linux
+com runtime gerenciado do App Service, sem container personalizado. Depois do
+primeiro deploy, abra **SSH** no portal, entre em `/home/site/wwwroot` e execute
+`npm run db:setup` uma vez para aplicar as migrações e criar o administrador
+inicial. Não execute seeds de desenvolvimento a cada inicialização. O `start` do
+`package.json` inicia a API.
+
+O aplicativo valida em produção que `DATABASE_URL` e `UPLOAD_DIR` estejam dentro
+de `/home`; assim, um caminho relativo acidental não grava o banco no diretório
+de publicação. O SQLite foi mantido. Para esse uso, mantenha **uma instância** do
+App Service, sem scale-out ou múltiplos processos Node, e não monte uma unidade
+Azure Files para o banco. Faça backups do arquivo `zephora.sqlite` e do conteúdo
+de `/home/uploads`. O armazenamento persistente do App Service mantém `/home`
+entre reinicializações; montagens Azure Files são inadequadas para arquivos de
+banco SQLite que dependem de bloqueios.
+
 A API sobe em `http://localhost:3000`.
 
 O acesso do navegador é habilitado com a configuração padrão do middleware CORS.

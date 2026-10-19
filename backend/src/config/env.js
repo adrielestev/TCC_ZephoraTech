@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import path from "node:path";
 import { z } from "zod";
 
 dotenv.config();
@@ -37,6 +38,29 @@ const envSchema = z
   })
   .superRefine((configuration, context) => {
     if (configuration.NODE_ENV !== "production") return;
+
+    const appServicePersistentPath = (value) => {
+      const resolvedPath = path.posix.resolve(value);
+      return path.posix.isAbsolute(value) && resolvedPath.startsWith("/home/");
+    };
+
+    if (!appServicePersistentPath(configuration.DATABASE_URL)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["DATABASE_URL"],
+        message:
+          "No Azure App Service Linux, DATABASE_URL deve apontar para um arquivo dentro de /home/ para persistir entre deploys.",
+      });
+    }
+
+    if (!appServicePersistentPath(configuration.UPLOAD_DIR)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["UPLOAD_DIR"],
+        message:
+          "No Azure App Service Linux, UPLOAD_DIR deve apontar para um diretório dentro de /home/ para persistir entre deploys.",
+      });
+    }
 
     if (
       configuration.JWT_SECRET.length < 32 ||

@@ -21,6 +21,9 @@
 
 #if __has_include("config.h")
 #include "config.h"
+#define ZEPHORA_HAS_CONFIG_H 1
+#else
+#define ZEPHORA_HAS_CONFIG_H 0
 #endif
 
 // --- Local project configuration -------------------------------------------
@@ -155,13 +158,24 @@ static void configureFromSerial(bool firstSetup) {
 }
 
 static void loadConfiguration() {
+  apiBaseUrl = API_BASE_URL;
+  deviceMacOverride = DEVICE_MAC_OVERRIDE;
+
+#if ZEPHORA_HAS_CONFIG_H
+  wifiSsid = WIFI_SSID;
+  wifiPassword = WIFI_PASSWORD;
+  deviceCredential = DEVICE_CREDENTIAL;
+  Serial.println("Usando Wi-Fi e credencial definidos em config.h.");
+  if (!wifiSsid.length() || !deviceCredential.length() ||
+      deviceCredential.startsWith("PASTE_")) {
+    Serial.println("Configure WIFI_SSID e DEVICE_CREDENTIAL em config.h.");
+  }
+#else
   preferences.begin("zephora", false);
   const bool configured = preferences.getBool("configured", false);
   wifiSsid = preferences.getString("ssid", "");
   wifiPassword = preferences.getString("wifi_pass", "");
   deviceCredential = preferences.getString("credential", "");
-  apiBaseUrl = API_BASE_URL;
-  deviceMacOverride = DEVICE_MAC_OVERRIDE;
   if (!configured || !wifiSsid.length() || !deviceCredential.length()) {
     configureFromSerial(true);
     preferences.putBool("configured", true);
@@ -177,6 +191,7 @@ static void loadConfiguration() {
     }
     delay(10);
   }
+#endif
 }
 
 static String normalizeMac(String mac) {
@@ -526,15 +541,24 @@ static void applyOutput(Device &device, float requestedState) {
     const uint8_t level = (active != device.inverted) ? HIGH : LOW;
     digitalWrite(device.pin, level);
   } else if (device.type == "SERVO") {
-    const float percent = state == 0 ? 0 : constrain(state, device.minPercent, device.maxPercent);
-    const float normalized = (percent - device.minPercent) /
-                             max(1.0f, device.maxPercent - device.minPercent);
-    const float angle = device.minAngle + normalized * (device.maxAngle - device.minAngle);
-    const uint32_t pulseUs = static_cast<uint32_t>(500 + (angle / 180.0f) * 2000.0f);
-    if (!ensurePwm(device, 50, SERVO_RESOLUTION_BITS)) return;
-    const uint32_t maxDuty = (1UL << SERVO_RESOLUTION_BITS) - 1;
-    const uint32_t duty = (pulseUs * maxDuty) / 20000UL;
-    ledcWrite(device.pin, duty);
+    if (state == 0) {
+      // Zero is the inactive state; stop sending pulses instead of mapping it
+      // below min_percent, which could drive the servo outside its safe range.
+      stopPwm(device);
+      pinMode(device.pin, INPUT);
+    } else {
+      const float percent = constrain(state, device.minPercent, device.maxPercent);
+      const float normalized = (percent - device.minPercent) /
+                               max(1.0f, device.maxPercent - device.minPercent);
+      const float angle = constrain(
+          device.minAngle + normalized * (device.maxAngle - device.minAngle),
+          device.minAngle, device.maxAngle);
+      const uint32_t pulseUs = static_cast<uint32_t>(500 + (angle / 180.0f) * 2000.0f);
+      if (!ensurePwm(device, 50, SERVO_RESOLUTION_BITS)) return;
+      const uint32_t maxDuty = (1UL << SERVO_RESOLUTION_BITS) - 1;
+      const uint32_t duty = (pulseUs * maxDuty) / 20000UL;
+      ledcWrite(device.pin, duty);
+    }
   } else if (device.type == "PWM") {
     const float percent = state == 0 ? 0 : constrain(state, device.minPercent, device.maxPercent);
     float electricalPercent = device.inverted ? 100.0f - percent : percent;
