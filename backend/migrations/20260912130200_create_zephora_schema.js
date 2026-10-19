@@ -90,6 +90,8 @@ export async function up(knex) {
     table.text("type_of_control").notNullable();
     table.integer("pin").notNullable();
     table.integer("pin_pwm");
+    table.text("device_settings").notNullable().defaultTo("{}");
+    table.text("state_labels").notNullable().defaultTo("{}");
     table.float("current_state").notNullable().defaultTo(0);
     table
       .text("created_at")
@@ -100,11 +102,17 @@ export async function up(knex) {
       .notNullable()
       .defaultTo(knex.raw(`(${nowSql})`));
     table.check("?? IN ('INPUT', 'OUTPUT')", ["direction"]);
-    table.check("?? IN ('RELE', 'SERVO', 'PWM', 'REED_SWITCH')", ["type"]);
+    table.check(
+      "?? IN ('RELE', 'SERVO', 'PWM', 'REED_SWITCH', 'CONTACT_SENSOR', 'PIR_SENSOR', 'TEMPERATURE')",
+      ["type"],
+    );
     table.check("?? IN ('DIGITAL', 'ANALOGICO')", ["type_of_control"]);
     table.check("?? BETWEEN 0 AND 39", ["pin"]);
     table.check("?? IS NULL OR ?? BETWEEN 0 AND 39", ["pin_pwm", "pin_pwm"]);
-    table.check("?? BETWEEN 0 AND 100", ["current_state"]);
+    table.check(
+      "((?? = 'TEMPERATURE' AND ?? BETWEEN -40 AND 125) OR (?? <> 'TEMPERATURE' AND ?? BETWEEN 0 AND 100))",
+      ["type", "current_state", "type", "current_state"],
+    );
     table.unique(["room_id", "pin"], { indexName: "uq_sensor_pin_per_room" });
     table.unique(["room_id", "device_key"], {
       indexName: "uq_sensor_device_key_per_room",

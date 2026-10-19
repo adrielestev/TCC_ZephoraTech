@@ -5,6 +5,7 @@ import * as sensorsRepository from "../repositories/sensors.repository.js";
 import { nowIso } from "../utils/datetime.js";
 import { ApiError, notFound } from "../utils/errors.js";
 import * as fileStorage from "./file-storage.service.js";
+import { signDeviceToken } from "./token.service.js";
 
 export function listRooms(user) {
   return roomsRepository
@@ -28,7 +29,9 @@ export async function getRoom(user, roomId) {
   return {
     room: toPublicRoom(room, user),
     sensors: sensors.map((sensor) =>
-      user.user_level === "ADMIN" ? sensor : sensorsRepository.toPublicSensor(sensor),
+      user.user_level === "ADMIN"
+        ? sensor
+        : sensorsRepository.toPublicSensor(sensor),
     ),
   };
 }
@@ -70,8 +73,8 @@ export async function deleteRoom(roomId) {
   }
 }
 
-export async function authenticateDevice(roomId, macAddress, credential) {
-  const room = await roomsRepository.findRoomById(roomId);
+export async function authenticateDevice(macAddress, credential) {
+  const room = await roomsRepository.findRoomByMacAddress(macAddress);
   const credentialHash = room?.device_credential_hash;
   const providedHash = createHash("sha256").update(credential).digest();
   const storedHash = credentialHash ? Buffer.from(credentialHash, "hex") : null;
@@ -79,8 +82,28 @@ export async function authenticateDevice(roomId, macAddress, credential) {
     storedHash?.length === providedHash.length &&
     timingSafeEqual(storedHash, providedHash);
 
-  if (!room || room.mac_address !== macAddress || !credentialMatches) {
+  if (!room || !credentialMatches) {
     throw new ApiError(401, "Credenciais do dispositivo invalidas.");
+  }
+
+  return room;
+}
+
+export async function authenticateDeviceSession(payload) {
+  const roomId = Number(payload.sub);
+  const room = await roomsRepository.findRoomById(roomId);
+  const storedHash = room?.device_credential_hash
+    ? Buffer.from(room.device_credential_hash, "utf8")
+    : null;
+  const tokenHash = payload.cv ? Buffer.from(String(payload.cv), "utf8") : null;
+  const credentialMatches =
+    storedHash &&
+    tokenHash &&
+    storedHash.length === tokenHash.length &&
+    timingSafeEqual(storedHash, tokenHash);
+
+  if (!room || room.mac_address !== payload.mac || !credentialMatches) {
+    throw new ApiError(401, "Token de dispositivo invalido ou expirado.");
   }
 
   return room;
@@ -102,9 +125,11 @@ export async function generateDeviceCredential(roomId) {
 export async function handshake(room) {
   await roomsRepository.touchRoomLastSeen(room.id, nowIso());
   const sensors = await sensorsRepository.listSensorsByRoom(room.id);
+  const token = signDeviceToken(room);
 
   return {
     ok: true,
+    token,
     room: {
       id: room.id,
       name: room.name,
@@ -116,9 +141,12 @@ export async function handshake(room) {
 
 export async function listCommands(room) {
   await roomsRepository.touchRoomLastSeen(room.id, nowIso());
-  const commands = await sensorsRepository.listRoomOutputCommands(room.id);
+  const [commands, devices] = await Promise.all([
+    sensorsRepository.listRoomOutputCommands(room.id),
+    sensorsRepository.listRoomDeviceConfiguration(room.id),
+  ]);
 
-  return { room_id: room.id, commands };
+  return { room_id: room.id, commands, devices };
 }
 
 function toPublicRoom(room, user = { user_level: "ADMIN" }) {
@@ -133,7 +161,9 @@ function toPublicRoom(room, user = { user_level: "ADMIN" }) {
     delete publicRoom.has_device_credential;
   }
   for (const photoField of ["room_photo_1", "room_photo_2", "room_photo_3"]) {
-    publicRoom[photoField] = fileStorage.createSignedMediaUrl(publicRoom[photoField]);
+    publicRoom[photoField] = fileStorage.createSignedMediaUrl(
+      publicRoom[photoField],
+    );
   }
   return publicRoom;
 }

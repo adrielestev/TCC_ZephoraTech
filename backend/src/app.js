@@ -6,6 +6,7 @@ import path from "node:path";
 import { env } from "./config/env.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { collaboratorsRouter } from "./routes/collaborators.routes.js";
+import { deviceRouter } from "./routes/device.routes.js";
 import { roomsRouter } from "./routes/rooms.routes.js";
 import { sensorsRouter } from "./routes/sensors.routes.js";
 import { usersRouter } from "./routes/users.routes.js";
@@ -51,6 +52,7 @@ app.use("/users", usersRouter);
 app.use("/rooms/:roomId/collaborators", collaboratorsRouter);
 app.use("/rooms", roomsRouter);
 app.use("/sensors", sensorsRouter);
+app.use("/device", deviceRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

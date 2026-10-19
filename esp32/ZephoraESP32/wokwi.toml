@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "build/ZephoraESP32.ino.bin"
+elf = "build/ZephoraESP32.ino.elf"

@@ -16,8 +16,8 @@ export function findRoomById(id) {
   return db("rooms").where({ id }).first();
 }
 
-export function findRoomByIdAndMac(id, macAddress) {
-  return db("rooms").where({ id, mac_address: macAddress }).first();
+export function findRoomByMacAddress(macAddress) {
+  return db("rooms").where({ mac_address: macAddress }).first();
 }
 
 export async function createRoom(payload) {

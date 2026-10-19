@@ -30,6 +30,6 @@ export async function updateUserLevel(req, res) {
 }
 
 export async function deleteUser(req, res) {
-  await usersService.softDeleteUser(req.params.id);
+  await usersService.softDeleteUser(req.user.id, req.params.id);
   res.status(204).send();
 }

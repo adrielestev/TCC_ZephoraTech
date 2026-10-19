@@ -1,9 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sensorsApi } from "../api/sensors";
 import { Sensor } from "../types";
-import { API_REFETCH_INTERVAL_MS } from "../config/constants";
+import {
+  API_REFETCH_INTERVAL_MS,
+} from "../config/constants";
 
-export function useRoomSensors(roomId: number) {
+export function useRoomSensors(
+  roomId: number,
+  refetchInterval = API_REFETCH_INTERVAL_MS,
+) {
   return useQuery({
     queryKey: ["sensors", roomId],
     queryFn: async () => {
@@ -11,7 +16,7 @@ export function useRoomSensors(roomId: number) {
       return data.sensors.filter((sensor) => sensor.room_id === roomId);
     },
     enabled: !!roomId,
-    refetchInterval: API_REFETCH_INTERVAL_MS,
+    refetchInterval,
     refetchIntervalInBackground: false,
   });
 }

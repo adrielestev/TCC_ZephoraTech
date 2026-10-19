@@ -4,6 +4,7 @@ import { Image } from "expo-image";
 import { Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useAuth } from "../../src/context/AuthContext";
 import { colors, layout, typography } from "../../src/theme/tokens";
+import { BackButton } from "../../src/components/BackButton";
 
 const desktopBreakpoint = layout.desktopBreakpoint;
 
@@ -216,19 +217,62 @@ export default function AppLayout() {
               tabBarIcon: ({ focused }) => <TabIcon name="shield-checkmark" focused={focused} />,
             }}
           />
-          <Tabs.Screen name="rooms/[id]/index" options={{ href: null, title: "Sala" }} />
-          <Tabs.Screen name="rooms/create" options={{ href: null, title: "Nova sala" }} />
-          <Tabs.Screen name="rooms/[id]/devices" options={{ href: null, title: "Dispositivos" }} />
+          <Tabs.Screen
+            name="rooms/[id]/index"
+            options={{
+              href: null,
+              title: "Sala",
+              headerLeft: () => <BackButton destination="rooms" />,
+            }}
+          />
+          <Tabs.Screen
+            name="rooms/create"
+            options={{
+              href: null,
+              title: "Nova sala",
+              headerLeft: () => <BackButton destination="rooms" />,
+            }}
+          />
+          <Tabs.Screen
+            name="rooms/[id]/devices/index"
+            options={{
+              href: null,
+              title: "Dispositivos",
+              headerLeft: () => <BackButton destination="room" />,
+            }}
+          />
           <Tabs.Screen
             name="rooms/[id]/devices/edit"
-            options={{ href: null, title: "Dispositivo" }}
+            options={{
+              href: null,
+              title: "Dispositivo",
+              headerLeft: () => <BackButton destination="devices" />,
+            }}
           />
           <Tabs.Screen
             name="rooms/[id]/collaborators"
-            options={{ href: null, title: "Colaboradores" }}
+            options={{
+              href: null,
+              title: "Colaboradores",
+              headerLeft: () => <BackButton destination="room" />,
+            }}
           />
-          <Tabs.Screen name="rooms/[id]/edit" options={{ href: null, title: "Editar sala" }} />
-          <Tabs.Screen name="profile/edit" options={{ href: null, title: "Editar perfil" }} />
+          <Tabs.Screen
+            name="rooms/[id]/edit"
+            options={{
+              href: null,
+              title: "Editar sala",
+              headerLeft: () => <BackButton destination="room" />,
+            }}
+          />
+          <Tabs.Screen
+            name="profile/edit"
+            options={{
+              href: null,
+              title: "Editar perfil",
+              headerLeft: () => <BackButton destination="profile" />,
+            }}
+          />
         </Tabs>
       </View>
     </View>

@@ -31,7 +31,15 @@ export interface Collaborator {
 
 export type SensorDirection = "INPUT" | "OUTPUT";
 export type SensorControlType = "DIGITAL" | "ANALOGICO";
-export type SensorType = "RELE" | "SERVO" | "PWM" | "REED_SWITCH";
+export type SensorType =
+  "RELE" | "SERVO" | "PWM" | "REED_SWITCH" | "CONTACT_SENSOR" | "PIR_SENSOR" | "TEMPERATURE";
+
+export type SensorDeviceSettings = Record<string, string | number | boolean>;
+
+export interface SensorStateLabels {
+  active: string;
+  inactive: string;
+}
 
 export interface Sensor {
   id: number;
@@ -42,8 +50,9 @@ export interface Sensor {
   type: SensorType;
   type_of_control: SensorControlType;
   pin: number;
-  pin_pwm: number | null;
   current_state: number;
+  device_settings: SensorDeviceSettings;
+  state_labels: SensorStateLabels;
 }
 
 export type RoomPhotoSlot = 1 | 2 | 3;

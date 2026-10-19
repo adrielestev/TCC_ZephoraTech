@@ -1,5 +1,5 @@
 import { api } from "./client";
-import { Sensor, SensorType } from "../types";
+import { Sensor, SensorDeviceSettings, SensorStateLabels, SensorType } from "../types";
 
 export const sensorsApi = {
   list: () => api.get<{ sensors: Sensor[] }>("/sensors"),
@@ -14,8 +14,9 @@ export const sensorsApi = {
     type: SensorType;
     type_of_control: "DIGITAL" | "ANALOGICO";
     pin: number;
-    pin_pwm?: number | null;
     current_state?: number;
+    device_settings?: SensorDeviceSettings;
+    state_labels?: SensorStateLabels;
   }) => api.post<{ sensor: Sensor }>("/sensors", data),
 
   update: (sensorId: number, data: Partial<Sensor>) =>

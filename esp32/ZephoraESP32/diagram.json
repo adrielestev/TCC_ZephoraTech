@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "author": "ZephoraTech",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {
+        "flashSize": "4",
+        "macAddress": "24:0a:c4:00:01:10"
+      }
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "pir",
+      "top": -72,
+      "left": 340,
+      "attrs": { "delayTime": "2", "inhibitTime": "0.5" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "lamp",
+      "top": 190,
+      "left": 370,
+      "attrs": { "color": "yellow", "lightColor": "#fff2a6", "label": "Lâmpada" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "lamp-resistor",
+      "top": 205,
+      "left": 285,
+      "rotate": 90,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    ["esp:27", "pir:OUT", "green", ["h0"]],
+    ["esp:5V", "pir:VCC", "red", ["v0"]],
+    ["esp:GND.1", "pir:GND", "black", ["v0"]],
+    ["esp:23", "lamp-resistor:1", "green", ["h0"]],
+    ["lamp-resistor:2", "lamp:A", "green", ["h0"]],
+    ["lamp:C", "esp:GND.2", "black", ["v0"]]
+  ],
+  "serialMonitor": { "display": "auto", "newline": "lf" },
+  "dependencies": {}
+}

@@ -83,10 +83,32 @@ export async function updateUserLevel(actorId, userId, userLevel) {
   return sanitizeUser(user);
 }
 
-export async function softDeleteUser(userId) {
+export async function softDeleteUser(actorId, userId) {
+  if (actorId === userId) {
+    throw new ApiError(
+      403,
+      "Você não pode desativar sua própria conta de administrador.",
+    );
+  }
+
+  const currentUser = await usersRepository.findActiveUserById(userId);
+  if (!currentUser) {
+    throw notFound("Usuário");
+  }
+
+  if (currentUser.user_level === "ADMIN") {
+    const adminCount = await usersRepository.countActiveAdmins();
+    if (Number(adminCount?.count ?? 0) <= 1) {
+      throw new ApiError(
+        409,
+        "O sistema precisa manter pelo menos um administrador ativo.",
+      );
+    }
+  }
+
   const updated = await usersRepository.softDeleteUser(userId, nowIso());
 
   if (!updated) {
-    throw notFound("Usuario");
+    throw notFound("Usuário");
   }
 }

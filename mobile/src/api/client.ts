@@ -1,4 +1,4 @@
-import { create } from "axios";
+import axios from "axios";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import type { ImagePickerAsset } from "expo-image-picker";
@@ -31,9 +31,13 @@ function detectApiBaseUrl() {
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || detectApiBaseUrl();
 
+if (process.env.NODE_ENV === "production" && new URL(BASE_URL).protocol !== "https:") {
+  throw new Error("A API deve usar HTTPS em builds de produção.");
+}
+
 export { TOKEN_KEY };
 
-export const api = create({
+export const api = axios.create({
   baseURL: BASE_URL,
   timeout: API_TIMEOUT_MS,
 });

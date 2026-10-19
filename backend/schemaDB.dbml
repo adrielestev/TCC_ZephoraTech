@@ -6,11 +6,12 @@ Project ZephoraDB {
   ETEC Prof. Milton Gazzetti - Técnico em Informática para Internet.
 
   ATENÇÃO: este arquivo é DOCUMENTAÇÃO VISUAL (dbdiagram.io).
-  A fonte de verdade executável é schema.sql.
+  A fonte de verdade executável é a migration
+  migrations/20260912130200_create_zephora_schema.js.
 
   DBML não expressa CHECK, TRIGGER nem ON DELETE RESTRICT de forma confiável,
   então toda regra escrita como "CHECK (...)" nas notas abaixo só existe de
-  fato no schema.sql. Alterou aqui? Altere lá também.
+  fato na migration. Alterou aqui? Altere a migration também.
 
   Escopo desta versão: uma escola só, um ESP32 por sala.
 
@@ -100,7 +101,7 @@ Table users {
 
    created_at text [
     not null,
-    note: "ISO-8601 UTC. No schema.sql: DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))"
+    note: "ISO-8601 UTC. Na migration: DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))"
   ]
 
   updated_at text [
@@ -235,7 +236,7 @@ Table sensors {
 
   type text [
     not null,
-    note: "CHECK (type IN ('RELE','SERVO','PWM','REED_SWITCH'))"
+    note: "CHECK (type IN ('RELE','SERVO','PWM','REED_SWITCH','CONTACT_SENSOR','PIR_SENSOR','TEMPERATURE'))"
   ]
 
   type_of_control text [
@@ -249,13 +250,25 @@ Table sensors {
   ]
 
   pin_pwm int [
-    note: "GPIO secundário utilizado em dispositivos PWM."
+    note: "Campo legado: novas configurações usam somente pin. Leituras antigas PWM priorizam este valor como GPIO PWM."
+  ]
+
+  device_settings text [
+    not null,
+    default: "{}",
+    note: "JSON validado por tipo: inversão elétrica, faixas/etapas analógicas, calibração de servo, frequência PWM e temporização de entradas."
+  ]
+
+  state_labels text [
+    not null,
+    default: "{}",
+    note: "JSON com rótulos amigáveis dos estados ativo e inativo."
   ]
 
   current_state real [
     not null,
     default: 0,
-    note: "Último estado conhecido. CHECK (current_state BETWEEN 0 AND 100)."
+    note: "Último estado conhecido. Normalmente 0–100; temperatura aceita de -40 a 125 °C."
   ]
 
   created_at text [

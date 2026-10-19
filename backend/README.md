@@ -73,17 +73,17 @@ valores padrão do `.env.example` são apenas para desenvolvimento.
 ## Exposição e autorização de dados
 
 - Rotas de usuário, sala e sensor autenticam com Bearer Token; operações de
-	cadastro/administração exigem papel ADMIN e leitura de salas/sensores é
-	filtrada pela associação do colaborador.
+  cadastro/administração exigem papel ADMIN e leitura de salas/sensores é
+  filtrada pela associação do colaborador.
 - Respostas a colaboradores omitem o MAC das salas e os identificadores/pinos
-	internos dos sensores. Administradores mantêm acesso às configurações.
+  internos dos sensores. Administradores mantêm acesso às configurações.
 - O hash da credencial ESP32, hashes de senha e de verificação, campos de
-	controle de verificação e `deleted_at` não são retornados pelas rotas comuns.
+  controle de verificação e `deleted_at` não são retornados pelas rotas comuns.
 - Fotos de perfil e sala usam URLs assinadas com validade de uma hora. Solicite
-	novamente os dados autenticados para obter outra URL após a expiração.
+  novamente os dados autenticados para obter outra URL após a expiração.
 - Mensagens públicas de cadastro, login, reenvio e recuperação não confirmam
-	se um endereço de e-mail existe. Detalhes de erros internos ficam somente no
-	log do servidor.
+  se um endereço de e-mail existe. Detalhes de erros internos ficam somente no
+  log do servidor.
 
 ## Referência da API
 
@@ -96,15 +96,15 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 
 ### 1. Autenticação (`/auth`)
 
-| Método | Rota                    | Autenticação | Corpo da Requisição (JSON)                                 | Descrição                                |
-| ------ | ----------------------- | ------------ | ---------------------------------------------------------- | ---------------------------------------- |
+| Método | Rota                    | Autenticação | Corpo da Requisição (JSON)                                 | Descrição                                                                          |
+| ------ | ----------------------- | ------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | POST   | `/auth/register`        | Pública      | `{ name (min: 2), email, password (min: 8), user_photo? }` | Aceita o pedido e envia instruções quando aplicável (HTTP 202; resposta genérica). |
-| POST   | `/auth/verify-email`    | Pública      | `{ email, code (6 dígitos) }`                              | Verifica o email do usuário.             |
-| POST   | `/auth/resend-code`     | Pública      | `{ email }`                                                | Reenvia o código de verificação.         |
-| POST   | `/auth/login`           | Pública      | `{ email, password }`                                      | Retorna o token JWT e dados do usuário.  |
-| POST   | `/auth/forgot-password` | Pública      | `{ email }`                                                | Solicita reset de senha.                 |
-| POST   | `/auth/reset-password`  | Pública      | `{ email, code, password }`                                | Define uma nova senha usando o código.   |
-| GET    | `/auth/me`              | Bearer Token | -                                                          | Retorna os dados do usuário autenticado. |
+| POST   | `/auth/verify-email`    | Pública      | `{ email, code (6 dígitos) }`                              | Verifica o email do usuário.                                                       |
+| POST   | `/auth/resend-code`     | Pública      | `{ email }`                                                | Reenvia o código de verificação.                                                   |
+| POST   | `/auth/login`           | Pública      | `{ email, password }`                                      | Retorna o token JWT e dados do usuário.                                            |
+| POST   | `/auth/forgot-password` | Pública      | `{ email }`                                                | Solicita reset de senha.                                                           |
+| POST   | `/auth/reset-password`  | Pública      | `{ email, code, password }`                                | Define uma nova senha usando o código.                                             |
+| GET    | `/auth/me`              | Bearer Token | -                                                          | Retorna os dados do usuário autenticado.                                           |
 
 ### 2. Usuários (`/users`)
 
@@ -119,16 +119,16 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 
 ### 3. Salas (`/rooms`)
 
-| Método | Rota                      | Autenticação | Corpo da Requisição (JSON)                                                           | Descrição                   |
-| ------ | ------------------------- | ------------ | ------------------------------------------------------------------------------------ | --------------------------- |
-| GET    | `/rooms`                  | Bearer Token | -                                                                                    | Lista as salas disponíveis. |
-| POST   | `/rooms`                  | Admin        | `{ name, classroom_code, mac_address, room_photo_1?, room_photo_2?, room_photo_3? }` | Cria uma nova sala.         |
-| GET    | `/rooms/:id`              | Bearer Token | -                                                                                    | Detalhes de uma sala.       |
-| PATCH  | `/rooms/:id`              | Admin        | Propriedades parciais de Room (ex: `name`)                                           | Atualiza dados da sala.     |
-| POST   | `/rooms/:id/device-credential` | Admin com Bearer Token | - | Gera/rotaciona a credencial do ESP32; o segredo é retornado uma única vez. Para admins, `GET /rooms` e `GET /rooms/:id` expõem `has_device_credential` (boolean), nunca o hash. |
-| POST   | `/rooms/:id/photos/:slot` | Admin        | `FormData: { photo: arquivo }` (Slot: 1, 2, ou 3)                                    | Atualiza foto no slot.      |
-| DELETE | `/rooms/:id/photos/:slot` | Admin        | -                                                                                    | Remove a foto do slot.      |
-| DELETE | `/rooms/:id`              | Admin        | -                                                                                    | Exclui a sala.              |
+| Método | Rota                           | Autenticação           | Corpo da Requisição (JSON)                                                           | Descrição                                                                                                                                                                       |
+| ------ | ------------------------------ | ---------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/rooms`                       | Bearer Token           | -                                                                                    | Lista as salas disponíveis.                                                                                                                                                     |
+| POST   | `/rooms`                       | Admin                  | `{ name, classroom_code, mac_address, room_photo_1?, room_photo_2?, room_photo_3? }` | Cria uma nova sala.                                                                                                                                                             |
+| GET    | `/rooms/:id`                   | Bearer Token           | -                                                                                    | Detalhes de uma sala.                                                                                                                                                           |
+| PATCH  | `/rooms/:id`                   | Admin                  | Propriedades parciais de Room (ex: `name`)                                           | Atualiza dados da sala.                                                                                                                                                         |
+| POST   | `/rooms/:id/device-credential` | Admin com Bearer Token | -                                                                                    | Gera/rotaciona a credencial do ESP32; o segredo é retornado uma única vez. Para admins, `GET /rooms` e `GET /rooms/:id` expõem `has_device_credential` (boolean), nunca o hash. |
+| POST   | `/rooms/:id/photos/:slot`      | Admin                  | `FormData: { photo: arquivo }` (Slot: 1, 2, ou 3)                                    | Atualiza foto no slot.                                                                                                                                                          |
+| DELETE | `/rooms/:id/photos/:slot`      | Admin                  | -                                                                                    | Remove a foto do slot.                                                                                                                                                          |
+| DELETE | `/rooms/:id`                   | Admin                  | -                                                                                    | Exclui a sala.                                                                                                                                                                  |
 
 ### 4. Colaboradores (`/rooms/:roomId/collaborators`)
 
@@ -140,34 +140,61 @@ Abaixo está a documentação completa dos endpoints, útil para integração do
 
 ### 5. Sensores e Atuadores (`/sensors`)
 
-| Método | Rota                   | Autenticação         | Corpo da Requisição (JSON)                                                                                                                                                                   | Descrição                            |
-| ------ | ---------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| GET    | `/sensors`             | Bearer Token         | -                                                                                                                                                                                            | Lista todos os sensores/atuadores.   |
-| POST   | `/sensors`             | Admin                | `{ room_id, name, device_key, direction ("INPUT"\|"OUTPUT"), type ("RELE"\|"SERVO"\|"PWM"\|"REED_SWITCH"), type_of_control ("DIGITAL"\|"ANALOGICO"), pin (0-39), pin_pwm?, current_state? }` | Cadastra novo sensor/atuador.        |
-| GET    | `/sensors/:id`         | Bearer Token         | -                                                                                                                                                                                            | Detalhes do sensor.                  |
-| PATCH  | `/sensors/:id`         | Admin                | Propriedades parciais de Sensor                                                                                                                                                              | Atualiza cadastro do sensor.         |
-| DELETE | `/sensors/:id`         | Admin                | -                                                                                                                                                                                            | Remove o sensor.                     |
-| POST   | `/sensors/:id/command` | Admin ou Colaborador | `{ current_state (0-100) }`                                                                                                                                                                  | Envia comando para o atuador/sensor. |
+| Método | Rota                   | Autenticação         | Corpo da Requisição (JSON)                                                                                              | Descrição                                                     |
+| ------ | ---------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| GET    | `/sensors`             | Bearer Token         | -                                                                                                                       | Lista todos os sensores/atuadores.                            |
+| POST   | `/sensors`             | Admin                | `{ room_id, name, device_key, direction, type, type_of_control, pin, current_state?, device_settings?, state_labels? }` | Cadastra dispositivo e configurações específicas do seu tipo. |
+| GET    | `/sensors/:id`         | Bearer Token         | -                                                                                                                       | Detalhes do sensor.                                           |
+| PATCH  | `/sensors/:id`         | Admin                | Propriedades parciais de Sensor                                                                                         | Atualiza cadastro do sensor.                                  |
+| DELETE | `/sensors/:id`         | Admin                | -                                                                                                                       | Remove o sensor.                                              |
+| POST   | `/sensors/:id/command` | Admin ou Colaborador | `{ current_state } (digital: 0 ou 1; analógico: 0 a 100)`                                                               | Envia comando para o atuador/sensor.                          |
 
 ### 6. Integração ESP32 (Hardware)
 
 Rotas geralmente consumidas diretamente pelo dispositivo de hardware (ESP32).
 
-| Método | Rota                                      | Autenticação | Corpo / Query                    | Descrição                                           |
-| ------ | ----------------------------------------- | ------------ | -------------------------------- | --------------------------------------------------- |
-| POST   | `/rooms/:id/handshake`                    | MAC + credencial nos headers | - | Handshake inicial e configuração dos sensores. |
-| GET    | `/rooms/:roomId/commands`                 | MAC + credencial nos headers | - | Dispositivo busca comandos pendentes. |
-| POST   | `/sensors/rooms/:roomId/:deviceKey/state` | MAC + credencial nos headers | `{ current_state (0-100) }` | Dispositivo reporta estado do sensor/atuador. |
+| Método | Rota                               | Autenticação                 | Corpo / Query                                                                        | Descrição                                                                                  |
+| ------ | ---------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| POST   | `/device/handshake`                | MAC + credencial nos headers | -                                                                                    | Handshake; a sala é resolvida pelo MAC. Devolve JWT e sensores.                            |
+| GET    | `/device/commands`                 | Bearer do dispositivo (JWT)  | -                                                                                    | Estados desejados das saídas e configurações atualizadas de todos os dispositivos da sala. |
+| POST   | `/device/sensors/:deviceKey/state` | Bearer do dispositivo (JWT)  | `{ current_state } (digital: 0 ou 1; analógico: 0 a 100; temperatura: -40 a 125 °C)` | Dispositivo reporta estado do sensor/atuador.                                              |
 
 ## Fluxo ESP32 (Resumo Prático)
 
 1. Um administrador chama `POST /rooms/:id/device-credential` com Bearer Token e injeta o segredo retornado no ESP32. O segredo é aleatório, único por sala, armazenado somente como hash e exibido apenas nessa resposta; chame novamente para revogá-lo e gerar outro.
-2. Em cada requisição do ESP32, envie `X-Device-MAC: AA:BB:CC:DD:EE:FF` e `X-Device-Credential: <segredo>` nos headers. Use HTTPS e nunca envie o segredo em URL/query string.
-3. **Ao ligar**, o ESP32 chama `POST /rooms/:id/handshake` sem body.
-4. **Para processar ações**, consulta `GET /rooms/:roomId/commands` periodicamente.
-5. **Para reportar estado**, chama `POST /sensors/rooms/:roomId/:deviceKey/state` com `{ "current_state": 0 }`. A autenticação é por sala; a rota permite reportar tanto sensores INPUT quanto OUTPUT.
+2. **Ao ligar**, o ESP32 chama `POST /device/handshake` com `X-Device-MAC` e `X-Device-Credential`. Não envia id de sala: o backend encontra a sala pelo MAC. Use HTTPS e nunca envie o segredo em URL/query string. A resposta inclui `token` (JWT de sessão, 7 dias) e a lista de sensores.
+3. **Para processar ações**, consulta `GET /device/commands` com `Authorization: Bearer <token>`.
+4. **Para reportar estado**, chama `POST /device/sensors/:deviceKey/state` com o mesmo Bearer e `{ "current_state": 0 }`. A autenticação é pela sala do token; a rota permite reportar tanto sensores INPUT quanto OUTPUT.
+5. Se o JWT expirar ou for recusado (HTTP 401), o firmware descarta o token e refaz o handshake.
 
-Salas existentes ficam sem credencial após a migração e não podem usar rotas ESP32 até um administrador gerar a credencial. Rotacionar a credencial invalida imediatamente a anterior.
+Salas existentes ficam sem credencial após a migração e não podem usar rotas ESP32 até um administrador gerar a credencial. Rotacionar a credencial ou alterar o MAC invalida o JWT de dispositivo imediatamente; a credencial anterior também deixa de autenticar o handshake.
+
+## Contrato de tipos e valores para o firmware
+
+`current_state` é o valor persistido pela API e usado pelo app e pelo ESP32. O formato depende do tipo do dispositivo. `device_settings` guarda parâmetros de hardware/controle individuais; cada tipo aceita apenas as opções documentadas abaixo. Omitir o campo aplica os padrões indicados:
+
+| Tipo                                          | Direção | Valores de `current_state`         | Conversão no firmware                                                                                                                                                                    |
+| --------------------------------------------- | ------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RELE`                                        | OUTPUT  | `0` ou `1`                         | `0` desliga e `1` liga a saída digital. A inversão de módulos ativos em nível baixo deve ser definida na configuração elétrica/firmware.                                                 |
+| `SERVO`                                       | OUTPUT  | `0` a `100`                        | Percentual normalizado: converter para o ângulo calibrado do servo: `min_angle + state / 100 * (max_angle - min_angle)`. Os limites devem ser configurados para o modelo de servo usado. |
+| `PWM`                                         | OUTPUT  | `0` a `100`                        | Percentual de duty cycle: `duty = state / 100`. O firmware converte para a resolução e frequência PWM configuradas para a placa e carga.                                                 |
+| `REED_SWITCH`, `CONTACT_SENSOR`, `PIR_SENSOR` | INPUT   | `0` ou `1`                         | `0` representa inativo/aberto/sem detecção; `1` representa ativo/fechado/detecção, conforme o sensor e a configuração elétrica.                                                          |
+| `TEMPERATURE`                                 | INPUT   | `-40` a `125` °C (aceita decimais) | Reporte a temperatura em graus Celsius, por exemplo `23.5`. O app exibe uma casa decimal e a unidade `°C`.                                                                               |
+
+Configurações aceitas em `device_settings`:
+
+| Tipo                                      | Campos                                                                   | Padrões / limites                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `RELE`                                    | `inverted`                                                               | `false`                                                         |
+| `PWM`                                     | `min_percent`, `max_percent`, `step_percent`, `frequency_hz`, `inverted` | `0`, `100`, `5`, `5000 Hz`, `false`; frequência de 1 a 40000 Hz |
+| `SERVO`                                   | `min_percent`, `max_percent`, `step_percent`, `min_angle`, `max_angle`   | `0`, `100`, `5`, `0°`, `180°`                                   |
+| Entradas `REED_SWITCH` e `CONTACT_SENSOR` | `inverted`, `debounce_ms`                                                | `false`, `50 ms`                                                |
+| `PIR_SENSOR`                              | `inverted`, `debounce_ms`, `hold_ms`                                     | `false`, `50 ms`, `0 ms`                                        |
+| `TEMPERATURE`                             | Nenhuma                                                                  | Leitura em °C, de −40 a 125, com casas decimais.                |
+
+As faixas percentuais são limitadas a 0–100; o mínimo deve ser menor ou igual ao máximo. O estado `0` continua disponível como valor de desligado mesmo quando o mínimo configurado é maior que zero. `step_percent` configura os incrementos sugeridos no controle do app. `min_angle` e `max_angle` aceitam valores inteiros entre 0° e 180°, com mínimo menor que máximo. `debounce_ms` aceita 0–5000 e `hold_ms`, 0–3600000. Esses parâmetros são enviados no handshake e novamente em `GET /device/commands` (campo `devices`), permitindo que o ESP32 atualize configurações sem reiniciar.
+
+O ESP32 deve enviar leituras INPUT e estados aplicados de OUTPUT no mesmo formato. Assim, um comando para relé usa `{ "current_state": 1 }`; um comando analógico usa um percentual, como `{ "current_state": 65 }`; e um sensor de temperatura reporta graus Celsius, como `{ "current_state": 23.5 }`. Leituras digitais diferentes de `0` ou `1` são rejeitadas. O mesmo campo `pin` identifica o GPIO escolhido para relé, PWM, servo ou entrada digital; o suporte e a capacidade PWM devem ser conferidos no modelo exato da placa. `device_settings` fornece frequência PWM e calibração do servo por dispositivo. Em registros legados PWM, o valor antigo de `pin_pwm` é tratado como o único pino PWM e será consolidado em `pin` ao salvar o dispositivo.
 
 ## E-mail em desenvolvimento
 

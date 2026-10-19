@@ -94,8 +94,8 @@ export function DeviceCredentialSection({
       </View>
 
       <Text style={{ ...typography.body, color: colors.muted }}>
-        Token único desta sala. O ESP32 deve enviá-lo no header X-Device-Credential, junto com o MAC
-        no header X-Device-MAC, em todas as requisições.
+        Token único desta sala. O ESP32 usa MAC + credencial só no handshake; as demais chamadas
+        usam o JWT devolvido pela API. Gerar de novo invalida o JWT e a credencial anteriores.
       </Text>
 
       {credential ? (

@@ -1,15 +1,9 @@
 import { Router } from "express";
 import * as sensorsController from "../controllers/sensors.controller.js";
 import { authenticate, requireAdmin } from "../middlewares/auth.js";
-import { authenticateDevice } from "../middlewares/device-auth.js";
-import {
-  deviceKeyParamSchema,
-  idParamSchema,
-  roomIdParamSchema,
-} from "../schemas/common.schemas.js";
+import { idParamSchema } from "../schemas/common.schemas.js";
 import {
   commandSchema,
-  espStateSchema,
   sensorSchema,
   updateSensorSchema,
 } from "../schemas/sensors.schemas.js";
@@ -52,12 +46,4 @@ sensorsRouter.post(
   validate(idParamSchema, "params"),
   validate(commandSchema),
   sensorsController.commandSensor,
-);
-sensorsRouter.post(
-  "/rooms/:roomId/:deviceKey/state",
-  validate(roomIdParamSchema, "params"),
-  validate(deviceKeyParamSchema, "params"),
-  authenticateDevice,
-  validate(espStateSchema),
-  sensorsController.reportSensorState,
 );
