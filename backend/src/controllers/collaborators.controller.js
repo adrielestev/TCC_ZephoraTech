@@ -1,26 +1,12 @@
-import * as collaboratorsService from "../services/collaborators.service.js";
+import * as collaborators from "../services/collaborators.service.js";
 
-export async function listCollaborators(req, res) {
-  const collaborators = await collaboratorsService.listCollaborators(
-    req.params.roomId,
-  );
-  res.json({ collaborators });
+export async function list(req, res) {
+  res.json({ collaborators: await collaborators.list(req.params.id) });
 }
-
-export async function createCollaborator(req, res) {
-  const collaborator = await collaboratorsService.createCollaborator(
-    req.params.roomId,
-    req.body.user_id,
-    req.user.id,
-  );
-
-  res.status(201).json({ collaborator });
+export async function add(req, res) {
+  res.status(201).json({ collaborator: await collaborators.add(req.params.id, req.body.user_id, req.user.id) });
 }
-
-export async function deleteCollaborator(req, res) {
-  await collaboratorsService.deleteCollaborator(
-    req.params.roomId,
-    req.params.id,
-  );
-  res.status(204).send();
+export async function remove(req, res) {
+  await collaborators.remove(req.params.collaboratorId, req.params.id);
+  res.status(204).end();
 }

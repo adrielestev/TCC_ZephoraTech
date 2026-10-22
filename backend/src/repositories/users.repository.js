@@ -1,83 +1,25 @@
-import { db } from "../db/connection.js";
+import { db } from "../db.js";
 
-const safeColumns = [
-  "id",
-  "name",
-  "email",
-  "is_email_verified",
-  "user_level",
-  "user_photo",
-  "created_at",
-  "updated_at",
-];
-
-export function findUserById(id) {
-  return db("users").where({ id }).first();
-}
-
-export function findActiveUserById(id) {
-  return db("users").where({ id }).whereNull("deleted_at").first();
-}
-
-export function findUserByEmail(email) {
-  return db("users").where({ email }).first();
-}
-
-export function findActiveUserByEmail(email) {
-  return db("users").where({ email }).whereNull("deleted_at").first();
-}
-
-export async function createUser(payload) {
-  const [id] = await db("users").insert(payload);
-  return findUserById(id);
-}
-
-export async function updateUser(id, payload) {
-  await db("users").where({ id }).update(payload);
-  return findUserById(id);
-}
-
-export async function updateUserPhoto(id, userPhoto) {
-  return updateUser(id, { user_photo: userPhoto });
-}
-
-export function incrementVerificationAttempts(id) {
-  return db("users").where({ id }).increment("verification_attempts", 1);
-}
-
-export function listUsers({ q, limit = 50, offset = 0 } = {}) {
-  const query = db("users").select(safeColumns).whereNull("deleted_at");
-
-  if (q) {
-    query.where((builder) => {
-      builder
-        .where("name", "like", `%${q}%`)
-        .orWhere("email", "like", `%${q}%`);
-    });
-  }
-
-  return query.orderBy("name").limit(limit).offset(offset);
-}
-
-export function countActiveAdmins() {
-  return db("users")
-    .where({ user_level: "ADMIN" })
-    .whereNull("deleted_at")
-    .count({ count: "id" })
-    .first();
-}
-
-export async function updateActiveUser(id, payload) {
-  const updated = await db("users")
+export const findByEmail = (email) => db("users").where({ email }).first();
+export const findActiveById = (id) =>
+  db("users").where({ id }).whereNull("deleted_at").first();
+export const createUser = (user) => db("users").insert(user);
+export const updateUser = (id, data, executor = db) =>
+  executor("users").where({ id }).update(data);
+export const incrementVerificationAttempts = (id) =>
+  db("users")
     .where({ id })
+    .where("verification_attempts", "<", 5)
+    .increment("verification_attempts", 1);
+export const listActiveUsers = () =>
+  db("users")
     .whereNull("deleted_at")
-    .update(payload);
-  return updated ? findUserById(id) : null;
-}
-
-export function softDeleteUser(id, deletedAt) {
-  return db("users")
-    .where({ id })
-    .whereNull("deleted_at")
-    .update({ deleted_at: deletedAt });
-}
+    .select(
+      "id",
+      "name",
+      "email",
+      "user_level",
+      "is_email_verified",
+      "user_photo",
+      "created_at",
+    );

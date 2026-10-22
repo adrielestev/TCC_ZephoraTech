@@ -1,114 +1,24 @@
-import * as usersRepository from "../repositories/users.repository.js";
-import { nowIso } from "../utils/datetime.js";
-import { ApiError, notFound } from "../utils/errors.js";
-import * as fileStorage from "./file-storage.service.js";
+import { HttpError } from "../utils/http-error.js";
+import * as users from "../repositories/users.repository.js";
 
-export function sanitizeUser(user) {
-  const {
-    password_hash: _passwordHash,
-    verification_code_hash: _verificationCodeHash,
-    verification_expires_at: _verificationExpiresAt,
-    verification_attempts: _verificationAttempts,
-    last_code_sent_at: _lastCodeSentAt,
-    deleted_at: _deletedAt,
-    ...safeUser
-  } = user;
-
-  return {
-    ...safeUser,
-    user_photo: fileStorage.createSignedMediaUrl(safeUser.user_photo),
-  };
+export async function getActiveUser(id) {
+  const user = await users.findActiveById(id);
+  if (!user) throw new HttpError(404, "Usuário não encontrado");
+  return user;
 }
 
-export async function updateMe(userId, payload) {
-  const user = await usersRepository.updateUser(userId, payload);
-  return sanitizeUser(user);
+export async function listUsers() { return users.listActiveUsers(); }
+
+export async function updateProfile(id, changes) {
+  await getActiveUser(id);
+  await users.updateUser(id, { ...changes, updated_at: new Date().toISOString() });
+  return getActiveUser(id);
 }
 
-export async function updateMyPhoto(userId, file) {
-  const user = await usersRepository.findActiveUserById(userId);
-  if (!user) throw notFound("Usuario");
-
-  const photoUrl = await fileStorage.saveImage(file, "users");
-  await usersRepository.updateUserPhoto(userId, photoUrl);
-  await fileStorage.removeImage(user.user_photo);
-
-  return sanitizeUser({ ...user, user_photo: photoUrl });
+export async function changeRole(actorId, targetId, role) {
+  const user = await getActiveUser(targetId);
+  if (user.id === actorId && role !== "admin") throw new HttpError(400, "Não é possível remover o próprio papel de administrador");
+  await users.updateUser(user.id, { user_level: role, updated_at: new Date().toISOString() });
+  return getActiveUser(user.id);
 }
 
-export async function removeMyPhoto(userId) {
-  const user = await usersRepository.findActiveUserById(userId);
-  if (!user) throw notFound("Usuario");
-
-  await usersRepository.updateUserPhoto(userId, null);
-  await fileStorage.removeImage(user.user_photo);
-}
-
-export async function listUsers(filters) {
-  const users = await usersRepository.listUsers(filters);
-  return users.map(sanitizeUser);
-}
-
-export async function updateUserLevel(actorId, userId, userLevel) {
-  if (actorId === userId && userLevel !== "ADMIN") {
-    throw new ApiError(
-      403,
-      "Você não pode remover seus próprios privilégios de administrador.",
-    );
-  }
-
-  const currentUser = await usersRepository.findActiveUserById(userId);
-  if (!currentUser) {
-    throw notFound("Usuário");
-  }
-
-  if (currentUser.user_level === "ADMIN" && userLevel !== "ADMIN") {
-    const adminCount = await usersRepository.countActiveAdmins();
-    if (Number(adminCount?.count ?? 0) <= 1) {
-      throw new ApiError(
-        409,
-        "O sistema precisa manter pelo menos um administrador ativo.",
-      );
-    }
-  }
-
-  const user = await usersRepository.updateActiveUser(userId, {
-    user_level: userLevel,
-  });
-
-  if (!user) {
-    throw notFound("Usuario");
-  }
-
-  return sanitizeUser(user);
-}
-
-export async function softDeleteUser(actorId, userId) {
-  if (actorId === userId) {
-    throw new ApiError(
-      403,
-      "Você não pode desativar sua própria conta de administrador.",
-    );
-  }
-
-  const currentUser = await usersRepository.findActiveUserById(userId);
-  if (!currentUser) {
-    throw notFound("Usuário");
-  }
-
-  if (currentUser.user_level === "ADMIN") {
-    const adminCount = await usersRepository.countActiveAdmins();
-    if (Number(adminCount?.count ?? 0) <= 1) {
-      throw new ApiError(
-        409,
-        "O sistema precisa manter pelo menos um administrador ativo.",
-      );
-    }
-  }
-
-  const updated = await usersRepository.softDeleteUser(userId, nowIso());
-
-  if (!updated) {
-    throw notFound("Usuário");
-  }
-}

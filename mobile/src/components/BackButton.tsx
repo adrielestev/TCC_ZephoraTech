@@ -19,14 +19,14 @@ export function BackButton({ destination }: { destination: BackDestination }) {
       accessibilityLabel="Voltar"
       hitSlop={8}
       onPress={() => (router.canGoBack() ? router.back() : router.replace(fallback))}
-      style={({ pressed, hovered }) => ({
+      style={({ pressed }) => ({
         width: layout.minTouchTarget,
         height: layout.minTouchTarget,
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 12,
         opacity: pressed ? 0.65 : 1,
-        backgroundColor: hovered ? colors.surfaceAccent : "transparent",
+        backgroundColor: pressed ? colors.surfaceAccent : "transparent",
       })}
     >
       <Ionicons name="arrow-back" size={22} color={colors.primary} />

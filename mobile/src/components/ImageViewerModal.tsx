@@ -1,5 +1,6 @@
-import { Modal, Pressable, Image, Text, View } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
 import { colors, layout, spacing } from "../theme/tokens";
+import { AuthenticatedImage } from "./AuthenticatedImage";
 
 interface ImageViewerModalProps {
   visible: boolean;
@@ -44,10 +45,10 @@ export function ImageViewerModal({ visible, uri, label, onClose }: ImageViewerMo
           onPress={onClose}
           style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg }}
         >
-          <Image
-            source={{ uri }}
-            accessibilityLabel={label}
-            resizeMode="contain"
+          <AuthenticatedImage
+            uri={uri}
+            label={label}
+            contentFit="contain"
             style={{ width: "100%", height: "80%" }}
           />
           <Text style={{ color: "rgba(255,255,255,0.72)", marginTop: spacing.md }}>{label}</Text>

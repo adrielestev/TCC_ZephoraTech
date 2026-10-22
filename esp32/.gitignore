@@ -1,2 +1,5 @@
 ZephoraESP32/config.h
+ZephoraESP32/tls_config.h
 ZephoraESP32/build/
+ZephoraESP32/.arduino/
+*.zip

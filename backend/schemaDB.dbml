@@ -1,306 +1,123 @@
-Project ZephoraDB {
+Project room_automation {
   database_type: 'SQLite'
+  Note: 'Modelo de referência DBML para o banco SQLite de automatização de salas.'
+}
 
-  Note: '''
-  Automação para salas de aula, com controle de dispositivos (ESP32) e usuários.
-  ETEC Prof. Milton Gazzetti - Técnico em Informática para Internet.
+Table rooms {
+  id integer [pk, increment]
+  name text [not null]
+  mac_address text [not null, unique, note: 'MAC obrigatório e único do controlador da sala']
+  device_credential_hash text [unique, note: 'Hash da credencial do único controlador ESP32 da sala']
+  last_seen_at text
+  room_photo_1 text
+  room_photo_2 text
+  room_photo_3 text
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at text [not null, default: `CURRENT_TIMESTAMP`]
 
-  ATENÇÃO: este arquivo é DOCUMENTAÇÃO VISUAL (dbdiagram.io).
-  A fonte de verdade executável é a migration
-  migrations/20260912130200_create_zephora_schema.js.
-
-  DBML não expressa CHECK, TRIGGER nem ON DELETE RESTRICT de forma confiável,
-  então toda regra escrita como "CHECK (...)" nas notas abaixo só existe de
-  fato na migration. Alterou aqui? Altere a migration também.
-
-  Escopo desta versão: uma escola só, um ESP32 por sala.
-
-  Protocolo de comunicação: HTTP(S). O ESP32 fala diretamente com a API REST
-  (POST/GET), sem broker MQTT. Comando de atuador é "modelo de polling": a API
-  grava o valor desejado e o firmware busca em GET /rooms/:roomId/commands
-  periodicamente.
-
-  Modelo de acesso em duas camadas:
-
-    - ADMIN: papel global (users.user_level). Cria, edita e apaga salas e
-      sensores, e decide quem colabora em cada sala. ADMIN sempre passa em
-      qualquer checagem de acesso, sem precisar estar em room_collaborators.
-
-    - Colaborador: vínculo local à sala (tabela room_collaborators). Só dá
-      permissão para operar o ESTADO dos sensores já cadastrados
-      (equivalente a POST /sensors/:id/command). Não configura sala nem sensor.
-  '''
+  Note: 'MAC obrigatório no formato AA:BB:CC:DD:EE:FF; API valida formato e SQLite trigger rejeita valor vazio. rooms.id identifica a sala internamente.'
 }
 
 Table users {
-  id int [pk, increment]
+  id integer [pk, increment]
+  name text [not null]
+  email text [not null, unique]
+  password_hash text [not null]
+  is_email_verified integer [not null, default: 0, note: 'SQLite boolean: 0 ou 1']
+  verification_code_hash text
+  verification_expires_at text
+  verification_attempts integer [not null, default: 0]
+  last_code_sent_at text
+  user_level text [not null, default: 'user', note: 'Papel global: admin ou user']
+  user_photo text
+  deleted_at text
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at text [not null, default: `CURRENT_TIMESTAMP`]
 
-  name text [
-    not null,
-    note: "Nome completo do usuário"
-  ]
+  Note: 'SQLite CHECKs: is_email_verified IN (0,1); verification_attempts >= 0; user_level IN (''admin'',''user''). E-mails são normalizados pela aplicação.'
+}
 
-  email text [
-    not null,
-    unique,
-    note: "E-mail do usuário, único no sistema. Usado como login."
-  ]
-
-  password_hash text [
-    not null,
-    note: "Hash da senha (bcrypt/argon2). Sem default: nunca armazenar senha em texto plano."
-  ]
-
-  is_email_verified int [
-    not null,
-    default: 0,
-    note: "Indica se o e-mail foi verificado (1) ou não (0). CHECK (is_email_verified IN (0,1)). Login é bloqueado até verificar. Também é o que decide se /forgot-password pode gerar código para este usuário — ver nota de verification_code_hash."
-  ]
-
-  verification_code_hash text [
-    note: "Hash SHA-256 do código de 6 dígitos, reutilizado tanto para confirmar e-mail quanto para redefinir senha. O código em texto puro nunca é armazenado. Não guarda para qual dos dois fluxos foi emitido porque eles nunca coexistem: /forgot-password só gera código para quem já tem is_email_verified = 1, e /register apenas para quem ainda não verificou."
-  ]
-
-  verification_expires_at text [
-    note: "Expiração do código atual. ISO-8601 UTC. Vencido, o código deixa de ser aceito em qualquer um dos fluxos, mesmo que a comparação do hash seja válida."
-  ]
-
-  verification_attempts int [
-    not null,
-    default: 0,
-    note: "Tentativas erradas do código atual. Bloqueia após MAX_VERIFICATION_ATTEMPTS e exige emissão de um novo código."
-  ]
-
-  last_code_sent_at text [
-    note: "ISO-8601 UTC. Hora do último código emitido (verificação OU reset — é o mesmo código). Antes de gerar um código novo a aplicação exige que VERIFICATION_RESEND_COOLDOWN_SECONDS já tenha passado desde este valor. Sem isso, /resend-code e /forgot-password poderiam ser chamados sem limite."
-  ]
-
-  user_level text [
-    not null,
-    default: "USER",
-    note: '''
-      CHECK (user_level IN ('USER','ADMIN')).
-
-      ADMIN: papel global. Cria, edita e apaga qualquer sala e sensor, e
-      gerencia room_collaborators. Nunca precisa de vínculo para operar sala.
-
-      USER: sem poder por padrão. Só opera sensores das salas em que um ADMIN
-      o cadastrou como colaborador (room_collaborators).
-    '''
-  ]
-
-  user_photo text [
-    default: null,
-    note: "URL da foto do usuário, caso tenha sido enviada"
-  ]
-
-  deleted_at text [
-    default: null,
-    note: "NULL = conta ativa. ISO-8601 UTC quando a conta for desativada (soft delete). Usuários com deleted_at preenchido não podem autenticar, solicitar redefinição de senha nem receber novos códigos."
-  ]
-
-   created_at text [
-    not null,
-    note: "ISO-8601 UTC. Na migration: DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))"
-  ]
-
-  updated_at text [
-    not null,
-    note: "ISO-8601 UTC. Atualizado pelo trigger trg_users_updated_at."
-  ]
+Table password_reset_tokens {
+  id integer [pk, increment]
+  user_id integer [not null, unique]
+  token_hash text [not null]
+  expires_at text [not null]
+  attempts integer [not null, default: 0]
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
 
   indexes {
-    (name) [name: "idx_user_name"]
+    expires_at [name: 'idx_password_reset_expires']
   }
+
+  Note: 'Armazena somente o hash do código temporário de recuperação; um código ativo por usuário.'
 }
 
-/*
-    O ESP32 (controlador) fica na sala. Cada sala tem um ESP32, e cada ESP32
-    pode ter vários sensores e atuadores conectados a ele.
-
-    Comunicação é HTTP direto (sem broker): o firmware faz POST/GET nas rotas
-    REST da API. O handshake e as rotas do dispositivo autenticam MAC mais
-    credencial secreta armazenada em hash nesta tabela. O segredo é entregue
-    uma única vez ao administrador durante a geração/rotação.
-
-    A sala NÃO tem dono fixo (não existe rooms.user_id). É um recurso
-    administrado por ADMIN; quem pode operar os aparelhos dela é definido
-    por room_collaborators, logo abaixo.
-*/
-Table rooms {
-  id int [pk, increment]
-
-  name text [
-    not null,
-    note: "Nome do local: sala de aula, laboratório, sala maker, sala direção, sala coordenação 1, etc"
-  ]
-
-  classroom_code text [
-    not null,
-    unique,
-    note: "Código da sala de aula. Único no sistema, escopo de uma escola só."
-  ]
-
-  mac_address text [
-    not null,
-    unique,
-    note: "Endereço MAC do ESP32 da sala, formato AA:BB:CC:DD:EE:FF em maiúsculas. Identificador único do controlador."
-  ]
-
-  device_credential_hash text [
-    note: "Hash SHA-256 da credencial aleatória exclusiva do ESP32 desta sala. Nunca retornar pela API. NULL até provisionamento."
-  ]
-
-  last_seen_at text [
-    note: "Último instante em que o ESP32 chamou a API. ISO-8601 UTC. NULL = nunca conectou."
-  ]
-
-  room_photo_1 text [default: null, note: "URL da foto da sala"]
-  room_photo_2 text [default: null, note: "URL da foto da sala"]
-  room_photo_3 text [default: null, note: "URL da foto da sala"]
-
-  created_at text [not null, note: "ISO-8601 UTC"]
-
-  updated_at text [
-    not null,
-    note: "ISO-8601 UTC. Atualizado pelo trigger trg_rooms_updated_at."
-  ]
-}
-
-/*
-    Vínculo N:N entre users e rooms.
-*/
 Table room_collaborators {
-  id int [pk, increment]
-
-  room_id int [
-    not null,
-    note: "Sala em que o vínculo dá permissão de operar."
-  ]
-
-  user_id int [
-    not null,
-    note: "Usuário que ganha a permissão."
-  ]
-
-  added_by int [
-    note: "ID do ADMIN que criou este vínculo."
-  ]
-
-  created_at text [
-    not null,
-    note: "ISO-8601 UTC."
-  ]
+  id integer [pk, increment]
+  room_id integer [not null]
+  user_id integer [not null]
+  added_by integer
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
 
   indexes {
-    (room_id, user_id) [
-      unique,
-      name: "uq_room_collaborator"
-    ]
-
-    (user_id) [
-      name: "idx_collab_user_id"
-    ]
-
-    (room_id) [
-      name: "idx_collab_room_id"
-    ]
+    (room_id, user_id) [unique, name: 'idx_room_collaborators_unique']
+    user_id [name: 'idx_room_collaborators_user']
   }
+
+  Note: 'Não há papel por sala; user_level define o papel global.'
 }
 
-/*
-    Sensores e atuadores ligados ao ESP32.
-*/
 Table sensors {
-  id int [pk, increment]
-
-  room_id int [
-    not null,
-    note: "ID da sala a qual o dispositivo pertence"
-  ]
-
-  name text [
-    not null,
-    note: "Nome exibido do dispositivo"
-  ]
-
-  device_key text [
-    not null,
-    note: "Identificador do sensor dentro da sala. Somente [a-z0-9_]."
-  ]
-
-  direction text [
-    not null,
-    note: "CHECK (direction IN ('INPUT','OUTPUT'))."
-  ]
-
-  type text [
-    not null,
-    note: "CHECK (type IN ('RELE','SERVO','PWM','REED_SWITCH','CONTACT_SENSOR','PIR_SENSOR','TEMPERATURE'))"
-  ]
-
-  type_of_control text [
-    not null,
-    note: "CHECK (type_of_control IN ('DIGITAL','ANALOGICO'))"
-  ]
-
-  pin int [
-    not null,
-    note: "GPIO principal do ESP32. CHECK (pin BETWEEN 0 AND 39)."
-  ]
-
-  pin_pwm int [
-    note: "Campo legado: novas configurações usam somente pin. Leituras antigas PWM priorizam este valor como GPIO PWM."
-  ]
-
-  device_settings text [
-    not null,
-    default: "{}",
-    note: "JSON validado por tipo: inversão elétrica, faixas/etapas analógicas, calibração de servo, frequência PWM e temporização de entradas."
-  ]
-
-  state_labels text [
-    not null,
-    default: "{}",
-    note: "JSON com rótulos amigáveis dos estados ativo e inativo."
-  ]
-
-  current_state real [
-    not null,
-    default: 0,
-    note: "Último estado conhecido. Normalmente 0–100; temperatura aceita de -40 a 125 °C."
-  ]
-
-  created_at text [
-    not null,
-    note: "ISO-8601 UTC"
-  ]
-
-  updated_at text [
-    not null,
-    note: "ISO-8601 UTC. Atualizado pelo trigger trg_sensors_updated_at."
-  ]
+  id integer [pk, increment]
+  room_id integer [not null]
+  name text [not null, note: 'Nome amigável, por exemplo Luz principal']
+  direction text [not null, note: 'SQLite CHECK: input ou output']
+  type text [not null, note: 'SQLite CHECK: relay, pwm, temperature, presence, contact']
+  pin integer [note: 'GPIO do controlador; NULL se não usar GPIO diretamente']
+  config_json text [note: 'Configuração específica em JSON opcional']
+  state_labels_json text [note: 'Mapa JSON de valores para rótulos, ex. {"0":"Desligado","1":"Ligado"}']
+  value_unit text [note: 'Unidade opcional, ex. °C ou %']
+  current_state real [note: 'Último valor reportado pelo hardware']
+  desired_state real [note: 'Valor solicitado pelo sistema']
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at text [not null, default: `CURRENT_TIMESTAMP`]
 
   indexes {
-    (room_id, pin) [
-      unique,
-      name: "uq_sensor_pin_per_room"
-    ]
-
-    (room_id, device_key) [
-      unique,
-      name: "uq_sensor_device_key_per_room"
-    ]
+    room_id [name: 'idx_sensors_room']
+    (room_id, pin) [unique, name: 'idx_sensors_room_pin']
   }
+
+  Note: 'No SQLite, o índice único de GPIO deve ser parcial: WHERE pin IS NOT NULL. A tabela sensors representa todos os dispositivos.'
+}
+
+Table automation_rules {
+  id integer [pk, increment]
+  name text [not null]
+  source_sensor_id integer [not null]
+  operator text [not null, note: 'SQLite CHECK: eq, ne, gt, gte, lt, lte']
+  comparison_value real [not null]
+  target_sensor_id integer [not null]
+  target_value real [not null]
+  restore_previous integer [not null, default: 0, note: 'Quando ativo, restaura o valor anterior ao fim da condição e bloqueia comandos manuais enquanto a condição estiver ativa']
+  is_active integer [not null, default: 0, note: 'Indica que esta regra está controlando temporariamente a saída']
+  previous_target_value real [note: 'Valor salvo antes de a automação assumir o controle']
+  is_enabled integer [not null, default: 1, note: 'SQLite boolean: 0 ou 1']
+  cooldown_seconds integer [not null, default: 0]
+  created_at text [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at text [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    source_sensor_id [name: 'idx_automation_source']
+    target_sensor_id [name: 'idx_automation_target']
+  }
+
+  Note: 'SQLite CHECKs: source_sensor_id <> target_sensor_id e is_enabled IN (0,1). Triggers validam origem input, destino output e mesma sala. Índice único parcial: target_sensor_id WHERE restore_previous = 1 AND is_active = 1 AND is_enabled = 1.'
 }
 
 Ref: room_collaborators.room_id > rooms.id [delete: cascade]
 Ref: room_collaborators.user_id > users.id [delete: cascade]
-
+Ref: room_collaborators.added_by > users.id [delete: set null]
+Ref: password_reset_tokens.user_id > users.id [delete: cascade]
 Ref: sensors.room_id > rooms.id [delete: cascade]
-
-/*
-O SQLite ignora foreign keys por padrão.
-Sem PRAGMA foreign_keys = ON em cada conexão,
-nenhum CASCADE acima tem efeito.
-*/
+Ref: automation_rules.source_sensor_id > sensors.id [delete: cascade]
+Ref: automation_rules.target_sensor_id > sensors.id [delete: cascade]

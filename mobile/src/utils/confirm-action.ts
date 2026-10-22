@@ -12,3 +12,11 @@ export function confirmAction(title: string, message: string) {
     ]);
   });
 }
+
+export function showNotice(title: string, message: string) {
+  if (Platform.OS === "web") {
+    globalThis.alert(`${title}\n\n${message}`);
+    return;
+  }
+  Alert.alert(title, message, [{ text: "Entendi" }]);
+}

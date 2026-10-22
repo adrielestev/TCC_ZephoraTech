@@ -1,223 +1,222 @@
 /*
- * Zephora ESP32 firmware
- * Arduino-ESP32 core 3.x; Wokwi and physical ESP32 DevKit V1/DevKitC.
- * Configure the room in the Zephora app before connecting this device.
+ * Zephora firmware for ESP32 DevKit (Arduino-ESP32 core 3.x).
+ * Supports the final project's digital PIR input and relay outputs.
+ * Configure the room, MAC, credential, GPIOs and devices in the Zephora app.
  */
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <DallasTemperature.h>
 #include <HTTPClient.h>
-#include <memory>
-#include <OneWire.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <esp_arduino_version.h>
 #include <vector>
-
-#if !defined(ESP_ARDUINO_VERSION_MAJOR) || ESP_ARDUINO_VERSION_MAJOR < 3
-#error "Zephora ESP32 requires Arduino-ESP32 3.x (LEDC by GPIO)."
-#endif
 
 #if __has_include("config.h")
 #include "config.h"
-#define ZEPHORA_HAS_CONFIG_H 1
+#define ZEPHORA_STATIC_CONFIG 1
 #else
-#define ZEPHORA_HAS_CONFIG_H 0
+#define ZEPHORA_STATIC_CONFIG 0
 #endif
 
-// --- Local project configuration -------------------------------------------
+#if __has_include("tls_config.h")
+#include "tls_config.h"
+#endif
+
 #ifndef WIFI_SSID
-#define WIFI_SSID "Wokwi-GUEST"
+#define WIFI_SSID ""
 #endif
 #ifndef WIFI_PASSWORD
 #define WIFI_PASSWORD ""
 #endif
-#ifndef WIFI_CHANNEL
-#define WIFI_CHANNEL 6  // Set to 0 for a physical Wi-Fi router.
-#endif
 #ifndef API_BASE_URL
-#define API_BASE_URL "http://host.wokwi.internal:3000"
+#define API_BASE_URL ""
 #endif
 #ifndef DEVICE_CREDENTIAL
-#define DEVICE_CREDENTIAL "PASTE_A_CREDENCIAL_DA_SALA_AQUI"
+#define DEVICE_CREDENTIAL ""
 #endif
 #ifndef DEVICE_MAC_OVERRIDE
-#define DEVICE_MAC_OVERRIDE ""  // Empty uses Wi-Fi MAC (real board or Wokwi).
+#define DEVICE_MAC_OVERRIDE ""
 #endif
 #ifndef API_ROOT_CA
-#define API_ROOT_CA ""  // HTTPS requires the trusted root CA certificate.
+#define API_ROOT_CA ""
 #endif
 
-static constexpr uint32_t COMMAND_POLL_MS = 2000;
+static constexpr uint32_t COMMAND_POLL_MS = 1500;
 static constexpr uint32_t WIFI_RETRY_MS = 5000;
-static constexpr uint32_t HTTP_TIMEOUT_MS = 6000;
-static constexpr uint32_t TEMPERATURE_POLL_MS = 5000;
+static constexpr uint32_t HTTP_TIMEOUT_MS = 5000;
 static constexpr uint32_t REPORT_RETRY_MS = 3000;
-static constexpr uint8_t PWM_RESOLUTION_BITS = 12;
-static constexpr uint8_t SERVO_RESOLUTION_BITS = 16;
-static constexpr char WOKWI_DEFAULT_MAC[] = "24:0A:C4:00:01:10";
+static constexpr uint32_t HANDSHAKE_RETRY_INITIAL_MS = 5000;
+static constexpr uint32_t HANDSHAKE_RETRY_MAX_MS = 5 * 60 * 1000;
+static constexpr uint32_t MAX_PRESENCE_TIMING_MS = 5UL * 60UL * 1000UL;
 
 struct Device {
-  String key;
+  int id = 0;
+  String name;
   String type;
   String direction;
-  String control;
   uint8_t pin = 0;
-  bool inverted = false;
+  bool activeLow = false;
+  bool activeHigh = true;
+  uint32_t debounceMs = 80;
+  uint32_t holdMs = 0;
   bool configured = false;
-  bool initialized = false;
+  bool seen = false;
   bool hasRawState = false;
-  bool hasReportedState = false;
   bool rawState = false;
+  bool debouncedState = false;
   bool stableState = false;
+  bool absencePending = false;
+  uint32_t rawChangedAt = 0;
+  uint32_t absenceStartedAt = 0;
   bool appliedStateValid = false;
   float appliedState = 0;
+  bool hasReportedState = false;
   float lastReportedState = 0;
-  float minPercent = 0;
-  float maxPercent = 100;
-  float minAngle = 0;
-  float maxAngle = 180;
-  uint32_t stepPercent = 5;
-  uint32_t frequencyHz = 5000;
-  uint32_t debounceMs = 50;
-  uint32_t holdMs = 0;
-  uint32_t rawChangedAt = 0;
   uint32_t nextReportAt = 0;
-  uint32_t holdUntil = 0;
-  uint8_t temperatureIndex = 0;
-  uint8_t pwmBits = 0;
-  uint32_t pwmFrequency = 0;
-  bool seenInLastSync = false;
-};
-
-struct TemperatureBus {
-  uint8_t pin;
-  uint8_t nextIndex = 0;
-  uint32_t lastReadAt = 0;
-  std::unique_ptr<OneWire> wire;
-  std::unique_ptr<DallasTemperature> sensor;
-
-  explicit TemperatureBus(uint8_t dataPin)
-      : pin(dataPin), wire(new OneWire(dataPin)),
-        sensor(new DallasTemperature(wire.get())) {
-    sensor->begin();
-    sensor->setWaitForConversion(false);
-    sensor->requestTemperatures();
-    lastReadAt = millis();
-  }
 };
 
 static std::vector<Device> devices;
-static std::vector<std::unique_ptr<TemperatureBus>> temperatureBuses;
-static String deviceToken;
+static Preferences preferences;
 static String wifiSsid;
 static String wifiPassword;
 static String apiBaseUrl;
 static String deviceCredential;
 static String deviceMacOverride;
-static Preferences preferences;
+static String deviceToken;
 static uint32_t lastCommandPollAt = 0;
-static uint32_t nextWifiRetryAt = 0;
-static bool missingCredentialLogged = false;
+static uint32_t nextWifiAttemptAt = 0;
+static uint32_t nextHandshakeAttemptAt = 0;
+static uint32_t handshakeRetryDelayMs = HANDSHAKE_RETRY_INITIAL_MS;
 
-static String normalizeMac(String mac);
+static void scheduleHandshakeRetry() {
+  nextHandshakeAttemptAt = millis() + handshakeRetryDelayMs;
+  handshakeRetryDelayMs = min(handshakeRetryDelayMs * 2, HANDSHAKE_RETRY_MAX_MS);
+}
 
-static String readSerialValue(const char *prompt, const String &current = "") {
-  Serial.print(prompt);
-  if (current.length()) Serial.print(" [Enter mantém o valor atual]");
-  Serial.println();
+static bool isOutput(const Device &device) {
+  return device.direction == "output" && device.type == "relay";
+}
+
+static bool isPresenceInput(const Device &device) {
+  return device.direction == "input" && device.type == "presence";
+}
+
+static String normalizedMac(String mac) {
+  mac.toUpperCase();
+  return mac;
+}
+
+static String deviceMac() {
+  if (deviceMacOverride.length()) return normalizedMac(deviceMacOverride);
+  return normalizedMac(WiFi.macAddress());
+}
+
+static String apiUrl(const String &path) {
+  String base = apiBaseUrl;
+  while (base.endsWith("/")) base.remove(base.length() - 1);
+  return base + "/api/device" + path;
+}
+
+static bool validApiUrl(const String &url) {
+  return url.startsWith("http://") || url.startsWith("https://");
+}
+
+static String readSerialLine(const char *prompt, const String &current,
+                             bool allowEmpty = false) {
+  Serial.println(prompt);
+  if (current.length()) Serial.println("Pressione Enter para manter o valor atual.");
   String value;
   while (true) {
-    while (Serial.available()) {
-      const char ch = static_cast<char>(Serial.read());
-      if (ch == '\n') {
-        if (value == "<vazio>") return "";
-        return value.length() ? value : current;
-      }
-      if (ch == '\r') continue;
-      if (ch >= 32 && ch <= 126) {
-        value += ch;
-      }
+    if (Serial.available()) {
+      value = Serial.readStringUntil('\n');
+      value.trim();
+      if (value == "<vazio>") return "";
+      if (!value.length() && current.length()) return current;
+      if (allowEmpty || value.length()) return value;
     }
     delay(10);
   }
 }
 
 static void configureFromSerial(bool firstSetup) {
-  Serial.println("\n=== Configuração Zephora ===");
-  Serial.printf("MAC Wi-Fi desta placa: %s\n", normalizeMac(WiFi.macAddress()).c_str());
-  Serial.println("Cadastre este MAC na sala do aplicativo.");
-  wifiSsid = readSerialValue("Nome da rede Wi-Fi (SSID):", firstSetup ? "" : wifiSsid);
-  wifiPassword = readSerialValue("Senha do Wi-Fi (vazia = rede aberta):", firstSetup ? "" : wifiPassword);
-  deviceCredential = readSerialValue("Credencial do dispositivo gerada no aplicativo:", firstSetup ? "" : deviceCredential);
+  Serial.println("\n=== Configuracao Zephora ESP32 ===");
+  Serial.printf("MAC Wi-Fi desta placa: %s\n", normalizedMac(WiFi.macAddress()).c_str());
+  Serial.println("Cadastre este MAC na sala do aplicativo antes de conectar.");
+
+  wifiSsid = readSerialLine("SSID da rede Wi-Fi:", firstSetup ? "" : wifiSsid);
+  wifiPassword = readSerialLine("Senha do Wi-Fi (rede aberta: <vazio>):",
+                                firstSetup ? "" : wifiPassword, true);
+  apiBaseUrl = readSerialLine("URL base da API (ex.: http://192.168.1.20:3000):",
+                              firstSetup ? "" : apiBaseUrl);
+  deviceCredential = readSerialLine("Credencial gerada no app Zephora:",
+                                    firstSetup ? "" : deviceCredential);
+  deviceMacOverride = readSerialLine("MAC alternativo (opcional; <vazio> usa o MAC da placa):",
+                                     firstSetup ? "" : deviceMacOverride, true);
+
+  while (!validApiUrl(apiBaseUrl)) {
+    Serial.println("A URL deve comecar com http:// ou https://.");
+    apiBaseUrl = readSerialLine("URL base da API:", "");
+  }
+  if (!wifiSsid.length() || !deviceCredential.length()) {
+    Serial.println("SSID e credencial sao obrigatorios. Reinicie e configure novamente.");
+    while (true) delay(1000);
+  }
+
   preferences.putString("ssid", wifiSsid);
   preferences.putString("wifi_pass", wifiPassword);
+  preferences.putString("api_url", apiBaseUrl);
   preferences.putString("credential", deviceCredential);
-  Serial.println("Configuração salva na memória do ESP32. Reinicie para conectar.");
+  preferences.putString("mac_override", deviceMacOverride);
+  preferences.putBool("configured", true);
+  Serial.println("Configuracao salva na NVS. A credencial nao sera exibida novamente.");
 }
 
 static void loadConfiguration() {
-  apiBaseUrl = API_BASE_URL;
-  deviceMacOverride = DEVICE_MAC_OVERRIDE;
-
-#if ZEPHORA_HAS_CONFIG_H
+#if ZEPHORA_STATIC_CONFIG
   wifiSsid = WIFI_SSID;
   wifiPassword = WIFI_PASSWORD;
+  apiBaseUrl = API_BASE_URL;
   deviceCredential = DEVICE_CREDENTIAL;
-  Serial.println("Usando Wi-Fi e credencial definidos em config.h.");
-  if (!wifiSsid.length() || !deviceCredential.length() ||
-      deviceCredential.startsWith("PASTE_")) {
-    Serial.println("Configure WIFI_SSID e DEVICE_CREDENTIAL em config.h.");
+  deviceMacOverride = DEVICE_MAC_OVERRIDE;
+  if (!wifiSsid.length() || !validApiUrl(apiBaseUrl) || !deviceCredential.length() ||
+      deviceCredential.startsWith("COLE_")) {
+    Serial.println("Revise WIFI_SSID, API_BASE_URL e DEVICE_CREDENTIAL em config.h.");
   }
 #else
   preferences.begin("zephora", false);
   const bool configured = preferences.getBool("configured", false);
   wifiSsid = preferences.getString("ssid", "");
   wifiPassword = preferences.getString("wifi_pass", "");
+  apiBaseUrl = preferences.getString("api_url", "");
   deviceCredential = preferences.getString("credential", "");
-  if (!configured || !wifiSsid.length() || !deviceCredential.length()) {
+  deviceMacOverride = preferences.getString("mac_override", "");
+  if (!configured || !wifiSsid.length() || !validApiUrl(apiBaseUrl) ||
+      !deviceCredential.length()) {
     configureFromSerial(true);
-    preferences.putBool("configured", true);
-    return;
-  }
-
-  Serial.println("Pressione 'c' e Enter no Monitor Serial em até 5 segundos para reconfigurar.");
-  const uint32_t startedAt = millis();
-  while (millis() - startedAt < 5000) {
-    if (Serial.available() && Serial.read() == 'c') {
-      configureFromSerial(false);
-      return;
+  } else {
+    Serial.println("Pressione c e Enter nos primeiros 5 segundos para reconfigurar.");
+    const uint32_t startedAt = millis();
+    while (millis() - startedAt < 5000) {
+      if (Serial.available() && Serial.read() == 'c') {
+        while (Serial.available()) Serial.read();
+        configureFromSerial(false);
+        break;
+      }
+      delay(10);
     }
-    delay(10);
   }
 #endif
 }
 
-static String normalizeMac(String mac) {
-  mac.toUpperCase();
-  return mac;
-}
-
-static String deviceMac() {
-  if (deviceMacOverride.length()) return normalizeMac(deviceMacOverride);
-  return normalizeMac(WiFi.macAddress());
-}
-
-static String apiUrl(const String &path) {
-  String base = apiBaseUrl;
-  while (base.endsWith("/")) base.remove(base.length() - 1);
-  return base + path;
-}
-
 static bool connectWifi() {
   if (WiFi.status() == WL_CONNECTED) return true;
-
   const uint32_t now = millis();
-  if (now < nextWifiRetryAt) return false;
-  nextWifiRetryAt = now + WIFI_RETRY_MS;
-  Serial.printf("Wi-Fi: conectando a %s\n", wifiSsid.c_str());
+  if (now < nextWifiAttemptAt) return false;
+
+  nextWifiAttemptAt = now + WIFI_RETRY_MS;
+  Serial.printf("Conectando ao Wi-Fi %s...\n", wifiSsid.c_str());
   WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
   WiFi.begin(wifiSsid.c_str(), wifiPassword.c_str());
   return false;
 }
@@ -229,10 +228,7 @@ static int sendRequest(NetworkClient &client, const String &method,
                        bool handshake = false) {
   HTTPClient http;
   http.setTimeout(HTTP_TIMEOUT_MS);
-  if (!http.begin(client, apiUrl(path))) {
-    Serial.println("HTTP: não foi possível iniciar a conexão.");
-    return -1;
-  }
+  if (!http.begin(client, apiUrl(path))) return -1;
 
   http.addHeader("Accept", "application/json");
   if (method == "POST") http.addHeader("Content-Type", "application/json");
@@ -243,8 +239,8 @@ static int sendRequest(NetworkClient &client, const String &method,
     http.addHeader("Authorization", "Bearer " + bearer);
   }
 
-  const int status = method == "POST" ? http.POST(body) : http.GET();
-  responseBody = status > 0 ? http.getString() : String();
+  const int status = method == "GET" ? http.GET() : http.POST(body);
+  if (status > 0) responseBody = http.getString();
   http.end();
   return status;
 }
@@ -254,171 +250,144 @@ static int requestApi(const String &method, const String &path,
                       String &responseBody, bool handshake = false) {
   const String url = apiUrl(path);
   if (url.startsWith("https://")) {
-    if (API_ROOT_CA[0] == '\0') {
-      Serial.println("HTTPS recusado: configure API_ROOT_CA com a CA confiável.");
+    if (!API_ROOT_CA[0]) {
+      Serial.println("HTTPS requer a CA raiz em API_ROOT_CA, no arquivo config.h.");
       return -1;
     }
     WiFiClientSecure client;
     client.setCACert(API_ROOT_CA);
     return sendRequest(client, method, path, body, bearer, responseBody, handshake);
   }
-  if (!url.startsWith("http://")) {
-    Serial.println("API_BASE_URL deve começar com http:// ou https://.");
-    return -1;
-  }
+  if (!url.startsWith("http://")) return -1;
 
   WiFiClient client;
   return sendRequest(client, method, path, body, bearer, responseBody, handshake);
 }
 
 static bool performHandshake() {
-  if (!deviceCredential.length()) {
-    if (!missingCredentialLogged) {
-      Serial.println("Configure a credencial da sala pelo Monitor Serial.");
-      missingCredentialLogged = true;
-    }
-    return false;
-  }
+  if (!deviceCredential.length() || WiFi.status() != WL_CONNECTED) return false;
+  if (nextHandshakeAttemptAt &&
+      static_cast<int32_t>(millis() - nextHandshakeAttemptAt) < 0) return false;
 
   String response;
-  const int status = requestApi("POST", "/device/handshake", "{}", "",
-                                response, true);
+  const int status = requestApi("POST", "/handshake", "{}", "", response, true);
   if (status != HTTP_CODE_OK) {
     Serial.printf("Handshake falhou (HTTP %d).\n", status);
+    if (response.length()) Serial.printf("Resposta da API: %s\n", response.c_str());
+    scheduleHandshakeRetry();
     return false;
   }
 
   JsonDocument json;
   if (deserializeJson(json, response)) {
-    Serial.println("Handshake: resposta JSON inválida.");
+    Serial.println("Handshake retornou JSON invalido.");
+    scheduleHandshakeRetry();
     return false;
   }
   const char *token = json["token"] | "";
   if (!token[0]) {
-    Serial.println("Handshake: API não retornou token.");
+    Serial.println("Handshake sem token na resposta da API.");
+    scheduleHandshakeRetry();
     return false;
   }
-
   deviceToken = token;
-  Serial.printf("ESP32 autenticado na sala %s (id %d).\n",
-                json["room"]["name"] | "", json["room"]["id"] | 0);
+  nextHandshakeAttemptAt = 0;
+  handshakeRetryDelayMs = HANDSHAKE_RETRY_INITIAL_MS;
+  Serial.printf("ESP32 autenticado na sala %d.\n", json["room_id"] | 0);
   return true;
 }
 
-static bool isDigitalInput(const Device &device) {
-  return device.direction == "INPUT" && device.control == "DIGITAL" &&
-         device.type != "TEMPERATURE";
-}
-
-static bool isOutput(const Device &device) {
-  return device.direction == "OUTPUT";
-}
-
-static bool pinCanDriveOutput(uint8_t pin) {
-  // ESP32 classic: avoid flash pins, boot-strapping pins, UART pins and
-  // GPIO 34-39, which are input-only. The project DB validates only 0-39.
+static bool outputPinAllowed(uint8_t pin) {
   if (pin > 33 || (pin >= 6 && pin <= 11)) return false;
+  // Evita UART e pinos de boot no DevKit classico.
   switch (pin) {
     case 0: case 1: case 2: case 3: case 5: case 12: case 15: return false;
     default: return true;
   }
 }
 
-static bool isContactInput(const Device &device) {
-  return device.type == "REED_SWITCH" || device.type == "CONTACT_SENSOR";
+static bool inputPinAllowed(uint8_t pin) {
+  if (pin > 39 || (pin >= 6 && pin <= 11)) return false;
+  switch (pin) {
+    case 0: case 1: case 2: case 3: case 5: case 12: case 15: return false;
+    default: return true;
+  }
 }
 
-static void stopPwm(Device &device) {
-  if (device.pwmBits) {
-    ledcDetach(device.pin);
-    device.pwmBits = 0;
-    device.pwmFrequency = 0;
-  }
+static void writeRelay(Device &device, bool active) {
+  const uint8_t level = (active != device.activeLow) ? HIGH : LOW;
+  digitalWrite(device.pin, level);
 }
 
 static void releaseDevice(Device &device) {
-  if (!device.initialized || !isOutput(device)) return;
-  if (device.pwmBits) {
-    stopPwm(device);
-    pinMode(device.pin, INPUT);
-  } else {
-    digitalWrite(device.pin, device.inverted ? HIGH : LOW);
+  if (device.configured && isOutput(device)) {
+    writeRelay(device, false);
     pinMode(device.pin, INPUT);
   }
+  device.configured = false;
 }
 
-static void configureDevice(Device &device) {
-  if (isOutput(device)) {
-    if (!pinCanDriveOutput(device.pin)) {
-      Serial.printf("GPIO %u recusado para saída de %s (pino reservado/incompatível).\n",
-                    device.pin, device.key.c_str());
-      device.configured = false;
-      return;
-    }
-    if (device.control == "DIGITAL") {
-      stopPwm(device);
-      pinMode(device.pin, OUTPUT);
-      digitalWrite(device.pin, device.inverted ? HIGH : LOW);
-    } else {
-      pinMode(device.pin, OUTPUT);
-      device.configured = true;
-      device.initialized = true;
-      return;
-    }
-  } else if (isDigitalInput(device)) {
-    stopPwm(device);
-    pinMode(device.pin, isContactInput(device) ? INPUT_PULLUP : INPUT);
-  } else if (device.type == "TEMPERATURE") {
-    stopPwm(device);
-    TemperatureBus *bus = nullptr;
-    for (auto &candidate : temperatureBuses) {
-      if (candidate->pin == device.pin) bus = candidate.get();
-    }
-    if (!bus) {
-      temperatureBuses.emplace_back(new TemperatureBus(device.pin));
-      bus = temperatureBuses.back().get();
-    }
-  }
-  device.configured = true;
-  device.initialized = true;
-  device.hasRawState = false;
-  device.hasReportedState = false;
-  device.appliedStateValid = false;
-}
-
-static Device readDevice(JsonObjectConst json) {
-  Device device;
-  device.key = json["device_key"] | "";
+static bool readDevice(JsonObjectConst json, Device &device) {
+  device.id = json["id"] | 0;
+  device.name = json["name"] | "Dispositivo";
   device.type = json["type"] | "";
   device.direction = json["direction"] | "";
-  device.control = json["type_of_control"] | "";
   const int pin = json["pin"] | -1;
-  if (pin >= 0 && pin <= 39) device.pin = static_cast<uint8_t>(pin);
-  JsonObjectConst settings = json["device_settings"].as<JsonObjectConst>();
-  device.inverted = settings["inverted"] | false;
-  device.minPercent = settings["min_percent"] | 0.0f;
-  device.maxPercent = settings["max_percent"] | 100.0f;
-  device.minAngle = settings["min_angle"] | 0.0f;
-  device.maxAngle = settings["max_angle"] | 180.0f;
-  device.stepPercent = settings["step_percent"] | 5U;
-  device.frequencyHz = settings["frequency_hz"] | 5000U;
-  device.debounceMs = settings["debounce_ms"] | 50U;
-  device.holdMs = settings["hold_ms"] | 0U;
+  if (device.id <= 0 || pin < 0 || pin > 39) return false;
+  device.pin = static_cast<uint8_t>(pin);
+
+  JsonObjectConst config = json["config"].as<JsonObjectConst>();
+  if (isOutput(device)) {
+    device.activeLow = config["active_low"] | false;
+    if (!outputPinAllowed(device.pin)) {
+      Serial.printf("GPIO %u recusado para o rele %s.\n", device.pin, device.name.c_str());
+      return false;
+    }
+  } else if (isPresenceInput(device)) {
+    device.activeHigh = config["active_high"] | true;
+    device.debounceMs = config["debounce_ms"] | 80U;
+    device.holdMs = config["hold_ms"] | 0U;
+    if (device.debounceMs > MAX_PRESENCE_TIMING_MS)
+      device.debounceMs = MAX_PRESENCE_TIMING_MS;
+    if (device.holdMs > MAX_PRESENCE_TIMING_MS)
+      device.holdMs = MAX_PRESENCE_TIMING_MS;
+    if (!inputPinAllowed(device.pin)) {
+      Serial.printf("GPIO %u recusado para o sensor %s.\n", device.pin, device.name.c_str());
+      return false;
+    }
+  } else {
+    Serial.printf("Dispositivo ignorado (tipo/direcao nao suportados): %s.\n",
+                  device.name.c_str());
+    return false;
+  }
+  return true;
+}
+
+static void initializeDevice(Device &device) {
+  if (isOutput(device)) {
+    // Prepara o nivel inativo antes de habilitar a saida para evitar pulso na partida.
+    digitalWrite(device.pin, device.activeLow ? HIGH : LOW);
+    pinMode(device.pin, OUTPUT);
+    writeRelay(device, false);
+  } else {
+    pinMode(device.pin, INPUT);
+    device.hasRawState = false;
+  }
   device.configured = true;
-  return device;
+  device.appliedStateValid = false;
+  device.hasReportedState = false;
 }
 
 static void synchronizeDevices(JsonArrayConst deviceList) {
-  for (auto &device : devices) device.seenInLastSync = false;
-  for (auto &bus : temperatureBuses) bus->nextIndex = 0;
+  for (Device &device : devices) device.seen = false;
 
   for (JsonObjectConst item : deviceList) {
-    Device incoming = readDevice(item);
-    if (!incoming.key.length() || !incoming.configured) continue;
+    Device incoming;
+    if (!readDevice(item, incoming)) continue;
 
     Device *existing = nullptr;
-    for (auto &device : devices) {
-      if (device.key == incoming.key) {
+    for (Device &device : devices) {
+      if (device.id == incoming.id) {
         existing = &device;
         break;
       }
@@ -426,247 +395,190 @@ static void synchronizeDevices(JsonArrayConst deviceList) {
 
     if (!existing) {
       devices.push_back(incoming);
-      configureDevice(devices.back());
-      devices.back().seenInLastSync = true;
-      if (devices.back().type == "TEMPERATURE") {
-        for (auto &bus : temperatureBuses) {
-          if (bus->pin == devices.back().pin) {
-            devices.back().temperatureIndex = bus->nextIndex++;
-          }
-        }
-      }
+      Device &added = devices.back();
+      initializeDevice(added);
+      added.seen = true;
+      Serial.printf("Configurado: %s (%s, GPIO %u).\n", added.name.c_str(),
+                    added.type.c_str(), added.pin);
       continue;
     }
 
-    const Device previous = *existing;
-    const bool mustConfigure = !existing->initialized ||
-        existing->pin != incoming.pin || existing->type != incoming.type ||
-        existing->direction != incoming.direction || existing->control != incoming.control;
-    incoming.initialized = existing->initialized;
-    incoming.pwmBits = existing->pwmBits;
-    incoming.pwmFrequency = existing->pwmFrequency;
-    incoming.seenInLastSync = true;
-    incoming.hasRawState = existing->hasRawState;
-    incoming.rawState = existing->rawState;
-    incoming.stableState = existing->stableState;
-    incoming.rawChangedAt = existing->rawChangedAt;
-    incoming.holdUntil = existing->holdUntil;
-    incoming.hasReportedState = existing->hasReportedState;
-    incoming.lastReportedState = existing->lastReportedState;
-    incoming.nextReportAt = existing->nextReportAt;
-    incoming.appliedStateValid = existing->appliedStateValid;
-    incoming.appliedState = existing->appliedState;
-    *existing = incoming;
-    if (mustConfigure) {
-      Device oldDevice = previous;
-      releaseDevice(oldDevice);
-      existing->initialized = false;
-      existing->pwmBits = 0;
-      existing->pwmFrequency = 0;
-      configureDevice(*existing);
+    const bool changed = existing->pin != incoming.pin ||
+                         existing->type != incoming.type ||
+                         existing->direction != incoming.direction ||
+                         existing->activeLow != incoming.activeLow ||
+                         existing->activeHigh != incoming.activeHigh ||
+                         existing->debounceMs != incoming.debounceMs ||
+                         existing->holdMs != incoming.holdMs;
+    if (changed) {
+      releaseDevice(*existing);
+      const bool wasReported = existing->hasReportedState;
+      const float lastReported = existing->lastReportedState;
+      *existing = incoming;
+      initializeDevice(*existing);
+      existing->hasReportedState = wasReported;
+      existing->lastReportedState = lastReported;
+    } else {
+      existing->name = incoming.name;
     }
-    if (existing->type == "TEMPERATURE") {
-      for (auto &bus : temperatureBuses) {
-        if (bus->pin == existing->pin) existing->temperatureIndex = bus->nextIndex++;
-      }
-    }
+    existing->seen = true;
   }
 
-  for (size_t i = 0; i < devices.size();) {
-    Device &device = devices[i];
-    if (device.seenInLastSync) {
-      ++i;
+  for (size_t index = 0; index < devices.size();) {
+    if (devices[index].seen) {
+      ++index;
       continue;
     }
-    if (isOutput(device)) {
-      if (device.control == "DIGITAL") {
-        digitalWrite(device.pin, device.inverted ? HIGH : LOW);
-        pinMode(device.pin, INPUT);
-      } else {
-        stopPwm(device);
-        pinMode(device.pin, INPUT);
-      }
-    }
-    devices.erase(devices.begin() + i);
+    Serial.printf("Dispositivo removido da sala: %s.\n", devices[index].name.c_str());
+    releaseDevice(devices[index]);
+    devices.erase(devices.begin() + index);
   }
 }
 
 static bool reportState(Device &device, float value) {
-  if (!deviceToken.length() || WiFi.status() != WL_CONNECTED) return false;
+  if (!deviceToken.length() || WiFi.status() != WL_CONNECTED) {
+    device.nextReportAt = millis() + REPORT_RETRY_MS;
+    return false;
+  }
+
+  const int deviceId = device.id;
   JsonDocument payload;
-  payload["current_state"] = value;
+  payload["value"] = value;
   String body;
   serializeJson(payload, body);
 
   String response;
-  const String path = "/device/sensors/" + device.key + "/state";
+  const String path = "/devices/" + String(deviceId) + "/state";
   int status = requestApi("POST", path, body, deviceToken, response);
   if (status == HTTP_CODE_UNAUTHORIZED) {
     deviceToken = "";
-    if (performHandshake()) {
+    if (performHandshake())
       status = requestApi("POST", path, body, deviceToken, response);
-    }
   }
 
   if (status >= 200 && status < 300) {
     device.lastReportedState = value;
     device.hasReportedState = true;
     device.nextReportAt = millis() + REPORT_RETRY_MS;
+    Serial.printf("Estado enviado: %s = %.2f\n", device.name.c_str(), value);
     return true;
   }
-  Serial.printf("Leitura de %s não enviada (HTTP %d).\n", device.key.c_str(), status);
+  Serial.printf("Falha ao enviar estado de %s (HTTP %d).\n",
+                device.name.c_str(), status);
   device.nextReportAt = millis() + REPORT_RETRY_MS;
   return false;
 }
 
-static bool ensurePwm(Device &device, uint32_t frequency, uint8_t bits) {
-  if (device.pwmBits == bits && device.pwmFrequency == frequency) return true;
-  stopPwm(device);
-  if (!ledcAttach(device.pin, frequency, bits)) {
-    Serial.printf("PWM não disponível no GPIO %u (%s).\n", device.pin, device.key.c_str());
-    return false;
-  }
-  device.pwmBits = bits;
-  device.pwmFrequency = frequency;
-  return true;
-}
-
-static void applyOutput(Device &device, float requestedState) {
-  if (!device.configured || !isOutput(device) || !isfinite(requestedState)) return;
-  float state = constrain(requestedState, 0.0f, 100.0f);
-
-  if (device.control == "DIGITAL") {
-    state = state >= 0.5f ? 1.0f : 0.0f;
-    const bool active = state > 0;
-    const uint8_t level = (active != device.inverted) ? HIGH : LOW;
-    digitalWrite(device.pin, level);
-  } else if (device.type == "SERVO") {
-    if (state == 0) {
-      // Zero is the inactive state; stop sending pulses instead of mapping it
-      // below min_percent, which could drive the servo outside its safe range.
-      stopPwm(device);
-      pinMode(device.pin, INPUT);
-    } else {
-      const float percent = constrain(state, device.minPercent, device.maxPercent);
-      const float normalized = (percent - device.minPercent) /
-                               max(1.0f, device.maxPercent - device.minPercent);
-      const float angle = constrain(
-          device.minAngle + normalized * (device.maxAngle - device.minAngle),
-          device.minAngle, device.maxAngle);
-      const uint32_t pulseUs = static_cast<uint32_t>(500 + (angle / 180.0f) * 2000.0f);
-      if (!ensurePwm(device, 50, SERVO_RESOLUTION_BITS)) return;
-      const uint32_t maxDuty = (1UL << SERVO_RESOLUTION_BITS) - 1;
-      const uint32_t duty = (pulseUs * maxDuty) / 20000UL;
-      ledcWrite(device.pin, duty);
-    }
-  } else if (device.type == "PWM") {
-    const float percent = state == 0 ? 0 : constrain(state, device.minPercent, device.maxPercent);
-    float electricalPercent = device.inverted ? 100.0f - percent : percent;
-    electricalPercent = constrain(electricalPercent, 0.0f, 100.0f);
-    if (!ensurePwm(device, device.frequencyHz, PWM_RESOLUTION_BITS)) return;
-    const uint32_t maxDuty = (1UL << PWM_RESOLUTION_BITS) - 1;
-    ledcWrite(device.pin, static_cast<uint32_t>(electricalPercent * maxDuty / 100.0f));
-  } else {
-    Serial.printf("Saída %s: tipo %s não implementado.\n",
-                  device.key.c_str(), device.type.c_str());
-    return;
-  }
-
-  if (!device.appliedStateValid || fabsf(state - device.appliedState) >= 0.01f) {
-    device.appliedState = state;
-    device.appliedStateValid = true;
-    reportState(device, state);
-  }
-}
-
 static bool fetchCommands() {
   if (!deviceToken.length() && !performHandshake()) return false;
-
   String response;
-  int status = requestApi("GET", "/device/commands", "", deviceToken, response);
+  int status = requestApi("GET", "/commands", "", deviceToken, response);
   if (status == HTTP_CODE_UNAUTHORIZED) {
     deviceToken = "";
     if (!performHandshake()) return false;
-    status = requestApi("GET", "/device/commands", "", deviceToken, response);
+    status = requestApi("GET", "/commands", "", deviceToken, response);
   }
   if (status != HTTP_CODE_OK) {
-    Serial.printf("Consulta de comandos falhou (HTTP %d).\n", status);
+    Serial.printf("Consulta de dispositivos falhou (HTTP %d).\n", status);
     return false;
   }
 
   JsonDocument json;
   if (deserializeJson(json, response)) {
-    Serial.println("Comandos: resposta JSON inválida.");
+    Serial.println("Resposta de comandos retornou JSON invalido.");
     return false;
   }
   synchronizeDevices(json["devices"].as<JsonArrayConst>());
 
-  JsonArrayConst commands = json["commands"].as<JsonArrayConst>();
-  for (JsonObjectConst command : commands) {
-    const String key = command["device_key"] | "";
-    const float state = command["current_state"] | 0.0f;
-    for (auto &device : devices) {
-      if (device.key == key) {
-        applyOutput(device, state);
+  for (Device &device : devices) {
+    if (!device.configured || !isOutput(device)) continue;
+    float state = 0.0f;
+    for (JsonObjectConst item : json["devices"].as<JsonArrayConst>()) {
+      if ((item["id"] | 0) == device.id) {
+        JsonVariantConst desired = item["desired_state"];
+        JsonVariantConst current = item["current_state"];
+        if (!desired.isNull()) state = desired.as<float>();
+        else if (!current.isNull()) state = current.as<float>();
         break;
       }
+    }
+
+    const bool active = state >= 0.5f;
+    if (!device.appliedStateValid || (device.appliedState >= 0.5f) != active) {
+      writeRelay(device, active);
+      device.appliedState = active ? 1.0f : 0.0f;
+      device.appliedStateValid = true;
+      Serial.printf("Rele %s: %s\n", device.name.c_str(), active ? "ligado" : "desligado");
+    }
+    if ((!device.hasReportedState || device.lastReportedState != device.appliedState) &&
+        millis() >= device.nextReportAt) {
+      reportState(device, device.appliedState);
     }
   }
   return true;
 }
 
-static void readDigitalInputs() {
+static void samplePresenceSensors() {
   const uint32_t now = millis();
-  for (auto &device : devices) {
-    if (!device.configured || !isDigitalInput(device)) continue;
+  for (Device &device : devices) {
+    if (!device.configured || !isPresenceInput(device)) continue;
 
     const bool pinHigh = digitalRead(device.pin) == HIGH;
-    const bool activeLevel = isContactInput(device) ? !pinHigh : pinHigh;
-    const bool active = activeLevel != device.inverted;
-    if (!device.hasRawState || active != device.rawState) {
-      device.rawState = active;
+    const bool rawState = pinHigh == device.activeHigh;
+    if (!device.hasRawState) {
+      device.rawState = rawState;
+      device.debouncedState = rawState;
+      device.stableState = rawState;
+      device.absencePending = false;
       device.rawChangedAt = now;
       device.hasRawState = true;
-      continue;
-    }
-
-    if (device.stableState != device.rawState &&
-        now - device.rawChangedAt >= device.debounceMs) {
-      device.stableState = device.rawState;
-      if (device.type == "PIR_SENSOR" && device.stableState && device.holdMs) {
-        device.holdUntil = now + device.holdMs;
+    } else if (rawState != device.rawState) {
+      device.rawState = rawState;
+      device.rawChangedAt = now;
+    } else if (device.debouncedState != device.rawState &&
+               now - device.rawChangedAt >= device.debounceMs) {
+      device.debouncedState = device.rawState;
+      if (device.debouncedState) {
+        device.absencePending = false;
+        if (!device.stableState) {
+          device.stableState = true;
+          Serial.printf("Presenca %s: detectada\n", device.name.c_str());
+        }
+      } else if (device.stableState && device.holdMs > 0) {
+        device.absencePending = true;
+        device.absenceStartedAt = now;
+      } else if (device.stableState) {
+        device.stableState = false;
+        Serial.printf("Presenca %s: ausente\n", device.name.c_str());
       }
     }
 
-    bool reportedState = device.stableState;
-    if (device.type == "PIR_SENSOR" && !reportedState && now < device.holdUntil) {
-      reportedState = true;
+    if (device.absencePending &&
+        now - device.absenceStartedAt >= device.holdMs) {
+      device.absencePending = false;
+      device.stableState = false;
+      Serial.printf("Presenca %s: ausente\n", device.name.c_str());
     }
-    const float value = reportedState ? 1.0f : 0.0f;
-    if ((!device.hasReportedState || value != device.lastReportedState) &&
+
+    const float value = device.stableState ? 1.0f : 0.0f;
+    if ((!device.hasReportedState || device.lastReportedState != value) &&
         now >= device.nextReportAt) {
       reportState(device, value);
     }
   }
 }
 
-static void readTemperatureSensors() {
-  const uint32_t now = millis();
-  for (auto &bus : temperatureBuses) {
-    if (now - bus->lastReadAt < TEMPERATURE_POLL_MS) continue;
-
-    for (auto &device : devices) {
-      if (!device.configured || device.type != "TEMPERATURE" || device.pin != bus->pin) continue;
-      const float value = bus->sensor->getTempCByIndex(device.temperatureIndex);
-      if (value == DEVICE_DISCONNECTED_C || value < -40.0f || value > 125.0f) continue;
-      if ((!device.hasReportedState || fabsf(value - device.lastReportedState) >= 0.1f) &&
-          now >= device.nextReportAt) {
-        reportState(device, value);
-      }
-    }
-    bus->sensor->requestTemperatures();
-    bus->lastReadAt = now;
-  }
+static void checkSerialConfiguration() {
+#if !ZEPHORA_STATIC_CONFIG
+  if (!Serial.available()) return;
+  const char command = static_cast<char>(Serial.read());
+  if (command != 'c' && command != 'C') return;
+  while (Serial.available()) Serial.read();
+  deviceToken = "";
+  nextHandshakeAttemptAt = 0;
+  handshakeRetryDelayMs = HANDSHAKE_RETRY_INITIAL_MS;
+  configureFromSerial(false);
+#endif
 }
 
 void setup() {
@@ -674,25 +586,21 @@ void setup() {
   delay(250);
   WiFi.mode(WIFI_STA);
   loadConfiguration();
-  Serial.printf("Zephora ESP32 iniciado. MAC Wi-Fi: %s\n", deviceMac().c_str());
-  Serial.printf("Para Wokwi, cadastre a sala com MAC %s.\n", WOKWI_DEFAULT_MAC);
+  Serial.printf("Zephora ESP32 iniciado. MAC usado no handshake: %s\n", deviceMac().c_str());
+  Serial.println("Esperando Wi-Fi e sincronizando os dispositivos desta sala.");
   connectWifi();
 }
 
 void loop() {
+  checkSerialConfiguration();
   connectWifi();
-  if (WiFi.status() != WL_CONNECTED) {
-    readDigitalInputs();
-    delay(20);
-    return;
+  if (WiFi.status() == WL_CONNECTED) {
+    const uint32_t now = millis();
+    if (now - lastCommandPollAt >= COMMAND_POLL_MS) {
+      lastCommandPollAt = now;
+      fetchCommands();
+    }
   }
-
-  const uint32_t now = millis();
-  if (now - lastCommandPollAt >= COMMAND_POLL_MS) {
-    lastCommandPollAt = now;
-    fetchCommands();
-  }
-  readDigitalInputs();
-  readTemperatureSensors();
+  samplePresenceSensors();
   delay(10);
 }

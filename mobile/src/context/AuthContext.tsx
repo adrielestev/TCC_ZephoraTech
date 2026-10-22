@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { router } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/auth";
-import { TOKEN_KEY } from "../api/client";
+import { setUnauthorizedHandler, TOKEN_KEY } from "../api/client";
 import { User } from "../types";
 import { deleteToken, getToken, setToken } from "../utils/token-storage";
 
@@ -17,6 +18,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +30,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
     }
   }
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      queryClient.clear();
+      setUser(null);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [queryClient]);
 
   useEffect(() => {
     (async () => {
@@ -45,19 +55,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signIn(email: string, password: string) {
     const { data } = await authApi.login({ email, password });
     await setToken(TOKEN_KEY, data.token);
-    await refreshMe();
+    setUser(data.user);
     router.replace("/(app)");
   }
 
   async function signOut() {
     await deleteToken(TOKEN_KEY);
+    queryClient.clear();
     setUser(null);
   }
 
   const value: AuthContextValue = {
     user,
     isLoading,
-    isAdmin: user?.user_level === "ADMIN",
+    isAdmin: user?.user_level === "admin",
     signIn,
     signOut,
     refreshMe,

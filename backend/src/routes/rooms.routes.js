@@ -1,70 +1,20 @@
 import { Router } from "express";
-import * as roomsController from "../controllers/rooms.controller.js";
-import { authenticate, requireAdmin } from "../middlewares/auth.js";
+import * as controller from "../controllers/rooms.controller.js";
+import { authenticateUser, requireAdmin } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
 import { idParamSchema } from "../schemas/common.schemas.js";
 import { roomSchema, updateRoomSchema } from "../schemas/rooms.schemas.js";
-import { validate } from "../utils/validators.js";
-import {
-  uploadImage,
-  validateUploadedImage,
-} from "../middlewares/image-upload.js";
-import { z } from "zod";
-
-const photoParamsSchema = idParamSchema.extend({
-  slot: z.coerce.number().int().min(1).max(3),
-});
+import { asyncHandler } from "../utils/async-handler.js";
+import { photoSlotParamsSchema } from "../schemas/media.schemas.js";
+import { uploadImage, validateImageContent } from "../middlewares/image-upload.middleware.js";
+import { imageUploadLimiter } from "../middlewares/rate-limit.middleware.js";
 
 export const roomsRouter = Router();
-
-roomsRouter.get("/", authenticate, roomsController.listRooms);
-roomsRouter.post(
-  "/",
-  authenticate,
-  requireAdmin,
-  validate(roomSchema),
-  roomsController.createRoom,
-);
-roomsRouter.get(
-  "/:id",
-  authenticate,
-  validate(idParamSchema, "params"),
-  roomsController.getRoom,
-);
-roomsRouter.patch(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  validate(idParamSchema, "params"),
-  validate(updateRoomSchema),
-  roomsController.updateRoom,
-);
-roomsRouter.post(
-  "/:id/photos/:slot",
-  authenticate,
-  requireAdmin,
-  validate(photoParamsSchema, "params"),
-  uploadImage,
-  validateUploadedImage,
-  roomsController.updateRoomPhoto,
-);
-roomsRouter.delete(
-  "/:id/photos/:slot",
-  authenticate,
-  requireAdmin,
-  validate(photoParamsSchema, "params"),
-  roomsController.removeRoomPhoto,
-);
-roomsRouter.delete(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  validate(idParamSchema, "params"),
-  roomsController.deleteRoom,
-);
-roomsRouter.post(
-  "/:id/device-credential",
-  authenticate,
-  requireAdmin,
-  validate(idParamSchema, "params"),
-  roomsController.generateDeviceCredential,
-);
+roomsRouter.get("/", authenticateUser, asyncHandler(controller.list));
+roomsRouter.post("/", authenticateUser, requireAdmin, validate(roomSchema), asyncHandler(controller.create));
+roomsRouter.get("/:id", authenticateUser, validate(idParamSchema, "params"), asyncHandler(controller.get));
+roomsRouter.patch("/:id", authenticateUser, requireAdmin, validate(idParamSchema, "params"), validate(updateRoomSchema), asyncHandler(controller.update));
+roomsRouter.delete("/:id", authenticateUser, requireAdmin, validate(idParamSchema, "params"), asyncHandler(controller.remove));
+roomsRouter.post("/:id/device-credential", authenticateUser, requireAdmin, validate(idParamSchema, "params"), asyncHandler(controller.rotateCredential));
+roomsRouter.post("/:id/photos/:slot", authenticateUser, requireAdmin, imageUploadLimiter, validate(photoSlotParamsSchema, "params"), uploadImage, validateImageContent, asyncHandler(controller.uploadPhoto));
+roomsRouter.delete("/:id/photos/:slot", authenticateUser, requireAdmin, validate(photoSlotParamsSchema, "params"), asyncHandler(controller.deletePhoto));

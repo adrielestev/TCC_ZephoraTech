@@ -1,58 +1,34 @@
-import cors from "cors";
 import express from "express";
+import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
-import path from "node:path";
 import { env } from "./config/env.js";
-import { authRouter } from "./routes/auth.routes.js";
-import { collaboratorsRouter } from "./routes/collaborators.routes.js";
-import { deviceRouter } from "./routes/device.routes.js";
-import { roomsRouter } from "./routes/rooms.routes.js";
-import { sensorsRouter } from "./routes/sensors.routes.js";
-import { usersRouter } from "./routes/users.routes.js";
-import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
-import { authorizeSignedMediaRequest } from "./services/file-storage.service.js";
+import { apiRouter } from "./routes/index.js";
+import { errorHandler, notFound } from "./middlewares/error.middleware.js";
 
 export const app = express();
-
+app.disable("x-powered-by");
+app.use(helmet());
 app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
+  cors((req, callback) => {
+    const origin = req.get("Origin");
+    if (!origin) return callback(null, { origin: false, credentials: false });
+
+    let allowed = env.corsOrigins.includes(origin);
+    if (!allowed && env.NODE_ENV !== "production") {
+      try {
+        const hostname = new URL(origin).hostname;
+        const isLoopback = hostname === "localhost" || hostname === "127.0.0.1";
+        allowed = isLoopback || hostname === req.hostname;
+      } catch {
+        allowed = false;
+      }
+    }
+
+    callback(null, { origin: allowed ? origin : false, credentials: false });
   }),
 );
-app.use(cors());
-app.use(express.json({ limit: "1mb" }));
-app.use(
-  morgan((tokens, req, res) =>
-    [
-      tokens.method(req, res),
-      req.path,
-      tokens.status(req, res),
-      tokens.res(req, res, "content-length"),
-      `- ${tokens["response-time"](req, res)} ms`,
-    ].join(" "),
-  ),
-);
-app.use(
-  "/uploads",
-  authorizeSignedMediaRequest,
-  express.static(path.resolve(process.cwd(), env.UPLOAD_DIR), {
-    setHeaders(res) {
-      res.setHeader("Cache-Control", "private, max-age=300");
-    },
-  }),
-);
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-app.use("/auth", authRouter);
-app.use("/users", usersRouter);
-app.use("/rooms/:roomId/collaborators", collaboratorsRouter);
-app.use("/rooms", roomsRouter);
-app.use("/sensors", sensorsRouter);
-app.use("/device", deviceRouter);
-
-app.use(notFoundHandler);
+app.use(express.json({ limit: "1mb", strict: true }));
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.use("/api", apiRouter);
+app.use(notFound);
 app.use(errorHandler);

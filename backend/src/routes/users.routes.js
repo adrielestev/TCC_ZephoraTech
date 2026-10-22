@@ -1,46 +1,17 @@
 import { Router } from "express";
-import * as usersController from "../controllers/users.controller.js";
-import { authenticate, requireAdmin } from "../middlewares/auth.js";
+import * as controller from "../controllers/users.controller.js";
+import { authenticateUser, requireAdmin } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
 import { idParamSchema } from "../schemas/common.schemas.js";
-import {
-  updateMeSchema,
-  updateUserLevelSchema,
-  listUsersQuerySchema,
-} from "../schemas/users.schemas.js";
-import { validate } from "../utils/validators.js";
-import {
-  uploadImage,
-  validateUploadedImage,
-} from "../middlewares/image-upload.js";
+import { updateProfileSchema, updateRoleSchema } from "../schemas/users.schemas.js";
+import { uploadImage, validateImageContent } from "../middlewares/image-upload.middleware.js";
+import { imageUploadLimiter } from "../middlewares/rate-limit.middleware.js";
+import { asyncHandler } from "../utils/async-handler.js";
 
 export const usersRouter = Router();
-
-usersRouter.use(authenticate);
-
-usersRouter.patch("/me", validate(updateMeSchema), usersController.updateMe);
-usersRouter.post(
-  "/me/photo",
-  uploadImage,
-  validateUploadedImage,
-  usersController.updateMyPhoto,
-);
-usersRouter.delete("/me/photo", usersController.removeMyPhoto);
-usersRouter.get(
-  "/",
-  requireAdmin,
-  validate(listUsersQuerySchema, "query"),
-  usersController.listUsers,
-);
-usersRouter.patch(
-  "/:id/level",
-  requireAdmin,
-  validate(idParamSchema, "params"),
-  validate(updateUserLevelSchema),
-  usersController.updateUserLevel,
-);
-usersRouter.delete(
-  "/:id",
-  requireAdmin,
-  validate(idParamSchema, "params"),
-  usersController.deleteUser,
-);
+usersRouter.use(authenticateUser);
+usersRouter.post("/me/photo", imageUploadLimiter, uploadImage, validateImageContent, asyncHandler(controller.uploadPhoto));
+usersRouter.delete("/me/photo", asyncHandler(controller.deletePhoto));
+usersRouter.patch("/me", validate(updateProfileSchema), asyncHandler(controller.updateMe));
+usersRouter.get("/", requireAdmin, asyncHandler(controller.list));
+usersRouter.patch("/:id/role", requireAdmin, validate(idParamSchema, "params"), validate(updateRoleSchema), asyncHandler(controller.updateRole));

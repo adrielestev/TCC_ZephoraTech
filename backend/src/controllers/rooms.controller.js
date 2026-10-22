@@ -1,56 +1,58 @@
-import * as roomsService from "../services/rooms.service.js";
+import * as rooms from "../services/rooms.service.js";
+import * as devices from "../services/devices.service.js";
+import { roomView } from "../serializers/room.serializer.js";
+import { deviceOperatorView, deviceView } from "../serializers/device.serializer.js";
+import * as storage from "../services/file-storage.service.js";
 
-export async function listRooms(req, res) {
-  const rooms = await roomsService.listRooms(req.user);
-  res.json({ rooms });
+async function removePreviousImage(filename) {
+  if (!filename) return;
+  try { await storage.deleteImage(filename); } catch (error) { console.error("Falha ao remover imagem substituída", error); }
 }
 
-export async function createRoom(req, res) {
-  const room = await roomsService.createRoom(req.body);
-  res.status(201).json({ room });
+export async function list(req, res) {
+  res.json({ rooms: (await rooms.listRooms(req.user)).map((room) => roomView(room, req.user.user_level === "admin")) });
+}
+export async function create(req, res) {
+  res.status(201).json({ room: roomView(await rooms.createRoom(req.body), true) });
+}
+export async function get(req, res) {
+  const result = await rooms.getRoom(req.user, req.params.id);
+  const admin = req.user.user_level === "admin";
+  const roomDevices = await devices.listForRoom(req.params.id);
+  res.json({ room: roomView(result.room, admin), devices: roomDevices.map(admin ? deviceView : deviceOperatorView) });
+}
+export async function update(req, res) {
+  res.json({ room: roomView(await rooms.updateRoom(req.params.id, req.body), true) });
+}
+export async function remove(req, res) {
+  const { room } = await rooms.getRoom(req.user, req.params.id);
+  await rooms.deleteRoom(req.params.id);
+  await Promise.all([room.room_photo_1, room.room_photo_2, room.room_photo_3].map(removePreviousImage));
+  res.status(204).end();
+}
+export async function rotateCredential(req, res) {
+  res.json({ ...await rooms.rotateDeviceCredential(req.params.id), message: "Guarde a credencial; ela será exibida somente nesta resposta." });
 }
 
-export async function getRoom(req, res) {
-  const data = await roomsService.getRoom(req.user, req.params.id);
-  res.json(data);
+export async function uploadPhoto(req, res) {
+  const room = await rooms.getRoom(req.user, req.params.id);
+  const column = `room_photo_${req.params.slot}`;
+  const filename = await storage.saveImage(req.validatedImage);
+  let updated;
+  try {
+    updated = await rooms.updateRoom(room.room.id, { [column]: filename });
+  } catch (error) {
+    await storage.deleteImage(filename);
+    throw error;
+  }
+  await removePreviousImage(room.room[column]);
+  res.json({ room: roomView(updated, true) });
 }
 
-export async function updateRoom(req, res) {
-  const room = await roomsService.updateRoom(req.params.id, req.body);
-  res.json({ room });
-}
-
-export async function updateRoomPhoto(req, res) {
-  const room = await roomsService.updateRoomPhoto(
-    req.params.id,
-    Number(req.params.slot),
-    req.file,
-  );
-  res.json({ room });
-}
-
-export async function removeRoomPhoto(req, res) {
-  await roomsService.removeRoomPhoto(req.params.id, Number(req.params.slot));
-  res.status(204).send();
-}
-
-export async function deleteRoom(req, res) {
-  await roomsService.deleteRoom(req.params.id);
-  res.status(204).send();
-}
-
-export async function generateDeviceCredential(req, res) {
-  const credential = await roomsService.generateDeviceCredential(req.params.id);
-  res.set("Cache-Control", "no-store");
-  res.json({ credential });
-}
-
-export async function handshake(req, res) {
-  const data = await roomsService.handshake(req.deviceRoom);
-  res.json(data);
-}
-
-export async function listCommands(req, res) {
-  const data = await roomsService.listCommands(req.deviceRoom);
-  res.json(data);
+export async function deletePhoto(req, res) {
+  const room = await rooms.getRoom(req.user, req.params.id);
+  const column = `room_photo_${req.params.slot}`;
+  const updated = await rooms.updateRoom(room.room.id, { [column]: null });
+  await removePreviousImage(room.room[column]);
+  res.json({ room: roomView(updated, true) });
 }

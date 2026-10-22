@@ -1,3 +1,1 @@
 ArduinoJson@7.4.2
-OneWire@2.3.8
-DallasTemperature@4.0.4

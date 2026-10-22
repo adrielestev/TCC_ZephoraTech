@@ -1,98 +1,49 @@
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
 import path from "node:path";
-import { env } from "../config/env.js";
-import { SIGNED_URL_LIFETIME_SECONDS } from "../config/constants.js";
+import { fileURLToPath } from "node:url";
+import { HttpError } from "../utils/http-error.js";
 
-const uploadRoot = path.resolve(process.cwd(), env.UPLOAD_DIR);
+const uploadDirectory = fileURLToPath(new URL("../../uploads/", import.meta.url));
+const validStoredName = /^[a-f0-9-]{36}\.(jpg|png|webp)$/;
+const extensionByMime = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
-export function createSignedMediaUrl(imageUrl) {
-  if (!imageUrl) return imageUrl;
+function resolveStoredPath(filename) {
+  if (!validStoredName.test(filename)) throw new HttpError(404, "Imagem não encontrada");
+  const fullPath = path.resolve(uploadDirectory, filename);
+  if (path.dirname(fullPath) !== path.resolve(uploadDirectory)) throw new HttpError(404, "Imagem não encontrada");
+  return fullPath;
+}
 
-  let parsedUrl;
+export async function saveImage(image) {
+  const extension = extensionByMime[image.mime];
+  if (!extension) throw new HttpError(415, "Tipo de imagem não permitido");
+  await fs.mkdir(uploadDirectory, { recursive: true, mode: 0o700 });
+  const filename = `${crypto.randomUUID()}.${extension}`;
+  const fullPath = resolveStoredPath(filename);
+  await fs.writeFile(fullPath, image.buffer, { flag: "wx", mode: 0o600 });
+  return filename;
+}
+
+export async function deleteImage(filename) {
+  if (!filename || !validStoredName.test(filename)) return;
+  const fullPath = resolveStoredPath(filename);
   try {
-    parsedUrl = new URL(imageUrl);
-  } catch {
-    return imageUrl;
-  }
-
-  if (parsedUrl.origin !== new URL(env.APP_URL).origin) return imageUrl;
-  if (!parsedUrl.pathname.startsWith("/uploads/")) return imageUrl;
-
-  const expiresAt = Math.floor(Date.now() / 1000) + SIGNED_URL_LIFETIME_SECONDS;
-  const signature = signMediaPath(parsedUrl.pathname, expiresAt);
-  parsedUrl.searchParams.set("expires", String(expiresAt));
-  parsedUrl.searchParams.set("signature", signature);
-  return parsedUrl.toString();
-}
-
-export function authorizeSignedMediaRequest(req, res, next) {
-  const pathname = `${req.baseUrl}${req.path}`;
-  const expiresAt = Number(req.query.expires);
-  const signature = req.query.signature;
-  const now = Math.floor(Date.now() / 1000);
-
-  if (
-    !Number.isInteger(expiresAt) ||
-    expiresAt <= now ||
-    expiresAt > now + SIGNED_URL_LIFETIME_SECONDS ||
-    typeof signature !== "string"
-  ) {
-    return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });
-  }
-
-  if (!/^[a-f0-9]+$/i.test(signature)) {
-    return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });
-  }
-
-  const expected = Buffer.from(signMediaPath(pathname, expiresAt), "hex");
-  const received = Buffer.from(signature, "hex");
-  if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
-    return res.status(403).json({ error: "Acesso à imagem expirado ou invalido." });
-  }
-
-  return next();
-}
-
-function signMediaPath(pathname, expiresAt) {
-  return createHmac("sha256", env.JWT_SECRET)
-    .update(`${pathname}:${expiresAt}`)
-    .digest("hex");
-}
-
-export async function saveImage(file, category) {
-  const directory = path.join(uploadRoot, category);
-  await mkdir(directory, { recursive: true });
-
-  const filename = `${randomUUID()}.${file.extension}`;
-  await writeFile(path.join(directory, filename), file.buffer, { flag: "wx" });
-
-  return `${env.APP_URL}/uploads/${category}/${filename}`;
-}
-
-export async function removeImage(imageUrl) {
-  if (!imageUrl) return;
-
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(imageUrl);
-  } catch {
-    return;
-  }
-
-  if (parsedUrl.origin !== new URL(env.APP_URL).origin) return;
-
-  const relativePath = decodeURIComponent(parsedUrl.pathname).replace(
-    /^\/uploads\//,
-    "",
-  );
-  const filePath = path.resolve(uploadRoot, relativePath);
-
-  if (!filePath.startsWith(`${uploadRoot}${path.sep}`)) return;
-
-  try {
-    await unlink(filePath);
+    await fs.unlink(fullPath);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
+  }
+}
+
+export async function readImage(filename) {
+  const fullPath = resolveStoredPath(filename);
+  try {
+    const buffer = await fs.readFile(fullPath);
+    const extension = path.extname(filename).slice(1);
+    const mime = extension === "jpg" ? "image/jpeg" : `image/${extension}`;
+    return { buffer, mime };
+  } catch (error) {
+    if (error.code === "ENOENT") throw new HttpError(404, "Imagem não encontrada");
+    throw error;
   }
 }

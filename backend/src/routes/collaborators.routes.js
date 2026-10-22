@@ -1,26 +1,13 @@
 import { Router } from "express";
-import * as collaboratorsController from "../controllers/collaborators.controller.js";
-import { authenticate, requireAdmin } from "../middlewares/auth.js";
-import { idParamSchema, roomIdParamSchema } from "../schemas/common.schemas.js";
-import { collaboratorSchema } from "../schemas/collaborators.schemas.js";
-import { validate } from "../utils/validators.js";
+import * as controller from "../controllers/collaborators.controller.js";
+import { authenticateUser, requireAdmin } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { idParamSchema } from "../schemas/common.schemas.js";
+import { addCollaboratorSchema, collaboratorParamsSchema } from "../schemas/collaborators.schemas.js";
+import { asyncHandler } from "../utils/async-handler.js";
 
 export const collaboratorsRouter = Router({ mergeParams: true });
-
-collaboratorsRouter.use(
-  authenticate,
-  requireAdmin,
-  validate(roomIdParamSchema, "params"),
-);
-
-collaboratorsRouter.get("/", collaboratorsController.listCollaborators);
-collaboratorsRouter.post(
-  "/",
-  validate(collaboratorSchema),
-  collaboratorsController.createCollaborator,
-);
-collaboratorsRouter.delete(
-  "/:id",
-  validate(idParamSchema, "params"),
-  collaboratorsController.deleteCollaborator,
-);
+collaboratorsRouter.use(authenticateUser, requireAdmin);
+collaboratorsRouter.get("/", validate(idParamSchema, "params"), asyncHandler(controller.list));
+collaboratorsRouter.post("/", validate(idParamSchema, "params"), validate(addCollaboratorSchema), asyncHandler(controller.add));
+collaboratorsRouter.delete("/:collaboratorId", validate(collaboratorParamsSchema, "params"), asyncHandler(controller.remove));

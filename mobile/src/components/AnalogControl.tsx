@@ -9,6 +9,7 @@ interface AnalogControlProps {
   max?: number;
   step?: number;
   pending?: boolean;
+  disabled?: boolean;
   onChange: (value: number) => void;
 }
 
@@ -19,6 +20,7 @@ export function AnalogControl({
   max = 100,
   step = 5,
   pending = false,
+  disabled = false,
   onChange,
 }: AnalogControlProps) {
   const decrease = () => {
@@ -65,13 +67,13 @@ export function AnalogControl({
         <IconButton
           icon="remove-outline"
           label={`Reduzir ${label}`}
-          disabled={pending || value <= 0}
+          disabled={pending || disabled || value <= 0}
           onPress={decrease}
         />
         <IconButton
           icon="add-outline"
           label={`Aumentar ${label}`}
-          disabled={pending || value >= max}
+          disabled={pending || disabled || value >= max}
           onPress={increase}
         />
       </View>

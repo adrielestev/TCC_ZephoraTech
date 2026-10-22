@@ -1,4 +1,4 @@
-import axios from "axios";
+import { create } from "axios";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import type { ImagePickerAsset } from "expo-image-picker";
@@ -29,7 +29,11 @@ function detectApiBaseUrl() {
   return `http://${hostname}:3000`;
 }
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || detectApiBaseUrl();
+export const BASE_URL = (process.env.EXPO_PUBLIC_API_URL?.trim() || detectApiBaseUrl()).replace(
+  /\/$/,
+  "",
+);
+export const API_BASE_URL = `${BASE_URL}/api`;
 
 if (process.env.NODE_ENV === "production" && new URL(BASE_URL).protocol !== "https:") {
   throw new Error("A API deve usar HTTPS em builds de produção.");
@@ -37,13 +41,21 @@ if (process.env.NODE_ENV === "production" && new URL(BASE_URL).protocol !== "htt
 
 export { TOKEN_KEY };
 
-export const api = axios.create({
-  baseURL: BASE_URL,
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
+
+export const api = create({
+  baseURL: API_BASE_URL,
   timeout: API_TIMEOUT_MS,
 });
 
 export function resolveMediaUrl(url: string | null | undefined) {
   if (!url) return null;
+
+  if (url.startsWith("/")) return `${BASE_URL}${url}`;
 
   try {
     const parsedUrl = new URL(url);
@@ -71,6 +83,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await deleteToken(TOKEN_KEY);
+      unauthorizedHandler?.();
       router.replace("/(auth)/login");
     }
     return Promise.reject(error);
@@ -83,8 +96,17 @@ export async function toPhotoFormData(asset: ImagePickerAsset, fieldName = "phot
   const match = /\.(\w+)$/.exec(fileName);
   const extension = match?.[1].toLowerCase();
   const type =
-    asset.mimeType ??
-    (extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg");
+    asset.mimeType?.toLowerCase() ??
+    (extension === "png"
+      ? "image/png"
+      : extension === "webp"
+        ? "image/webp"
+        : extension === "jpg" || extension === "jpeg"
+          ? "image/jpeg"
+          : "");
+  if (!["image/jpeg", "image/png", "image/webp"].includes(type)) {
+    throw new Error("Escolha uma imagem JPEG, PNG ou WebP.");
+  }
 
   if (typeof globalThis.document !== "undefined") {
     const file = asset.file ?? (await fetch(asset.uri).then((response) => response.blob()));

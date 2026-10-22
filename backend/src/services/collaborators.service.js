@@ -1,42 +1,22 @@
-import * as collaboratorsRepository from "../repositories/collaborators.repository.js";
-import * as usersRepository from "../repositories/users.repository.js";
-import { ApiError, notFound } from "../utils/errors.js";
-import { assertRoomExists } from "./rooms.service.js";
+import { HttpError } from "../utils/http-error.js";
+import * as rooms from "../repositories/rooms.repository.js";
+import * as collaborators from "../repositories/collaborators.repository.js";
+import * as users from "../repositories/users.repository.js";
 
-export async function listCollaborators(roomId) {
-  await assertRoomExists(roomId);
-  return collaboratorsRepository.listRoomCollaborators(roomId);
+export async function list(roomId) {
+  if (!(await rooms.findRoomById(roomId))) throw new HttpError(404, "Sala não encontrada");
+  return collaborators.listForRoom(roomId);
 }
 
-export async function createCollaborator(roomId, userId, addedBy) {
-  await assertRoomExists(roomId);
-
-  const user = await usersRepository.findActiveUserById(userId);
-  if (!user) {
-    throw notFound("Usuario");
-  }
-
-  if (!user.is_email_verified) {
-    throw new ApiError(
-      400,
-      "Usuario precisa verificar o e-mail antes de colaborar.",
-    );
-  }
-
-  return collaboratorsRepository.createRoomCollaborator({
-    room_id: roomId,
-    user_id: userId,
-    added_by: addedBy,
-  });
+export async function add(roomId, userId, adminId) {
+  const [room, user] = await Promise.all([rooms.findRoomById(roomId), users.findActiveById(userId)]);
+  if (!room) throw new HttpError(404, "Sala não encontrada");
+  if (!user) throw new HttpError(404, "Usuário não encontrado");
+  if (user.user_level === "admin") throw new HttpError(400, "Administradores já acessam todas as salas");
+  const [id] = await collaborators.add(roomId, userId, adminId);
+  return collaborators.findById(id);
 }
 
-export async function deleteCollaborator(roomId, collaboratorId) {
-  const deleted = await collaboratorsRepository.deleteRoomCollaborator(
-    collaboratorId,
-    roomId,
-  );
-
-  if (!deleted) {
-    throw notFound("Colaborador");
-  }
+export async function remove(id, roomId) {
+  if (!(await collaborators.remove(id, roomId))) throw new HttpError(404, "Colaborador não encontrado");
 }

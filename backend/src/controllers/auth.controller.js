@@ -1,45 +1,46 @@
-import * as authService from "../services/auth.service.js";
-import { sanitizeUser } from "../services/users.service.js";
+import * as auth from "../services/auth.service.js";
+import * as users from "../services/users.service.js";
+import { userView } from "../serializers/user.serializer.js";
 
 export async function register(req, res) {
-  await authService.register(req.body);
-
-  res.status(202).json({
-    message: "Se o cadastro puder ser concluido, enviaremos as instrucoes por e-mail.",
-  });
+  await auth.register(req.body);
+  res
+    .status(202)
+    .json({
+      message:
+        "Se o cadastro puder ser concluído, enviaremos um código ao e-mail informado.",
+    });
 }
-
 export async function verifyEmail(req, res) {
-  const message = await authService.verifyEmail(req.body.email, req.body.code);
-  res.json({ message });
+  await auth.verifyEmail(req.body);
+  res.json({ message: "E-mail verificado" });
 }
-
 export async function resendCode(req, res) {
-  await authService.resendCode(req.body.email);
-  res.json({ message: "Se a conta puder receber um codigo, ele sera enviado." });
+  await auth.resendCode(req.body.email);
+  res
+    .status(202)
+    .json({
+      message:
+        "Se a conta puder receber um código, enviaremos ao e-mail informado.",
+    });
 }
-
 export async function login(req, res) {
-  const data = await authService.login(req.body.email, req.body.password);
-  res.json(data);
+  const result = await auth.login(req.body);
+  res.json({ token: result.token, user: userView(result.user) });
 }
-
-export async function forgotPassword(req, res) {
-  await authService.forgotPassword(req.body.email);
-  res.json({
-    message: "Se a conta puder receber instrucoes, elas serao enviadas por e-mail.",
-  });
+export async function requestPasswordReset(req, res) {
+  await auth.requestPasswordReset(req.body.email);
+  res
+    .status(202)
+    .json({
+      message:
+        "Se a conta puder receber um código, enviaremos as instruções ao e-mail informado.",
+    });
 }
-
 export async function resetPassword(req, res) {
-  await authService.resetPassword(
-    req.body.email,
-    req.body.code,
-    req.body.password,
-  );
-  res.json({ message: "Senha redefinida com sucesso." });
+  await auth.resetPassword(req.body);
+  res.json({ message: "Senha redefinida com sucesso" });
 }
-
 export async function me(req, res) {
-  res.json({ user: sanitizeUser(req.user) });
+  res.json({ user: userView(await users.getActiveUser(req.user.id)) });
 }

@@ -1,51 +1,58 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 
-function createTransporter() {
-  if (!env.SMTP_HOST) {
-    return nodemailer.createTransport({ jsonTransport: true });
-  }
-
-  return nodemailer.createTransport({
-    host: env.SMTP_HOST,
+let transport;
+function getTransport() {
+  if (transport) return transport;
+  transport = nodemailer.createTransport({
+    host: env.SMTP_HOST.trim(),
     port: env.SMTP_PORT,
-    secure: env.SMTP_SECURE,
+    secure: env.SMTP_SECURE === "true",
     auth: env.SMTP_USER
-      ? {
-          user: env.SMTP_USER,
-          pass: env.SMTP_PASS,
-        }
+      ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
       : undefined,
   });
+  return transport;
 }
 
-const transporter = createTransporter();
+async function sendCode({ email, code, subject, text, purpose, ttlMinutes }) {
+  if (!env.SMTP_HOST?.trim()) {
+    if (env.NODE_ENV === "development") {
+      console.info(
+        `[Zephora] SMTP não configurado. Código de ${purpose} para ${email}: ${code} (expira em ${ttlMinutes} minutos)`,
+      );
+      return;
+    }
 
-export async function sendVerificationCode({ to, name, code, purpose }) {
-  const subject =
-    purpose === "password-reset"
-      ? `${env.APP_NAME}: codigo para redefinir senha`
-      : `${env.APP_NAME}: confirme seu e-mail`;
+    throw new Error("SMTP_HOST não configurado; e-mail não enviado.");
+  }
 
-  const text = [
-    `Ola, ${name}.`,
-    "",
-    `Seu codigo do ${env.APP_NAME} e: ${code}`,
-    `Ele expira em ${env.VERIFICATION_CODE_TTL_MINUTES} minutos.`,
-    "",
-    "Se voce nao solicitou este codigo, ignore este e-mail.",
-  ].join("\n");
-
-  const info = await transporter.sendMail({
+  await getTransport().sendMail({
     from: env.MAIL_FROM,
-    to,
+    to: email,
     subject,
     text,
   });
+}
 
-  if (!env.SMTP_HOST && info.message) {
-    console.info("E-mail gerado em modo desenvolvimento:", info.message);
-  }
+export async function sendVerification(email, code) {
+  await sendCode({
+    email,
+    code,
+    purpose: "verificação",
+    ttlMinutes: env.VERIFICATION_CODE_TTL_MINUTES,
+    subject: "Código de verificação Zephora",
+    text: `Seu código é ${code}. Ele expira em ${env.VERIFICATION_CODE_TTL_MINUTES} minutos.`,
+  });
+}
 
-  return info;
+export async function sendPasswordReset(email, code) {
+  await sendCode({
+    email,
+    code,
+    purpose: "recuperação de senha",
+    ttlMinutes: env.PASSWORD_RESET_TTL_MINUTES,
+    subject: "Recuperação de senha Zephora",
+    text: `Seu código para redefinir a senha é ${code}. Ele expira em ${env.PASSWORD_RESET_TTL_MINUTES} minutos. Se você não solicitou a recuperação, ignore esta mensagem.`,
+  });
 }

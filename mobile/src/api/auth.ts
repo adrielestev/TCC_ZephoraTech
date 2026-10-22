@@ -9,13 +9,13 @@ export const authApi = {
 
   resendCode: (data: { email: string }) => api.post("/auth/resend-code", data),
 
-  login: (data: { email: string; password: string }) =>
-    api.post<{ token: string }>("/auth/login", data),
-
-  forgotPassword: (data: { email: string }) => api.post("/auth/forgot-password", data),
+  requestPasswordReset: (data: { email: string }) => api.post("/auth/forgot-password", data),
 
   resetPassword: (data: { email: string; code: string; password: string }) =>
     api.post("/auth/reset-password", data),
+
+  login: (data: { email: string; password: string }) =>
+    api.post<{ token: string; user: User }>("/auth/login", data),
 
   me: () => api.get<{ user: User }>("/auth/me"),
 };

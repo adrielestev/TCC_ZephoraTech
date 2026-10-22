@@ -1,33 +1,9 @@
-import { db } from "../db/connection.js";
+import { db } from "../db.js";
 
-export function findRoomCollaborator(roomId, userId) {
-  return db("room_collaborators")
-    .where({ room_id: roomId, user_id: userId })
-    .first();
-}
-
-export function listRoomCollaborators(roomId) {
-  return db("room_collaborators")
-    .join("users", "users.id", "room_collaborators.user_id")
-    .leftJoin("users as admins", "admins.id", "room_collaborators.added_by")
-    .where("room_collaborators.room_id", roomId)
-    .select(
-      "room_collaborators.id",
-      "room_collaborators.room_id",
-      "room_collaborators.user_id",
-      "room_collaborators.created_at",
-      "users.name",
-      "users.email",
-      "admins.name as added_by_name",
-    )
-    .orderBy("users.name");
-}
-
-export async function createRoomCollaborator(payload) {
-  const [id] = await db("room_collaborators").insert(payload);
-  return db("room_collaborators").where({ id }).first();
-}
-
-export function deleteRoomCollaborator(id, roomId) {
-  return db("room_collaborators").where({ id, room_id: roomId }).delete();
-}
+export const listForRoom = (roomId) => db("room_collaborators")
+  .join("users", "users.id", "room_collaborators.user_id")
+  .where("room_collaborators.room_id", roomId)
+  .select("room_collaborators.id", "room_collaborators.room_id", "room_collaborators.user_id", "room_collaborators.added_by", "room_collaborators.created_at", "users.name", "users.email");
+export const findById = (id) => db("room_collaborators").where({ id }).first();
+export const add = (room_id, user_id, added_by) => db("room_collaborators").insert({ room_id, user_id, added_by });
+export const remove = (id, room_id) => db("room_collaborators").where({ id, room_id }).del();

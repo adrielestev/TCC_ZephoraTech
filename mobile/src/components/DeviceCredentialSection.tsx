@@ -11,7 +11,7 @@ import { SurfaceCard } from "./SurfaceCard";
 
 interface DeviceCredentialSectionProps {
   roomId: number;
-  macAddress: string;
+  macAddress?: string | null;
   hasCredential: boolean;
 }
 
@@ -31,6 +31,14 @@ export function DeviceCredentialSection({
 
   async function handleGenerate() {
     setFeedback(null);
+
+    if (!macAddress) {
+      setFeedback({
+        message: "Configure o MAC address do ESP32 antes de gerar a credencial.",
+        variant: "error",
+      });
+      return;
+    }
 
     if (
       hasCredential &&

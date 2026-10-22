@@ -1,37 +1,58 @@
 import { Router } from "express";
-import * as authController from "../controllers/auth.controller.js";
-import { authenticate } from "../middlewares/auth.js";
+import * as controller from "../controllers/auth.controller.js";
+import { authenticateUser } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { asyncHandler } from "../utils/async-handler.js";
 import {
-  codeSchema,
   emailSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
 } from "../schemas/auth.schemas.js";
-import { validate } from "../utils/validators.js";
+import {
+  registrationLimiter,
+  loginLimiter,
+  passwordResetLimiter,
+  verificationLimiter,
+  resendLimiter,
+} from "../middlewares/rate-limit.middleware.js";
 
 export const authRouter = Router();
-
-authRouter.post("/register", validate(registerSchema), authController.register);
+authRouter.post(
+  "/register",
+  registrationLimiter,
+  validate(registerSchema),
+  asyncHandler(controller.register),
+);
 authRouter.post(
   "/verify-email",
-  validate(codeSchema),
-  authController.verifyEmail,
+  verificationLimiter,
+  validate(verifyEmailSchema),
+  asyncHandler(controller.verifyEmail),
 );
 authRouter.post(
   "/resend-code",
+  resendLimiter,
   validate(emailSchema),
-  authController.resendCode,
+  asyncHandler(controller.resendCode),
 );
-authRouter.post("/login", validate(loginSchema), authController.login);
+authRouter.post(
+  "/login",
+  loginLimiter,
+  validate(loginSchema),
+  asyncHandler(controller.login),
+);
 authRouter.post(
   "/forgot-password",
+  passwordResetLimiter,
   validate(emailSchema),
-  authController.forgotPassword,
+  asyncHandler(controller.requestPasswordReset),
 );
 authRouter.post(
   "/reset-password",
+  passwordResetLimiter,
   validate(resetPasswordSchema),
-  authController.resetPassword,
+  asyncHandler(controller.resetPassword),
 );
-authRouter.get("/me", authenticate, authController.me);
+authRouter.get("/me", authenticateUser, asyncHandler(controller.me));
