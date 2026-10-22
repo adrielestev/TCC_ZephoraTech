@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
+import Logo from "@/assets/images/Logo-zephora.svg";
 import { colors, spacing } from "../theme/tokens";
 
 export function BrandHeader() {
@@ -10,7 +10,7 @@ export function BrandHeader() {
       accessibilityLabel="Logo Zephora"
       style={{ alignItems: "center", gap: spacing.sm }}
     >
-      <Ionicons name="home" size={42} color={colors.primary} />
+      <Logo width={86} height={60} />
       <Text style={{ color: colors.ink, fontSize: 22, fontWeight: "800", letterSpacing: 1.2 }}>
         ZEPHORA
       </Text>

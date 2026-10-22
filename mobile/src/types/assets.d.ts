@@ -1,4 +1,7 @@
 declare module "*.svg" {
-  const asset: number;
-  export default asset;
+  import type { FC } from "react";
+  import type { SvgProps } from "react-native-svg";
+
+  const component: FC<SvgProps>;
+  export default component;
 }
