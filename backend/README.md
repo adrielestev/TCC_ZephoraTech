@@ -2,6 +2,10 @@
 
 API REST para automação de salas. Requer Node.js 24+, Express, Zod, Knex com o módulo SQLite nativo `node:sqlite`, Nodemailer, JWT e bcrypt. Não é necessário instalar um driver SQLite nativo via npm.
 
+## Drivers de dispositivos
+
+O catálogo atual aceita `relay/output` (`relay_gpio`) e `presence/input` (`pir_gpio`). O catálogo do backend fica em `src/domain/device-drivers.js`; a implementação física correspondente fica no registro `esp32/ZephoraESP32/src/device_driver_registry.h`, e os tipos disponíveis no formulário ficam em `mobile/src/utils/deviceRules.ts`. Ao adicionar um driver, atualize esses três pontos e os validadores/configuração específicos do driver. Tipos ainda não implementados não podem ser cadastrados nem usados em novas automações; registros antigos continuam legíveis e editáveis sem trocar seu tipo.
+
 ## Inicialização
 
 ```powershell

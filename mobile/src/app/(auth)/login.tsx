@@ -27,6 +27,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signIn(email, password);
+      setEmail("");
+      setPassword("");
+      setAttemptedSubmit(false);
     } catch {
       setError("E-mail ou senha inválidos.");
     } finally {

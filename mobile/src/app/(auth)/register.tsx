@@ -30,8 +30,13 @@ export default function RegisterScreen() {
     }
     setLoading(true);
     try {
-      await authApi.register({ name: name.trim(), email: email.trim(), password });
-      router.push({ pathname: "/(auth)/verify-email", params: { email } });
+      const registeredEmail = email.trim();
+      await authApi.register({ name: name.trim(), email: registeredEmail, password });
+      setName("");
+      setEmail("");
+      setPassword("");
+      setAttemptedSubmit(false);
+      router.push({ pathname: "/(auth)/verify-email", params: { email: registeredEmail } });
     } catch {
       setError("Não foi possível criar a conta. Verifique os dados.");
     } finally {

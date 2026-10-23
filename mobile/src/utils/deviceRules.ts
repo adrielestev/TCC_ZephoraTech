@@ -1,9 +1,15 @@
 import { DeviceDirection, DeviceType } from "../types";
 
 export const deviceTypesByDirection: Record<DeviceDirection, DeviceType[]> = {
-  output: ["relay", "pwm"],
-  input: ["temperature", "presence", "contact"],
+  // Tipos com driver implementado. Novos ficam disponíveis depois de
+  // registrados no backend e no registry de drivers do ESP32.
+  output: ["relay"],
+  input: ["presence"],
 };
+
+export function hasImplementedDeviceDriver(direction: DeviceDirection, type: DeviceType) {
+  return deviceTypesByDirection[direction].includes(type);
+}
 
 export const deviceTypeLabels: Record<DeviceType, string> = {
   relay: "Relé",

@@ -104,6 +104,10 @@ export default function RoomEditScreen() {
         name: name.trim(),
         mac_address: normalizedMac.toUpperCase(),
       });
+      setName("");
+      setMacAddress("");
+      setError(null);
+      setAttemptedSubmit(false);
       router.back();
     } catch {
       setError("Não foi possível salvar. Confira o MAC e se ele já não está vinculado a outra sala.");

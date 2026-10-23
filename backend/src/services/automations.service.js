@@ -3,6 +3,7 @@ import * as rooms from "../repositories/rooms.repository.js";
 import * as devices from "../repositories/devices.repository.js";
 import * as automations from "../repositories/automations.repository.js";
 import { assertValidState } from "../utils/device-state.js";
+import { isSupportedDevice } from "../domain/device-drivers.js";
 import { db } from "../db.js";
 
 const lastTriggeredAt = new Map();
@@ -29,6 +30,9 @@ export async function create(roomId, input) {
   const [source, target] = await Promise.all([devices.findById(input.source_sensor_id), devices.findById(input.target_sensor_id)]);
   if (!source || !target || source.room_id !== roomId || target.room_id !== roomId) throw new HttpError(400, "Os dispositivos devem pertencer à sala informada");
   if (source.direction !== "input" || target.direction !== "output") throw new HttpError(400, "A automação precisa de uma entrada como origem e uma saída como destino");
+  if (!isSupportedDevice(source.type, source.direction) || !isSupportedDevice(target.type, target.direction)) {
+    throw new HttpError(400, "A automação só pode usar dispositivos com driver implementado.");
+  }
   assertValidState(target, input.target_value);
   const [id] = await automations.create({
     ...input,
@@ -53,6 +57,12 @@ export async function update(id, changes) {
   const [source, target] = await Promise.all([devices.findById(next.source_sensor_id), devices.findById(next.target_sensor_id)]);
   if (!source || !target || source.room_id !== target.room_id) throw new HttpError(400, "Os dispositivos devem pertencer à mesma sala");
   if (source.direction !== "input" || target.direction !== "output") throw new HttpError(400, "A automação precisa de uma entrada como origem e uma saída como destino");
+  const devicesChanged = next.source_sensor_id !== old.source_sensor_id ||
+      next.target_sensor_id !== old.target_sensor_id;
+  if (devicesChanged &&
+      (!isSupportedDevice(source.type, source.direction) || !isSupportedDevice(target.type, target.direction))) {
+    throw new HttpError(400, "A automação só pode usar dispositivos com driver implementado.");
+  }
   assertValidState(target, next.target_value);
   if (next.restore_previous && next.is_enabled && !old.restore_previous &&
       (await automations.findActiveForTarget(next.target_sensor_id))) {

@@ -61,6 +61,9 @@ export default function ProfileEditScreen() {
     try {
       await usersApi.updateMe({ name: name.trim() });
       await refreshMe();
+      setName("");
+      setError(null);
+      setAttemptedSubmit(false);
       router.back();
     } catch {
       setError("Não foi possível salvar o perfil.");

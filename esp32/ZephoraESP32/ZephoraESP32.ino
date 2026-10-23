@@ -2,14 +2,19 @@
  * Zephora firmware for ESP32 DevKit (Arduino-ESP32 core 3.x).
  * Supports the final project's digital PIR input and relay outputs.
  * Configure the room, MAC, credential, GPIOs and devices in the Zephora app.
+ * Arduino IDE 2: install the Espressif ESP32 platform and ArduinoJson 7.
+ * http://boardsmanager/All#esp32
+ * http://librarymanager/All#ArduinoJson
  */
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <math.h>
 #include <HTTPClient.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <vector>
+#include "src/device_driver_registry.h"
 
 #if __has_include("config.h")
 #include "config.h"
@@ -47,34 +52,6 @@ static constexpr uint32_t HTTP_TIMEOUT_MS = 5000;
 static constexpr uint32_t REPORT_RETRY_MS = 3000;
 static constexpr uint32_t HANDSHAKE_RETRY_INITIAL_MS = 5000;
 static constexpr uint32_t HANDSHAKE_RETRY_MAX_MS = 5 * 60 * 1000;
-static constexpr uint32_t MAX_PRESENCE_TIMING_MS = 5UL * 60UL * 1000UL;
-
-struct Device {
-  int id = 0;
-  String name;
-  String type;
-  String direction;
-  uint8_t pin = 0;
-  bool activeLow = false;
-  bool activeHigh = true;
-  uint32_t debounceMs = 80;
-  uint32_t holdMs = 0;
-  bool configured = false;
-  bool seen = false;
-  bool hasRawState = false;
-  bool rawState = false;
-  bool debouncedState = false;
-  bool stableState = false;
-  bool absencePending = false;
-  uint32_t rawChangedAt = 0;
-  uint32_t absenceStartedAt = 0;
-  bool appliedStateValid = false;
-  float appliedState = 0;
-  bool hasReportedState = false;
-  float lastReportedState = 0;
-  uint32_t nextReportAt = 0;
-};
-
 static std::vector<Device> devices;
 static Preferences preferences;
 static String wifiSsid;
@@ -91,14 +68,6 @@ static uint32_t handshakeRetryDelayMs = HANDSHAKE_RETRY_INITIAL_MS;
 static void scheduleHandshakeRetry() {
   nextHandshakeAttemptAt = millis() + handshakeRetryDelayMs;
   handshakeRetryDelayMs = min(handshakeRetryDelayMs * 2, HANDSHAKE_RETRY_MAX_MS);
-}
-
-static bool isOutput(const Device &device) {
-  return device.direction == "output" && device.type == "relay";
-}
-
-static bool isPresenceInput(const Device &device) {
-  return device.direction == "input" && device.type == "presence";
 }
 
 static String normalizedMac(String mac) {
@@ -297,33 +266,9 @@ static bool performHandshake() {
   return true;
 }
 
-static bool outputPinAllowed(uint8_t pin) {
-  if (pin > 33 || (pin >= 6 && pin <= 11)) return false;
-  // Evita UART e pinos de boot no DevKit classico.
-  switch (pin) {
-    case 0: case 1: case 2: case 3: case 5: case 12: case 15: return false;
-    default: return true;
-  }
-}
-
-static bool inputPinAllowed(uint8_t pin) {
-  if (pin > 39 || (pin >= 6 && pin <= 11)) return false;
-  switch (pin) {
-    case 0: case 1: case 2: case 3: case 5: case 12: case 15: return false;
-    default: return true;
-  }
-}
-
-static void writeRelay(Device &device, bool active) {
-  const uint8_t level = (active != device.activeLow) ? HIGH : LOW;
-  digitalWrite(device.pin, level);
-}
-
 static void releaseDevice(Device &device) {
-  if (device.configured && isOutput(device)) {
-    writeRelay(device, false);
-    pinMode(device.pin, INPUT);
-  }
+  const DeviceDriver *driver = findDeviceDriver(device);
+  if (device.configured && driver && driver->end) driver->end(device);
   device.configured = false;
 }
 
@@ -336,43 +281,25 @@ static bool readDevice(JsonObjectConst json, Device &device) {
   if (device.id <= 0 || pin < 0 || pin > 39) return false;
   device.pin = static_cast<uint8_t>(pin);
 
+  const DeviceDriver *driver = findDeviceDriver(device);
+  if (!driver) {
+    Serial.printf("Dispositivo ignorado (driver nao registrado): %s (%s/%s).\n",
+                  device.name.c_str(), device.type.c_str(), device.direction.c_str());
+    return false;
+  }
   JsonObjectConst config = json["config"].as<JsonObjectConst>();
-  if (isOutput(device)) {
-    device.activeLow = config["active_low"] | false;
-    if (!outputPinAllowed(device.pin)) {
-      Serial.printf("GPIO %u recusado para o rele %s.\n", device.pin, device.name.c_str());
-      return false;
-    }
-  } else if (isPresenceInput(device)) {
-    device.activeHigh = config["active_high"] | true;
-    device.debounceMs = config["debounce_ms"] | 80U;
-    device.holdMs = config["hold_ms"] | 0U;
-    if (device.debounceMs > MAX_PRESENCE_TIMING_MS)
-      device.debounceMs = MAX_PRESENCE_TIMING_MS;
-    if (device.holdMs > MAX_PRESENCE_TIMING_MS)
-      device.holdMs = MAX_PRESENCE_TIMING_MS;
-    if (!inputPinAllowed(device.pin)) {
-      Serial.printf("GPIO %u recusado para o sensor %s.\n", device.pin, device.name.c_str());
-      return false;
-    }
-  } else {
-    Serial.printf("Dispositivo ignorado (tipo/direcao nao suportados): %s.\n",
-                  device.name.c_str());
+  if (!driver->configure(device, config)) {
+    Serial.printf("Configuracao ou GPIO invalido para %s (%s).\n",
+                  device.name.c_str(), driver->id);
     return false;
   }
   return true;
 }
 
 static void initializeDevice(Device &device) {
-  if (isOutput(device)) {
-    // Prepara o nivel inativo antes de habilitar a saida para evitar pulso na partida.
-    digitalWrite(device.pin, device.activeLow ? HIGH : LOW);
-    pinMode(device.pin, OUTPUT);
-    writeRelay(device, false);
-  } else {
-    pinMode(device.pin, INPUT);
-    device.hasRawState = false;
-  }
+  const DeviceDriver *driver = findDeviceDriver(device);
+  if (!driver || !driver->begin) return;
+  driver->begin(device);
   device.configured = true;
   device.appliedStateValid = false;
   device.hasReportedState = false;
@@ -398,8 +325,10 @@ static void synchronizeDevices(JsonArrayConst deviceList) {
       Device &added = devices.back();
       initializeDevice(added);
       added.seen = true;
-      Serial.printf("Configurado: %s (%s, GPIO %u).\n", added.name.c_str(),
-                    added.type.c_str(), added.pin);
+      const DeviceDriver *driver = findDeviceDriver(added);
+      Serial.printf("Configurado: %s (%s, driver %s, GPIO %u).\n",
+                    added.name.c_str(), added.type.c_str(),
+                    driver ? driver->id : "desconhecido", added.pin);
       continue;
     }
 
@@ -505,10 +434,12 @@ static bool fetchCommands() {
 
     const bool active = state >= 0.5f;
     if (!device.appliedStateValid || (device.appliedState >= 0.5f) != active) {
-      writeRelay(device, active);
+      const DeviceDriver *driver = findDeviceDriver(device);
+      if (!driver || !driver->writeOutput) continue;
+      driver->writeOutput(device, active ? 1.0f : 0.0f);
       device.appliedState = active ? 1.0f : 0.0f;
       device.appliedStateValid = true;
-      Serial.printf("Rele %s: %s\n", device.name.c_str(), active ? "ligado" : "desligado");
+      Serial.printf("Saida %s: %s\n", device.name.c_str(), active ? "ligada" : "desligada");
     }
     if ((!device.hasReportedState || device.lastReportedState != device.appliedState) &&
         millis() >= device.nextReportAt) {
@@ -518,13 +449,32 @@ static bool fetchCommands() {
   return true;
 }
 
-static void samplePresenceSensors() {
+static void sampleInputDevices() {
   const uint32_t now = millis();
   for (Device &device : devices) {
-    if (!device.configured || !isPresenceInput(device)) continue;
+    const DeviceDriver *driver = findDeviceDriver(device);
+    if (!device.configured || !driver || !driver->readInput) continue;
 
-    const bool pinHigh = digitalRead(device.pin) == HIGH;
-    const bool rawState = pinHigh == device.activeHigh;
+    if (driver->inputMode == DriverInputMode::SampledValue) {
+      if (now < device.nextInputSampleAt) continue;
+      const uint32_t interval = driver->sampleIntervalMs
+          ? driver->sampleIntervalMs : 1000;
+      device.nextInputSampleAt = now + interval;
+      float value = 0.0f;
+      if (!driver->readInput(device, value)) continue;
+      const float delta = fabsf(value - device.lastReportedState);
+      const bool changed = !device.hasReportedState ||
+          (driver->reportThreshold > 0
+               ? delta >= driver->reportThreshold
+               : delta > 0);
+      if (changed && now >= device.nextReportAt) reportState(device, value);
+      continue;
+    }
+
+    if (driver->inputMode != DriverInputMode::DebouncedPresence) continue;
+    float inputValue = 0.0f;
+    if (!driver->readInput(device, inputValue)) continue;
+    const bool rawState = inputValue >= 0.5f;
     if (!device.hasRawState) {
       device.rawState = rawState;
       device.debouncedState = rawState;
@@ -601,6 +551,6 @@ void loop() {
       fetchCommands();
     }
   }
-  samplePresenceSensors();
+  sampleInputDevices();
   delay(10);
 }

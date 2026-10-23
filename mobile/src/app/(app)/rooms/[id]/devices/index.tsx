@@ -6,7 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useCommandDevice, useRemoveDevice, useRoomDevices } from "@/hooks/useDevices";
 import { useRoomAutomations } from "@/hooks/useAutomations";
 import { Device } from "@/types";
-import { deviceStateLabel, deviceTypeIcons, deviceTypeLabels } from "@/utils/deviceRules";
+import {
+  deviceStateLabel,
+  deviceTypeIcons,
+  deviceTypeLabels,
+  hasImplementedDeviceDriver,
+} from "@/utils/deviceRules";
 import { Screen } from "@/components/Screen";
 import { SurfaceCard } from "@/components/SurfaceCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -36,6 +41,7 @@ function DeviceCard({
   const value = device.desired_state ?? device.current_state ?? 0;
   const active = value > 0;
   const isOutput = device.direction === "output";
+  const driverAvailable = hasImplementedDeviceDriver(device.direction, device.type);
   const automationLocked = Boolean(device.automation_lock);
   return (
     <SurfaceCard>
@@ -100,7 +106,11 @@ function DeviceCard({
           {device.type === "pwm" ? ` (${value}%)` : ""}
         </Text>
       </View>
-      {isOutput && device.type === "pwm" ? (
+      {!driverAvailable ? (
+        <Text style={{ ...typography.caption, textAlign: "center", color: colors.muted }}>
+          Driver deste dispositivo ainda não está implementado.
+        </Text>
+      ) : isOutput && device.type === "pwm" ? (
         <AnalogControl
           label={`Intensidade de ${device.name}`}
           value={value}

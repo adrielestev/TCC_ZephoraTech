@@ -23,6 +23,7 @@ export default function VerifyEmailScreen() {
     setLoading(true);
     try {
       await authApi.verifyEmail({ email, code });
+      setCode("");
       router.replace("/(auth)/login");
     } catch {
       setMessage("Código inválido ou expirado.");
@@ -35,6 +36,7 @@ export default function VerifyEmailScreen() {
     setLoading(true);
     try {
       await authApi.resendCode({ email });
+      setCode("");
       setMessage("Novo código enviado.");
     } catch {
       setMessage("Não foi possível reenviar o código agora.");

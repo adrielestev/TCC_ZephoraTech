@@ -56,12 +56,13 @@ export default function DeviceEditScreen() {
 
   useEffect(() => {
     if (!deviceTypesByDirection[direction].includes(type)) {
+      if (isEditing) return;
       const nextType = deviceTypesByDirection[direction][0];
       setType(nextType);
       setLabelsForType(nextType);
       setUnit(nextType === "temperature" ? "°C" : "");
     }
-  }, [direction, setLabelsForType, type]);
+  }, [direction, isEditing, setLabelsForType, type]);
 
   useEffect(() => {
     if (!isAdmin) router.replace(`/(app)/rooms/${roomId}/devices` as never);
@@ -145,6 +146,14 @@ export default function DeviceEditScreen() {
     try {
       if (isEditing) await update.mutateAsync(payload);
       else await create.mutateAsync({ ...payload, current_state: 0 });
+      setName("");
+      setPin("");
+      setUnit("");
+      setConfigEntries([]);
+      setActiveLabel("");
+      setInactiveLabel("");
+      setError(null);
+      setAttemptedSubmit(false);
       router.back();
     } catch {
       setError("Não foi possível salvar. Confira o GPIO e os parâmetros configurados.");
@@ -198,7 +207,11 @@ export default function DeviceEditScreen() {
           Escolha o tipo físico para definir os estados e controles disponíveis.
         </Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.xs }}>
-          {deviceTypesByDirection[direction].map((item) => (
+          {(
+            isEditing && device && !deviceTypesByDirection[direction].includes(device.type)
+              ? [...deviceTypesByDirection[direction], device.type]
+              : deviceTypesByDirection[direction]
+          ).map((item) => (
             <Choice
               key={item}
               label={deviceTypeLabels[item]}

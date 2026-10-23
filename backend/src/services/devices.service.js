@@ -59,7 +59,9 @@ export async function update(id, input) {
       400,
       "Direção não pode ser alterada; remova e recrie o dispositivo",
     );
-  assertCompatibleType(old.direction, input.type || old.type);
+  if (input.type !== undefined && input.type !== old.type) {
+    assertCompatibleType(old.direction, input.type);
+  }
   const { current_state: _ignored, ...configuration } = input;
   await devices.update(id, {
     ...configuration,

@@ -27,6 +27,10 @@ export default function ResetPasswordScreen() {
     setLoading(true);
     try {
       await authApi.resetPassword({ email, code, password });
+      setCode("");
+      setPassword("");
+      setConfirmation("");
+      setAttemptedSubmit(false);
       setDone(true);
     } catch {
       setError("Código inválido ou expirado. Solicite outro código e tente novamente.");

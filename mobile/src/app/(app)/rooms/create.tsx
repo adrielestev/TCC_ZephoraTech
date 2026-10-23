@@ -37,6 +37,10 @@ export default function CreateRoomScreen() {
         name: name.trim(),
         mac_address: normalizedMac.toUpperCase(),
       });
+      setName("");
+      setMacAddress("");
+      setError(null);
+      setAttemptedSubmit(false);
       router.replace(`/(app)/rooms/${data.room.id}` as never);
     } catch {
       setError("Não foi possível criar a sala. Confira o MAC e se ele já não está vinculado a outra sala.");

@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { EmptyState } from "@/components/EmptyState";
 import { colors, spacing, typography } from "@/theme/tokens";
 import { useAuth } from "@/context/AuthContext";
+import { hasImplementedDeviceDriver } from "@/utils/deviceRules";
 import { confirmAction } from "@/utils/confirm-action";
 import { AutomationForm } from "@/features/automations/components/AutomationForm";
 import { AutomationRuleCard } from "@/features/automations/components/AutomationRuleCard";
@@ -51,11 +52,17 @@ export default function RoomAutomationsScreen() {
   const update = useUpdateAutomation(roomId);
   const remove = useRemoveAutomation(roomId);
   const inputDevices = useMemo(
-    () => devices.filter((device) => device.direction === "input"),
+    () => devices.filter(
+      (device) => device.direction === "input" &&
+        hasImplementedDeviceDriver(device.direction, device.type),
+    ),
     [devices],
   );
   const outputDevices = useMemo(
-    () => devices.filter((device) => device.direction === "output"),
+    () => devices.filter(
+      (device) => device.direction === "output" &&
+        hasImplementedDeviceDriver(device.direction, device.type),
+    ),
     [devices],
   );
 

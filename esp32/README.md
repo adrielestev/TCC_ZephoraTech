@@ -37,6 +37,8 @@ No circuito, o PIR está no GPIO 27, a simulação da primeira fileira no GPIO 2
 
 ## Placa física
 
+Para usar o Arduino IDE, abra `ZephoraESP32/ZephoraESP32.ino` e siga o guia `ZephoraESP32/ARDUINO_IDE.md`. Um pacote pronto para extrair pode ser gerado no PowerShell com `./package-arduino-ide.ps1`; ele inclui o sketch e todos os headers, mas exclui `config.h`, credenciais e configurações do Wokwi.
+
 1. Grave o sketch em uma ESP32 DevKit com core Arduino-ESP32 3.x.
 2. Abra o Monitor Serial em 115200 baud. Na primeira inicialização, informe SSID, senha, URL base da API, credencial da sala e, se necessário, um MAC alternativo. A URL aceita `http://` ou `https://`.
 3. O firmware imprime o MAC Wi-Fi real; cadastre exatamente esse MAC na sala antes do handshake. Os dados de Wi-Fi e a credencial ficam na NVS do ESP32. Para reconfigurar, reinicie e pressione `c` + Enter nos primeiros cinco segundos. Use `<vazio>` para limpar um campo opcional.
@@ -52,7 +54,9 @@ Não versione `config.h`, `tls_config.h`, senhas ou credenciais. A credencial é
 | Fileira 1 | `relay` | Saída | 23 | `active_low: false` no LED Wokwi; normalmente `true` em módulo de relé ativo em nível baixo |
 | Fileira 2 | `relay` | Saída | 22 | `active_low: false` no LED Wokwi; normalmente `true` em módulo de relé ativo em nível baixo |
 
-No firmware, os únicos tipos físicos habilitados neste escopo são `presence` e `relay`. Outros tipos cadastrados são ignorados. Use GPIOs disponíveis e seguros no ESP32 DevKit; embora o formulário permita números maiores, o chip não dispõe de todos esses GPIOs. O firmware recusa como saídas os pinos de flash, UART, strap de boot e pinos somente de entrada.
+No firmware, os drivers físicos habilitados neste escopo são `pir_gpio` (`presence/input`) e `relay_gpio` (`relay/output`). A implementação está modularizada em `src/drivers/`; `src/device_driver_registry.h` associa cada driver ao tipo/direção e define o ciclo de vida, leitura e escrita. Dispositivos sem driver registrado são ignorados. Para adicionar um driver, crie sua implementação encapsulando configuração, validação de GPIO e acesso ao hardware, registre-o no array `DEVICE_DRIVERS` e conecte seu tipo à lista disponível no backend e no app. O modo `SampledValue` já oferece amostragem e envio periódico de entradas numéricas; entradas binárias com debounce/hold usam `DebouncedPresence`.
+
+Use GPIOs disponíveis e seguros no ESP32 DevKit; embora o formulário permita números maiores, o chip não dispõe de todos esses GPIOs. Cada driver valida seus pinos, e o firmware recusa como saídas os pinos de flash, UART, strap de boot e pinos somente de entrada.
 
 No sensor `presence`, `debounce_ms` aceita de 0 a 300000 ms (5 minutos) e usa 80 ms quando omitido. O intervalo é aplicado tanto ao início quanto ao fim da detecção; por exemplo, `debounce_ms: 30000` exige 30 segundos de sinal estável antes de aceitar a mudança. `hold_ms` aceita de 0 a 300000 ms e mantém “presença detectada” depois que o sensor deixa de detectar movimento. O tempo de retenção começa depois de a transição para ausência passar pelo debounce; se o movimento voltar e permanecer pelo debounce, o temporizador é cancelado. Exemplo: `debounce_ms: 80`, `hold_ms: 30000` mantém a presença por 30 segundos após a ausência ser confirmada.
 
