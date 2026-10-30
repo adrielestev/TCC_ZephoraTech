@@ -1,9 +1,16 @@
 import { forwardRef, useState } from "react";
-import { Pressable, Text, TextInput, TextInputProps, View } from "react-native";
+import {
+  Pressable,
+  Text,
+  TextInput,
+  TextInputProps,
+  TextInputInstance,
+  View,
+} from "react-native";
 import { colors, radii, spacing } from "../theme/tokens";
 
 export const FormField = forwardRef<
-  TextInput,
+  TextInputInstance,
   TextInputProps & { label: string; helperText?: string; error?: string }
 >(({ label, helperText, error, style, secureTextEntry, onFocus, onBlur, ...props }, ref) => {
   const [isVisible, setIsVisible] = useState(false);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Platform, type ImageStyle, type ImageSourcePropType } from "react-native";
-import { Image } from "expo-image";
+import { Platform, type ImageStyle } from "react-native";
+import { Image, type ImageSource } from "expo-image";
 import { api, resolveMediaUrl, TOKEN_KEY } from "../api/client";
 import { getToken } from "../utils/token-storage";
 
@@ -17,7 +17,7 @@ export function AuthenticatedImage({
   style,
   contentFit = "cover",
 }: AuthenticatedImageProps) {
-  const [source, setSource] = useState<ImageSourcePropType>();
+  const [source, setSource] = useState<ImageSource>();
 
   useEffect(() => {
     let disposed = false;

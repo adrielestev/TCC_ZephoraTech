@@ -41,7 +41,7 @@ export default function CreateRoomScreen() {
       setMacAddress("");
       setError(null);
       setAttemptedSubmit(false);
-      router.replace(`/(app)/rooms/${data.room.id}` as never);
+      router.replace(`/rooms/${data.room.id}`);
     } catch {
       setError("Não foi possível criar a sala. Confira o MAC e se ele já não está vinculado a outra sala.");
     }

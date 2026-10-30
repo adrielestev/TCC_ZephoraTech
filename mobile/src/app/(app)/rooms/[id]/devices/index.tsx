@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
@@ -222,6 +222,7 @@ export default function RoomDevicesScreen() {
     <Screen scroll={false}>
       <FlatList
         data={devices ?? []}
+        showsVerticalScrollIndicator={Platform.OS === "web"}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{
           width: "100%",
@@ -237,7 +238,7 @@ export default function RoomDevicesScreen() {
             {isAdmin && (
               <Pressable
                 accessibilityRole="button"
-                onPress={() => router.push(`/(app)/rooms/${roomId}/devices/edit` as never)}
+                onPress={() => router.push(`/rooms/${roomId}/devices/edit`)}
                 style={({ pressed }) => ({
                   minHeight: layout.minTouchTarget + 6,
                   borderRadius: radii.button,
@@ -278,7 +279,7 @@ export default function RoomDevicesScreen() {
               );
             }}
             onEdit={() =>
-              router.push(`/(app)/rooms/${roomId}/devices/edit?deviceId=${item.id}` as never)
+              router.push(`/rooms/${roomId}/devices/edit?deviceId=${item.id}`)
             }
             onRemove={() => void handleRemove(item)}
             linkedAutomations={(automations ?? [])

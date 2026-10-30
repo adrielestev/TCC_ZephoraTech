@@ -24,7 +24,7 @@ export function Screen({ children, scroll = true, contentContainerStyle }: Scree
         contentContainerStyle,
       ]}
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={Platform.OS === "web"}
     >
       {children}
     </ScrollView>

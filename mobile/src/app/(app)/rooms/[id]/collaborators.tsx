@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { usersApi } from "@/api/users";
@@ -31,7 +31,7 @@ export default function RoomCollaboratorsScreen() {
   const addCollaborator = useAddCollaborator(roomId);
   const removeCollaborator = useRemoveCollaborator(roomId);
   useEffect(() => {
-    if (!isAdmin) router.replace("/(app)");
+    if (!isAdmin) router.replace("/");
   }, [isAdmin]);
 
   const existingIds = useMemo(
@@ -81,6 +81,7 @@ export default function RoomCollaboratorsScreen() {
     <Screen scroll={false}>
       <FlatList
         data={collaborators ?? []}
+        showsVerticalScrollIndicator={Platform.OS === "web"}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{
           width: "100%",

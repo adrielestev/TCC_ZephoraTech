@@ -45,7 +45,7 @@ export default function RoomEditScreen() {
   }, [room]);
 
   useEffect(() => {
-    if (!isAdmin) router.replace("/(app)");
+    if (!isAdmin) router.replace("/");
   }, [isAdmin]);
 
   if (!isAdmin) return null;

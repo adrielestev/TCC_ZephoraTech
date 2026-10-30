@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "@/api/users";
@@ -34,7 +34,7 @@ export default function AdminUsersScreen() {
   });
 
   useEffect(() => {
-    if (!isAdmin) router.replace("/(app)");
+    if (!isAdmin) router.replace("/");
   }, [isAdmin]);
 
   if (!isAdmin) return null;
@@ -50,6 +50,7 @@ export default function AdminUsersScreen() {
     <Screen scroll={false}>
       <FlatList
         data={filtered}
+        showsVerticalScrollIndicator={Platform.OS === "web"}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
         ListHeaderComponent={

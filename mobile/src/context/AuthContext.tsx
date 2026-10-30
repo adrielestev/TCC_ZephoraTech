@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data } = await authApi.login({ email, password });
     await setToken(TOKEN_KEY, data.token);
     setUser(data.user);
-    router.replace("/(app)");
+    router.replace("/");
   }
 
   async function signOut() {

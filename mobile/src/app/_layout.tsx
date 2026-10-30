@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Slot, useSegments } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
+import "./safe-area.css";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +26,7 @@ function RootNavigation() {
   }
 
   if (user && !inAppGroup) {
-    return <Redirect href="/(app)" />;
+    return <Redirect href="/" />;
   }
 
   return <Slot />;
@@ -34,12 +34,10 @@ function RootNavigation() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RootNavigation />
-        </AuthProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RootNavigation />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

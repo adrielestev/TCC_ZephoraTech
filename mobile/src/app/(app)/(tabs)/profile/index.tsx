@@ -56,7 +56,9 @@ export default function ProfileScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.push("/(app)/profile/edit")}
+          accessibilityRole="button"
+          accessibilityLabel="Editar dados do perfil"
+          onPress={() => router.push("/profile/edit")}
           style={{
             borderWidth: 1,
             borderColor: colors.border,

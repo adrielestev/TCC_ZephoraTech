@@ -1,4 +1,4 @@
-import { Href, Link, Tabs, usePathname } from "expo-router";
+import { Href, Link, Stack, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
 import { useAuth } from "@/context/AuthContext";
@@ -96,16 +96,16 @@ function WebSidebar({ isAdmin }: { isAdmin: boolean }) {
           >
             Menu principal
           </Text>
-          <SidebarLink href="/(app)" label="Salas" icon="home-outline" active={onRooms} />
+          <SidebarLink href="/" label="Salas" icon="home-outline" active={onRooms} />
           <SidebarLink
-            href="/(app)/profile"
+            href="/profile"
             label="Perfil"
             icon="person-outline"
             active={onProfile}
           />
           {isAdmin && (
             <SidebarLink
-              href="/(app)/admin/users"
+              href="/admin/users"
               label="Administração"
               icon="shield-checkmark-outline"
               active={onAdmin}
@@ -146,16 +146,6 @@ function WebSidebar({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
-function TabIcon({ name, focused }: { name: keyof typeof Ionicons.glyphMap; focused: boolean }) {
-  return (
-    <Ionicons
-      name={focused ? name : (`${name}-outline` as keyof typeof Ionicons.glyphMap)}
-      size={focused ? 24 : 22}
-      color={focused ? colors.primary : colors.muted}
-    />
-  );
-}
-
 export default function AppLayout() {
   const { isAdmin } = useAuth();
   const { width } = useWindowDimensions();
@@ -165,118 +155,45 @@ export default function AppLayout() {
     <View style={{ flex: 1, flexDirection: "row", backgroundColor: colors.surfaceMuted }}>
       {showSidebar && <WebSidebar isAdmin={isAdmin} />}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Tabs
+        <Stack
           screenOptions={{
             headerShown: true,
             headerStyle: { backgroundColor: colors.surfaceMuted },
             headerTintColor: colors.ink,
             headerTitleStyle: { fontWeight: "800" },
             headerShadowVisible: false,
-            tabBarActiveTintColor: colors.primary,
-            tabBarInactiveTintColor: colors.muted,
-            tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 4 },
-            tabBarItemStyle: { paddingTop: 5 },
-            tabBarStyle: {
-              display: showSidebar ? "none" : "flex",
-              height: 68,
-              paddingTop: 4,
-              backgroundColor: colors.surfaceSolid,
-              borderTopColor: colors.border,
-              elevation: 8,
-              shadowColor: "#31516D",
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-              shadowOffset: { width: 0, height: -4 },
-            },
           }}
         >
-          <Tabs.Screen
-            name="index"
-            options={{
-              title: "Salas",
-              tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
-            }}
-          />
-          <Tabs.Screen
-            name="profile/index"
-            options={{
-              title: "Perfil",
-              tabBarIcon: ({ focused }) => <TabIcon name="person" focused={focused} />,
-            }}
-          />
-          <Tabs.Screen
-            name="admin/users"
-            options={{
-              title: "Administração",
-              href: isAdmin ? undefined : null,
-              tabBarIcon: ({ focused }) => <TabIcon name="shield-checkmark" focused={focused} />,
-            }}
-          />
-          <Tabs.Screen
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
             name="rooms/[id]/index"
-            options={{
-              href: null,
-              title: "Sala",
-              headerLeft: () => <BackButton destination="rooms" />,
-            }}
+            options={{ title: "Sala", headerLeft: () => <BackButton destination="rooms" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/create"
-            options={{
-              href: null,
-              title: "Nova sala",
-              headerLeft: () => <BackButton destination="rooms" />,
-            }}
+            options={{ title: "Nova sala", headerLeft: () => <BackButton destination="rooms" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/[id]/devices/index"
-            options={{
-              href: null,
-              title: "Dispositivos",
-              headerLeft: () => <BackButton destination="room" />,
-            }}
+            options={{ title: "Dispositivos", headerLeft: () => <BackButton destination="room" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/[id]/devices/edit"
-            options={{
-              href: null,
-              title: "Dispositivo",
-              headerLeft: () => <BackButton destination="devices" />,
-            }}
+            options={{ title: "Dispositivo", headerLeft: () => <BackButton destination="devices" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/[id]/automations"
-            options={{
-              href: null,
-              title: "Automações",
-              headerLeft: () => <BackButton destination="room" />,
-            }}
+            options={{ title: "Automações", headerLeft: () => <BackButton destination="room" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/[id]/collaborators"
-            options={{
-              href: null,
-              title: "Colaboradores",
-              headerLeft: () => <BackButton destination="room" />,
-            }}
+            options={{ title: "Colaboradores", headerLeft: () => <BackButton destination="room" /> }}
           />
-          <Tabs.Screen
+          <Stack.Screen
             name="rooms/[id]/edit"
-            options={{
-              href: null,
-              title: "Editar sala",
-              headerLeft: () => <BackButton destination="room" />,
-            }}
+            options={{ title: "Editar sala", headerLeft: () => <BackButton destination="room" /> }}
           />
-          <Tabs.Screen
-            name="profile/edit"
-            options={{
-              href: null,
-              title: "Editar perfil",
-              headerLeft: () => <BackButton destination="profile" />,
-            }}
-          />
-        </Tabs>
+        </Stack>
       </View>
     </View>
   );

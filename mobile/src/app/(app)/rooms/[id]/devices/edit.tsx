@@ -65,7 +65,7 @@ export default function DeviceEditScreen() {
   }, [direction, isEditing, setLabelsForType, type]);
 
   useEffect(() => {
-    if (!isAdmin) router.replace(`/(app)/rooms/${roomId}/devices` as never);
+    if (!isAdmin) router.replace(`/rooms/${roomId}/devices`);
   }, [isAdmin, roomId]);
 
   function chooseType(nextType: DeviceType) {

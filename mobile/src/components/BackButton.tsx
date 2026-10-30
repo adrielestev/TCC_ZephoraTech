@@ -7,11 +7,11 @@ type BackDestination = "rooms" | "profile" | "room" | "devices";
 
 export function BackButton({ destination }: { destination: BackDestination }) {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  let fallback: Href = "/(app)";
+  let fallback: Href = "/";
 
-  if (destination === "profile") fallback = "/(app)/profile";
-  if (destination === "room" && id) fallback = `/(app)/rooms/${id}` as Href;
-  if (destination === "devices" && id) fallback = `/(app)/rooms/${id}/devices` as Href;
+  if (destination === "profile") fallback = "/profile";
+  if (destination === "room" && id) fallback = `/rooms/${id}` as Href;
+  if (destination === "devices" && id) fallback = `/rooms/${id}/devices` as Href;
 
   return (
     <Pressable

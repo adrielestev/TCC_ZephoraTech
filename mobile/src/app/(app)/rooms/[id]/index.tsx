@@ -30,12 +30,12 @@ export default function RoomDetailScreen() {
   }
 
   const actions = [
-    { label: "Dispositivos", href: `/(app)/rooms/${roomId}/devices` },
-    { label: "Automações", href: `/(app)/rooms/${roomId}/automations` },
+    { label: "Dispositivos", href: `/rooms/${roomId}/devices` },
+    { label: "Automações", href: `/rooms/${roomId}/automations` },
     ...(isAdmin
       ? [
-          { label: "Colaboradores", href: `/(app)/rooms/${roomId}/collaborators` },
-          { label: "Editar sala", href: `/(app)/rooms/${roomId}/edit` },
+          { label: "Colaboradores", href: `/rooms/${roomId}/collaborators` },
+          { label: "Editar sala", href: `/rooms/${roomId}/edit` },
         ]
       : []),
   ] as const;
@@ -44,7 +44,7 @@ export default function RoomDetailScreen() {
     if (!(await confirmAction("Excluir sala", "Esta ação não pode ser desfeita."))) return;
     try {
       await removeRoom.mutateAsync(roomId);
-      router.replace("/(app)");
+      router.replace("/");
     } catch {
       setDeleteError("Não foi possível excluir a sala.");
     }

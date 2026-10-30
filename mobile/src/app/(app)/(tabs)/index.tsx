@@ -1,4 +1,4 @@
-import { Text, FlatList, Pressable, RefreshControl, View } from "react-native";
+import { Platform, Text, FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
 import { useRooms } from "@/hooks/useRooms";
@@ -36,6 +36,7 @@ export default function RoomsListScreen() {
     <LinearGradient colors={[colors.backgroundTop, colors.backgroundBottom]} style={{ flex: 1 }}>
       <FlatList
         data={rooms}
+        showsVerticalScrollIndicator={Platform.OS === "web"}
         refreshControl={
           <RefreshControl
             refreshing={isManualRefreshing && isRefetching}
@@ -52,7 +53,7 @@ export default function RoomsListScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Criar nova sala"
-              onPress={() => router.push("/(app)/rooms/create")}
+              onPress={() => router.push("/rooms/create")}
               style={({ pressed }) => ({
                 backgroundColor: colors.primary,
                 minHeight: layout.minTouchTarget + 4,
@@ -67,7 +68,7 @@ export default function RoomsListScreen() {
             >
               <Text style={{ ...typography.bodyStrong, color: colors.white }}>Nova sala</Text>
             </Pressable>
-          ) : null
+          ) : undefined
         }
         keyExtractor={(room) => String(room.id)}
         contentContainerStyle={{ padding: spacing.md, gap: spacing.sm, paddingBottom: 32 }}
@@ -75,7 +76,7 @@ export default function RoomsListScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Abrir sala ${item.name}`}
-            onPress={() => router.push(`/(app)/rooms/${item.id}`)}
+            onPress={() => router.push(`/rooms/${item.id}`)}
             style={({ pressed }) => ({
               width: "100%",
               maxWidth: layout.contentMaxWidth,
