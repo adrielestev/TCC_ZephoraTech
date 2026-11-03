@@ -11,6 +11,7 @@ import { colors, spacing } from "@/theme/tokens";
 export default function CreateRoomScreen() {
   const createRoom = useCreateRoom();
   const [name, setName] = useState("");
+  const [classroomCode, setClassroomCode] = useState("");
   const [macAddress, setMacAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
@@ -20,6 +21,10 @@ export default function CreateRoomScreen() {
     const normalizedMac = macAddress.trim();
     if (!name.trim() || name.trim().length > 100) {
       setError("Informe um nome de sala com até 100 caracteres.");
+      return;
+    }
+    if (!classroomCode.trim() || classroomCode.trim().length > 50) {
+      setError("Informe um código de acesso com até 50 caracteres.");
       return;
     }
     if (!normalizedMac) {
@@ -35,9 +40,11 @@ export default function CreateRoomScreen() {
     try {
       const { data } = await createRoom.mutateAsync({
         name: name.trim(),
+        classroom_code: classroomCode.trim(),
         mac_address: normalizedMac.toUpperCase(),
       });
       setName("");
+      setClassroomCode("");
       setMacAddress("");
       setError(null);
       setAttemptedSubmit(false);
@@ -61,6 +68,15 @@ export default function CreateRoomScreen() {
           maxLength={100}
           helperText="Obrigatório. Escolha um nome fácil de identificar."
           error={attemptedSubmit && !name.trim() ? "Este campo é obrigatório." : undefined}
+        />
+        <FormField
+          label="Código da sala *"
+          placeholder="Ex.: SALA-101"
+          value={classroomCode}
+          onChangeText={setClassroomCode}
+          maxLength={50}
+          helperText="Código usado para identificar a sala."
+          error={attemptedSubmit && !classroomCode.trim() ? "Este campo é obrigatório." : undefined}
         />
         <FormField
           label="MAC address do ESP32 *"

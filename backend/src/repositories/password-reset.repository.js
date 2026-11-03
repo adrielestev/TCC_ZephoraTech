@@ -1,23 +1,42 @@
 import { db } from "../db.js";
 
-export const deleteForUser = (user_id, executor = db) =>
-  executor("password_reset_tokens").where({ user_id }).del();
+export const clearForUser = (userId, executor = db) =>
+  executor("users").where({ id: userId }).update({
+    password_reset_token_hash: null,
+    password_reset_expires_at: null,
+    password_reset_attempts: 0,
+  });
 
-export const create = (token, executor = db) =>
-  executor("password_reset_tokens").insert(token);
+export const setForUser = (userId, token, executor = db) =>
+  executor("users").where({ id: userId }).update({
+    password_reset_token_hash: token.token_hash,
+    password_reset_expires_at: token.expires_at,
+    password_reset_attempts: token.attempts,
+  });
 
-export const findForUser = (user_id) =>
-  db("password_reset_tokens").where({ user_id }).first();
+export const findForUser = (userId) =>
+  db("users")
+    .where({ id: userId })
+    .select(
+      "password_reset_token_hash as token_hash",
+      "password_reset_expires_at as expires_at",
+      "password_reset_attempts as attempts",
+    )
+    .first();
 
-export const incrementAttempts = (user_id) =>
-  db("password_reset_tokens")
-    .where({ user_id })
-    .where("attempts", "<", 5)
-    .increment("attempts", 1);
+export const incrementAttempts = (userId) =>
+  db("users")
+    .where({ id: userId })
+    .where("password_reset_attempts", "<", 5)
+    .increment("password_reset_attempts", 1);
 
-export const consume = (user_id, token_hash, now, executor = db) =>
-  executor("password_reset_tokens")
-    .where({ user_id, token_hash })
-    .where("expires_at", ">", now)
-    .where("attempts", "<", 5)
-    .del();
+export const consume = (userId, tokenHash, now, executor = db) =>
+  executor("users")
+    .where({ id: userId, password_reset_token_hash: tokenHash })
+    .where("password_reset_expires_at", ">", now)
+    .where("password_reset_attempts", "<", 5)
+    .update({
+      password_reset_token_hash: null,
+      password_reset_expires_at: null,
+      password_reset_attempts: 0,
+    });

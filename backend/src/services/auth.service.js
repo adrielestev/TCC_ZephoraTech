@@ -139,10 +139,9 @@ export async function requestPasswordReset(email) {
     now.getTime() + env.PASSWORD_RESET_TTL_MINUTES * 60_000,
   );
   await db.transaction(async (transaction) => {
-    await passwordResets.deleteForUser(user.id, transaction);
-    await passwordResets.create(
+    await passwordResets.setForUser(
+      user.id,
       {
-        user_id: user.id,
         token_hash: hashCode(code),
         expires_at: expires.toISOString(),
         attempts: 0,

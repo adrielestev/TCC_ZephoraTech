@@ -7,10 +7,10 @@ export const roomsApi = {
 
   get: (roomId: number) => api.get<{ room: Room; devices: Device[] }>(`/rooms/${roomId}`),
 
-  create: (data: { name: string; mac_address: string }) =>
+  create: (data: { name: string; classroom_code: string; mac_address: string }) =>
     api.post<{ room: Room }>("/rooms", data),
 
-  update: (roomId: number, data: Partial<Pick<Room, "name" | "mac_address">>) =>
+  update: (roomId: number, data: Partial<Pick<Room, "name" | "classroom_code" | "mac_address">>) =>
     api.patch<{ room: Room }>(`/rooms/${roomId}`, data),
 
   remove: (roomId: number) => api.delete(`/rooms/${roomId}`),

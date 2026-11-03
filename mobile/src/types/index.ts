@@ -13,6 +13,7 @@ export interface User {
 export interface Room {
   id: number;
   name: string;
+  classroom_code: string;
   mac_address?: string | null;
   has_device_credential?: boolean;
   last_seen_at?: string | null;

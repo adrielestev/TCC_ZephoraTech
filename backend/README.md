@@ -17,6 +17,8 @@ npm run dev
 
 Configure `INITIAL_ADMIN_*` antes de executar o seed. O seed cria apenas a conta inicial se ela ainda não existir. Configure `JWT_SECRET` com pelo menos 32 caracteres em produção. Sem `SMTP_HOST`, os códigos de verificação e de recuperação aparecem no terminal apenas em desenvolvimento; em produção nenhum código é exposto e o envio falha. Para enviar e-mails, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` e `MAIL_FROM`. `PASSWORD_RESET_TTL_MINUTES` define a validade do código de recuperação (padrão: 15 minutos).
 
+No Azure App Service, use `npm run start:azure` como comando de inicialização. Ele aplica as migrations pendentes, executa o seed idempotente do administrador inicial e inicia a API. Configure as variáveis de ambiente do Azure antes da primeira inicialização.
+
 ## Estrutura do backend
 
 - `src/routes`: declara URLs, middlewares e schemas de cada domínio.
@@ -78,7 +80,7 @@ As regras disparam quando o ESP32 reporta uma leitura de entrada. `cooldown_seco
 
 ## HTTP e HTTPS
 
-O servidor escuta na porta `PORT` (padrão 3000), em `0.0.0.0`. Pode atender HTTPS diretamente quando `HTTPS_KEY_FILE` e `HTTPS_CERT_FILE` apontarem para a chave e o certificado TLS; em produção também pode ficar atrás de um proxy HTTPS. Configure as origens web em `CORS_ORIGIN`.
+O servidor escuta na porta `PORT` (padrão 3000), em `0.0.0.0`. Pode atender HTTPS diretamente quando `HTTPS_KEY_FILE` e `HTTPS_CERT_FILE` apontarem para a chave e o certificado TLS; em produção também pode ficar atrás de um proxy HTTPS. Configure as origens web em `CORS_ORIGIN`; use `*` para aceitar qualquer origem. Credenciais CORS permanecem desabilitadas.
 
 ## Importar no Insomnia
 

@@ -6,6 +6,7 @@ Project room_automation {
 Table rooms {
   id integer [pk, increment]
   name text [not null]
+  classroom_code text [not null, unique]
   mac_address text [not null, unique, note: 'MAC obrigatório e único do controlador da sala']
   device_credential_hash text [unique, note: 'Hash da credencial do único controlador ESP32 da sala']
   last_seen_at text
@@ -28,28 +29,16 @@ Table users {
   verification_expires_at text
   verification_attempts integer [not null, default: 0]
   last_code_sent_at text
+  password_reset_token_hash text
+  password_reset_expires_at text
+  password_reset_attempts integer [not null, default: 0]
   user_level text [not null, default: 'user', note: 'Papel global: admin ou user']
   user_photo text
   deleted_at text
   created_at text [not null, default: `CURRENT_TIMESTAMP`]
   updated_at text [not null, default: `CURRENT_TIMESTAMP`]
 
-  Note: 'SQLite CHECKs: is_email_verified IN (0,1); verification_attempts >= 0; user_level IN (''admin'',''user''). E-mails são normalizados pela aplicação.'
-}
-
-Table password_reset_tokens {
-  id integer [pk, increment]
-  user_id integer [not null, unique]
-  token_hash text [not null]
-  expires_at text [not null]
-  attempts integer [not null, default: 0]
-  created_at text [not null, default: `CURRENT_TIMESTAMP`]
-
-  indexes {
-    expires_at [name: 'idx_password_reset_expires']
-  }
-
-  Note: 'Armazena somente o hash do código temporário de recuperação; um código ativo por usuário.'
+  Note: 'SQLite CHECKs: is_email_verified IN (0,1); verification_attempts >= 0; user_level aceita admin ou user. E-mails são normalizados pela aplicação.'
 }
 
 Table room_collaborators {
@@ -117,7 +106,6 @@ Table automation_rules {
 Ref: room_collaborators.room_id > rooms.id [delete: cascade]
 Ref: room_collaborators.user_id > users.id [delete: cascade]
 Ref: room_collaborators.added_by > users.id [delete: set null]
-Ref: password_reset_tokens.user_id > users.id [delete: cascade]
 Ref: sensors.room_id > rooms.id [delete: cascade]
 Ref: automation_rules.source_sensor_id > sensors.id [delete: cascade]
 Ref: automation_rules.target_sensor_id > sensors.id [delete: cascade]

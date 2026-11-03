@@ -13,7 +13,7 @@ app.use(
     const origin = req.get("Origin");
     if (!origin) return callback(null, { origin: false, credentials: false });
 
-    let allowed = env.corsOrigins.includes(origin);
+    let allowed = env.corsOrigins.includes("*") || env.corsOrigins.includes(origin);
     if (!allowed && env.NODE_ENV !== "production") {
       try {
         const hostname = new URL(origin).hostname;

@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "start:azure": "npm run migrate && npm run seed && node src/server.js",
     "knex": "knex",
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback",

@@ -2,6 +2,7 @@ export async function up(knex) {
   await knex.schema.createTable("rooms", (t) => {
     t.increments("id").primary();
     t.text("name").notNullable();
+    t.text("classroom_code").notNullable().unique();
     t.text("mac_address").notNullable().unique();
     t.text("device_credential_hash").unique();
     t.text("last_seen_at");
@@ -33,6 +34,9 @@ export async function up(knex) {
     t.text("verification_expires_at");
     t.integer("verification_attempts").notNullable().defaultTo(0);
     t.text("last_code_sent_at");
+    t.text("password_reset_token_hash");
+    t.text("password_reset_expires_at");
+    t.integer("password_reset_attempts").notNullable().defaultTo(0);
     t.text("user_level").notNullable().defaultTo("user");
     t.text("user_photo");
     t.text("deleted_at");
@@ -61,20 +65,6 @@ export async function up(knex) {
     t.text("created_at").notNullable().defaultTo(knex.raw("CURRENT_TIMESTAMP"));
     t.unique(["room_id", "user_id"], "idx_room_collaborators_unique");
     t.index("user_id", "idx_room_collaborators_user");
-  });
-  await knex.schema.createTable("password_reset_tokens", (t) => {
-    t.increments("id").primary();
-    t.integer("user_id")
-      .notNullable()
-      .unique()
-      .references("id")
-      .inTable("users")
-      .onDelete("CASCADE");
-    t.text("token_hash").notNullable();
-    t.text("expires_at").notNullable();
-    t.integer("attempts").notNullable().defaultTo(0);
-    t.text("created_at").notNullable().defaultTo(knex.raw("CURRENT_TIMESTAMP"));
-    t.index("expires_at", "idx_password_reset_expires");
   });
   await knex.schema.createTable("sensors", (t) => {
     t.increments("id").primary();
@@ -155,7 +145,6 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("password_reset_tokens");
   await knex.schema.dropTableIfExists("automation_rules");
   await knex.schema.dropTableIfExists("sensors");
   await knex.schema.dropTableIfExists("room_collaborators");

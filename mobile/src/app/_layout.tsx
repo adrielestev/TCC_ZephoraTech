@@ -4,7 +4,14 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ActivityIndicator, View } from "react-native";
 import "./safe-area.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function RootNavigation() {
   const { user, isLoading } = useAuth();
