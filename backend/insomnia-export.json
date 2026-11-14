@@ -1,0 +1,971 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-14T19:40:35.198Z",
+  "__export_source": "zephora-backend",
+  "resources": [
+    {
+      "_id": "wrk_zephora_api",
+      "parentId": null,
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Zephora API",
+      "description": "Requests da API do Zephora",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_zephora_base",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3333",
+        "token": "",
+        "email": "admin@escola.com",
+        "password": "uma-senha-forte",
+        "code": "000000",
+        "user_id": "1",
+        "room_id": "1",
+        "device_id": "1",
+        "automation_id": "1",
+        "esp32_id": "1",
+        "esp32_credential": "COLE_A_CREDENCIAL_DE_32_A_128_CARACTERES",
+        "firmware": "1.0.0"
+      },
+      "dataPropertyOrder": null,
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Health",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 0,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_health",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health check",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 0,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Auth",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 100,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_register",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/register",
+      "name": "Register",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Administrador\",\n  \"email\": \"{{ _.email }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/login",
+      "name": "Login",
+      "description": "Copie o token retornado para a variável token.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_verify_email",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/verify-email",
+      "name": "Verify email",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\",\n  \"code\": \"{{ _.code }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "req_forgot_password",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/forgot-password",
+      "name": "Forgot password",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_reset_password",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/reset-password",
+      "name": "Reset password",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\",\n  \"code\": \"{{ _.code }}\",\n  \"newPassword\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 4,
+      "_type": "request"
+    },
+    {
+      "_id": "req_me",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/me",
+      "name": "Current user",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 5,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_users",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Users",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 200,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_users_list",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users?q=&limit=20&offset=0",
+      "name": "List users",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_update_me",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/me",
+      "name": "Update my profile",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Novo nome\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_get",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/{{ _.user_id }}",
+      "name": "Get user",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_role",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/{{ _.user_id }}/role",
+      "name": "Change user role",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"role\": \"member\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_status",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/{{ _.user_id }}/status",
+      "name": "Change user status",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"isActive\": true\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 4,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_rooms",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/{{ _.user_id }}/rooms",
+      "name": "Set user rooms",
+      "description": "",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roomIds\": [{{ _.room_id }}]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 5,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_rooms",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Rooms",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 300,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_rooms_list",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms",
+      "name": "List rooms",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_create",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms",
+      "name": "Create room",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Sala 101\",\n  \"description\": \"Sala de aula\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_get",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms/{{ _.room_id }}",
+      "name": "Get room",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_update",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms/{{ _.room_id }}",
+      "name": "Update room",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Sala 101 - Atualizada\",\n  \"description\": \"Descrição atualizada\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_access",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms/{{ _.room_id }}/access",
+      "name": "List room access",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 4,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_devices",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Devices",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 400,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_devices_list",
+      "parentId": "fld_devices",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/devices?roomId={{ _.room_id }}",
+      "name": "List devices by room",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_device_state",
+      "parentId": "fld_devices",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/devices/{{ _.device_id }}/state",
+      "name": "Set device state",
+      "description": "",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"state\": {\n    \"on\": true\n  }\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_device_update",
+      "parentId": "fld_devices",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/devices/{{ _.device_id }}",
+      "name": "Update device",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Luz do quadro\",\n  \"roomId\": {{ _.room_id }}\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_automations",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "Automations",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 500,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_automations_list",
+      "parentId": "fld_automations",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/automations?roomId={{ _.room_id }}",
+      "name": "List automations",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_automation_create",
+      "parentId": "fld_automations",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/automations",
+      "name": "Create automation",
+      "description": "Todos os aparelhos precisam pertencer à mesma sala.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roomId\": {{ _.room_id }},\n  \"name\": \"Acender luz ao detectar movimento\",\n  \"triggers\": [\n    {\n      \"deviceId\": {{ _.device_id }},\n      \"condition\": {\n        \"presence\": true\n      }\n    }\n  ],\n  \"actions\": [\n    {\n      \"deviceId\": {{ _.device_id }},\n      \"state\": {\n        \"on\": true\n      }\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_automation_pause",
+      "parentId": "fld_automations",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/automations/{{ _.automation_id }}/pause",
+      "name": "Pause automation",
+      "description": "",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"paused\": true\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_esp32",
+      "parentId": "wrk_zephora_api",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "name": "ESP32",
+      "description": "",
+      "environment": {},
+      "metaSortKey": 600,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_esp32_register",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/esp32",
+      "name": "Register ESP32",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"credential\": \"{{ _.esp32_credential }}\",\n  \"name\": \"ESP32 Sala 101\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 0,
+      "_type": "request"
+    },
+    {
+      "_id": "req_esp32_list",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/esp32",
+      "name": "List ESP32 devices",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 1,
+      "_type": "request"
+    },
+    {
+      "_id": "req_esp32_register_devices",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/esp32/{{ _.esp32_id }}/devices",
+      "name": "Register ESP32 devices",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"devices\": [\n    {\n      \"deviceId\": {{ _.device_id }},\n      \"roomId\": {{ _.room_id }},\n      \"name\": \"Luz do quadro\"\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 2,
+      "_type": "request"
+    },
+    {
+      "_id": "req_device_sync",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/device-sync",
+      "name": "Device sync",
+      "description": "Autenticação do firmware por X-ESP32-Credential, sem JWT.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"firmware\": \"{{ _.firmware }}\",\n  \"devices\": [\n    {\n      \"channel\": \"relay_1\",\n      \"type\": \"light\",\n      \"name\": \"Luz do quadro\",\n      \"state\": {\n        \"on\": false\n      }\n    },\n    {\n      \"channel\": \"pir_1\",\n      \"type\": \"presence_sensor\",\n      \"name\": \"Presença\",\n      \"state\": {\n        \"presence\": false\n      }\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-ESP32-Credential",
+          "value": "{{ _.esp32_credential }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_resend_verification",
+      "parentId": "fld_auth",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/auth/resend-verification",
+      "name": "Resend verification",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 6,
+      "_type": "request"
+    },
+    {
+      "_id": "req_user_get_rooms",
+      "parentId": "fld_users",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/users/{{ _.user_id }}/rooms",
+      "name": "Get user rooms",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 6,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_delete",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms/{{ _.room_id }}",
+      "name": "Delete room",
+      "description": "",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 5,
+      "_type": "request"
+    },
+    {
+      "_id": "req_device_delete",
+      "parentId": "fld_devices",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/devices/{{ _.device_id }}",
+      "name": "Delete device",
+      "description": "",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_automation_rename",
+      "parentId": "fld_automations",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/automations/{{ _.automation_id }}",
+      "name": "Rename automation",
+      "description": "",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Automação atualizada\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 3,
+      "_type": "request"
+    },
+    {
+      "_id": "req_automation_delete",
+      "parentId": "fld_automations",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/automations/{{ _.automation_id }}",
+      "name": "Delete automation",
+      "description": "",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 4,
+      "_type": "request"
+    },
+    {
+      "_id": "req_esp32_get",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/esp32/{{ _.esp32_id }}",
+      "name": "Get ESP32 device",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 4,
+      "_type": "request"
+    },
+    {
+      "_id": "req_esp32_delete",
+      "parentId": "fld_esp32",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/esp32/{{ _.esp32_id }}",
+      "name": "Delete ESP32 device",
+      "description": "",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 5,
+      "_type": "request"
+    },
+    {
+      "_id": "req_room_photo_delete",
+      "parentId": "fld_rooms",
+      "modified": 1763150000000,
+      "created": 1763150000000,
+      "url": "{{ _.base_url }}/api/rooms/{{ _.room_id }}/photos/1",
+      "name": "Delete room photo",
+      "description": "Use slot 1, 2 ou 3.",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "metaSortKey": 6,
+      "_type": "request"
+    }
+  ]
+}

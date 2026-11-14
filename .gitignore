@@ -1,3 +1,2 @@
-*.zip
-.vscode
-node_modules/
+.zip
+!nativeEsp32.zip

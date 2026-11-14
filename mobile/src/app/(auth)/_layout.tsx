@@ -1,22 +1,17 @@
-import { Stack } from "expo-router";
-import { colors } from "@/theme/tokens";
+import { Stack } from 'expo-router';
+import { colors } from '@/ui/theme';
+
+// Ao sair da conta (ou abrir o app deslogado), a base da pilha é o login
+export const unstable_settings = { anchor: 'login' };
 
 export default function AuthLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerBackTitle: "Voltar",
-        headerTintColor: colors.primary,
-        headerTitleStyle: { color: colors.ink, fontWeight: "800" },
-        headerStyle: { backgroundColor: colors.surfaceMuted },
-      }}
-    >
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="register" options={{ title: "Criar conta" }} />
-      <Stack.Screen name="verify-email" options={{ title: "Verificar e-mail" }} />
-      <Stack.Screen name="forgot-password" options={{ title: "Recuperar senha" }} />
-      <Stack.Screen name="reset-password" options={{ title: "Nova senha" }} />
+    <Stack screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.bg } }}>
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
+      <Stack.Screen name="verify-email" />
+      <Stack.Screen name="forgot-password" />
+      <Stack.Screen name="reset-password" />
     </Stack>
   );
 }

@@ -2,8 +2,5 @@ node_modules/
 package-lock.json
 .env
 data/
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
 uploads/
-certs/
+*.log

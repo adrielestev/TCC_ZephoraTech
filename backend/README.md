@@ -1,87 +1,120 @@
-# Zephora Backend
+# Zephora — Backend
 
-API REST para automação de salas. Requer Node.js 24+, Express, Zod, Knex com o módulo SQLite nativo `node:sqlite`, Nodemailer, JWT e bcrypt. Não é necessário instalar um driver SQLite nativo via npm.
+API do sistema institucional de automação de salas (ESP32).
+Node.js ≥ 22.13 · Express 5 · `node:sqlite` · JWT · Nodemailer · Zod.
 
-## Drivers de dispositivos
+## Rodando
 
-O catálogo atual aceita `relay/output` (`relay_gpio`) e `presence/input` (`pir_gpio`). O catálogo do backend fica em `src/domain/device-drivers.js`; a implementação física correspondente fica no registro `esp32/ZephoraESP32/src/device_driver_registry.h`, e os tipos disponíveis no formulário ficam em `mobile/src/utils/deviceRules.ts`. Ao adicionar um driver, atualize esses três pontos e os validadores/configuração específicos do driver. Tipos ainda não implementados não podem ser cadastrados nem usados em novas automações; registros antigos continuam legíveis e editáveis sem trocar seu tipo.
-
-## Inicialização
-
-```powershell
+```bash
 npm install
-Copy-Item .env.example .env
-npm run db:setup
-npm run dev
+cp .env.example .env          # preencha JWT_SECRET e CODE_HMAC_SECRET (comando no próprio arquivo)
+OWNER_EMAIL=admin@escola.com OWNER_PASSWORD='uma-senha-forte' npm run db:seed
+npm run dev                   # ou: npm start
+npm test                      # 22 testes de ponta a ponta (banco em memória)
 ```
 
-Configure `INITIAL_ADMIN_*` antes de executar o seed. O seed cria apenas a conta inicial se ela ainda não existir. Configure `JWT_SECRET` com pelo menos 32 caracteres em produção. Sem `SMTP_HOST`, os códigos de verificação e de recuperação aparecem no terminal apenas em desenvolvimento; em produção nenhum código é exposto e o envio falha. Para enviar e-mails, configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` e `MAIL_FROM`. `PASSWORD_RESET_TTL_MINUTES` define a validade do código de recuperação (padrão: 15 minutos).
+Sem `SMTP_HOST`, em desenvolvimento os códigos de 6 dígitos são impressos no console.
+Em produção `SMTP_HOST` é obrigatório (a API não sobe sem ele).
 
-No Azure App Service, use `npm run start:azure` como comando de inicialização. Ele aplica as migrations pendentes, executa o seed idempotente do administrador inicial e inicia a API. Configure as variáveis de ambiente do Azure antes da primeira inicialização.
+## Estrutura
 
-## Estrutura do backend
+```
+src/
+  config/env.js            variáveis de ambiente validadas (falha ao subir se inválidas)
+  database/                db.js (conexão, transaction), schema.sql, seed-owner.js
+  shared/                  errors, crypto, files, mailer, roles, schemas
+    middlewares/           authenticate, authorize, authenticateEsp32, validate,
+                           rateLimiters, upload, errorHandler
+  modules/<nome>/          routes → controller → service → repository (+ schemas)
+    auth · users · rooms · esp32 · devices · automations · sync
+```
 
-- `src/routes`: declara URLs, middlewares e schemas de cada domínio.
-- `src/controllers`: traduz requisições HTTP em chamadas de serviço e monta respostas.
-- `src/services`: aplica regras de autenticação, acesso, salas, dispositivos e automações.
-- `src/repositories`: concentra consultas e alterações SQLite via Knex.
-- `src/schemas`: valida corpos e parâmetros com Zod.
-- `src/middlewares`: autenticação, limitação de tentativas, validação e erros.
-- `src/config` e `src/serializers`: configuração validada e formatos públicos de resposta.
-- `migrations`: uma migration consolidada com o schema SQLite completo e atualizado.
-- `seeds`: criação idempotente do admin inicial.
+## Endpoints
 
-O arquivo `schemadb.dbml` documenta o mesmo schema. Para uma instalação nova, `npm run db:setup` aplica a migration consolidada e executa o seed.
+Erros: `{ "error": { "code", "message", "details?" } }`. Listas: `{ "data": [...] }`.
+Autenticação de usuário: `Authorization: Bearer <token>`.
 
-## Fotos e uploads
+| Método | Rota | Quem | Descrição |
+|---|---|---|---|
+| POST | `/api/auth/register` | público | Cadastro (resposta sempre genérica) + código por e-mail |
+| POST | `/api/auth/verify-email` | público | `{email, code}` |
+| POST | `/api/auth/resend-verification` | público | `{email}` |
+| POST | `/api/auth/login` | público | `{email, password}` → `{token, user}` (403 `EMAIL_NOT_VERIFIED` se pendente) |
+| POST | `/api/auth/forgot-password` | público | `{email}` |
+| POST | `/api/auth/reset-password` | público | `{email, code, newPassword}` |
+| GET | `/api/auth/me` | logado | Usuário atual |
+| PATCH | `/api/users/me` | logado | `{name}` |
+| PUT/DELETE | `/api/users/me/avatar` | logado | Campo multipart `avatar` |
+| GET | `/api/users?q=&limit=&offset=` | admin | Lista/busca |
+| GET | `/api/users/:id` | admin | |
+| PATCH | `/api/users/:id/role` | **owner** | `{role: "admin" ou "member"}` |
+| PATCH | `/api/users/:id/status` | admin | `{isActive}` |
+| GET/PUT | `/api/users/:id/rooms` | admin | `{roomIds: []}` substitui as salas do usuário comum |
+| GET | `/api/rooms` | logado | Admin: todas · comum: só as suas |
+| POST | `/api/rooms` | admin | `{name, description?}` |
+| GET | `/api/rooms/:roomId` | acesso à sala | |
+| PATCH/DELETE | `/api/rooms/:roomId` | admin | Exclusão bloqueada se houver aparelhos |
+| GET | `/api/rooms/:roomId/access` | admin | Usuários com acesso |
+| PUT/DELETE | `/api/rooms/:roomId/photos/:slot` | admin | `slot` 1–3, campo multipart `photo` |
+| POST | `/api/esp32` | admin | `{credential, name?}` (passo 1) |
+| GET | `/api/esp32` · `/api/esp32/:id` | admin | Status e aparelhos reportados (passo 2) |
+| POST | `/api/esp32/:id/devices` | admin | `{devices:[{deviceId, roomId, name?}]}` (passo 3) |
+| DELETE | `/api/esp32/:id` | admin | |
+| GET | `/api/devices?roomId=` | acesso à sala | |
+| PUT | `/api/devices/:id/state` | acesso à sala | `{state:{on:true}}` |
+| PATCH/DELETE | `/api/devices/:id` | admin | Renomear/mover · descadastrar |
+| GET | `/api/automations?roomId=` | acesso à sala | |
+| POST | `/api/automations` | admin | `{roomId, name, triggers[], actions[]}` |
+| PATCH/DELETE | `/api/automations/:id` | admin | |
+| PUT | `/api/automations/:id/pause` | acesso à sala | `{paused: true ou false}` |
+| POST | `/api/device-sync` | **ESP32** | Polling do firmware |
 
-Fotos de perfil e de salas são enviadas como `multipart/form-data`, usando o campo `photo`. São aceitos apenas JPEG, PNG e WebP, com limite de 5 MB por arquivo e uma imagem por requisição. O backend verifica o tipo declarado e a assinatura binária, gera um nome aleatório e salva o conteúdo em `backend/uploads` com permissões restritas. Essa pasta não é servida como diretório público; o SQLite guarda somente o nome gerado.
+Exemplo de automação:
+```json
+{ "roomId": 1, "name": "Acender luz ao detectar movimento",
+  "triggers": [{ "deviceId": 3, "condition": { "presence": true } }],
+  "actions":  [{ "deviceId": 1, "state": { "on": true } }] }
+```
+Gatilhos: só sensores; ações: só aparelhos controláveis; todos na mesma sala. Com vários gatilhos, **todos** precisam estar satisfeitos. A automação dispara na **mudança** do sensor (não reaplica enquanto a presença continua).
 
-Use `POST /api/users/me/photo` para enviar ou substituir a própria foto, `DELETE /api/users/me/photo` para removê-la, e `POST` ou `DELETE /api/rooms/:id/photos/:slot` para gerenciar os espaços de foto 1 a 3 de uma sala (somente admin). As URLs retornadas apontam para `GET /api/media/:filename`, que exige JWT e só permite ao usuário ler a própria foto, a qualquer admin ler fotos existentes, ou a colaboradores ler fotos das salas às quais têm acesso. As respostas de imagem não são armazenadas em cache; clientes web devem enviar o Bearer Token no fetch da URL.
+## Protocolo do ESP32
 
-Configuração inválida impede a inicialização. Cadastro, verificação, login e handshake ESP32 têm limites de requisições; tokens de usuário são conferidos contra o banco em cada chamada para aplicar imediatamente mudanças de papel. Segredos de ESP32 são armazenados como SHA-256 e comparados em tempo constante. Respostas de colaborador não incluem MAC, pinos ou configuração interna de dispositivos.
+Autenticação: header `X-ESP32-Credential` (32–128 caracteres `[A-Za-z0-9_-]` gerados pelo ESP32, ex.: 32 bytes aleatórios em hex). Use **HTTPS**.
 
-## API
+```http
+POST /api/device-sync
+X-ESP32-Credential: <credencial>
+Content-Type: application/json
 
-Todas as rotas abaixo usam o prefixo `/api`. JSON é validado com Zod. Rotas autenticadas usam `Authorization: Bearer <token>`.
+{ "firmware": "1.0.0",
+  "devices": [
+    { "channel": "relay_1", "type": "light",           "name": "Luz do quadro", "state": { "on": false } },
+    { "channel": "pir_1",   "type": "presence_sensor", "name": "Presença",      "state": { "presence": false } } ] }
+```
+```json
+{ "serverTime": "...", "pollIntervalMs": 3000,
+  "commands": [ { "channel": "relay_1", "state": { "on": true } } ] }
+```
+Fluxo: o admin cadastra a credencial (`pending`) → o ESP32 faz o primeiro sync (`online`; aparelhos novos ficam `discovered`) → o admin escolhe quais cadastrar e em qual sala. A cada sync o ESP32 envia os estados atuais e aplica os `commands`. Sem sync por `ESP32_OFFLINE_AFTER_SECONDS`, o módulo vira `offline`.
+Novos tipos de aparelho: `modules/devices/device-types.js` + CHECK de `devices.type` no `schema.sql`.
 
-| Método           | Rota                                       | Acesso                           | Função                                                                      |
-| ---------------- | ------------------------------------------ | -------------------------------- | --------------------------------------------------------------------------- |
-| POST             | `/auth/register`                           | Público                          | Cadastra e envia código de verificação                                      |
-| POST             | `/auth/verify-email`                       | Público                          | Verifica e-mail com `{email, code}`                                         |
-| POST             | `/auth/resend-code`                        | Público                          | Solicita novo código de verificação                                         |
-| POST             | `/auth/login`                              | Público                          | Autentica e retorna JWT                                                     |
-| POST             | `/auth/forgot-password`                    | Público                          | Solicita código temporário de recuperação sem revelar se a conta existe     |
-| POST             | `/auth/reset-password`                     | Público                          | Redefine a senha com `{email, code, password}`                              |
-| GET              | `/auth/me`                                 | Usuário                          | Perfil autenticado                                                          |
-| PATCH            | `/users/me`                                | Usuário                          | Atualiza perfil                                                             |
-| POST/DELETE      | `/users/me/photo`                          | Usuário                          | Envia/remove a própria foto (multipart `photo`; JPEG, PNG ou WebP até 5 MB) |
-| GET              | `/users`                                   | Admin                            | Lista usuários                                                              |
-| PATCH            | `/users/:id/role`                          | Admin                            | Promove/rebaixa via `{user_level: "admin"                                   | "user"}` |
-| GET/POST         | `/rooms`                                   | Usuário/Admin                    | Lista salas acessíveis / cria sala (admin)                                  |
-| GET/PATCH/DELETE | `/rooms/:id`                               | Colaborador/Admin; escrita admin | Consulta / configura / remove sala                                          |
-| POST/DELETE      | `/rooms/:id/photos/:slot`                  | Admin                            | Envia/remove foto da sala no slot 1 a 3                                     |
-| GET              | `/media/:filename`                         | Usuário autorizado               | Lê foto de perfil própria ou foto de sala acessível                         |
-| GET/POST         | `/rooms/:id/collaborators`                 | Admin                            | Lista/adiciona `{user_id}` como colaborador                                 |
-| DELETE           | `/rooms/:id/collaborators/:collaboratorId` | Admin                            | Remove vínculo de colaborador                                               |
-| POST             | `/rooms/:id/device-credential`             | Admin                            | Gera/rotaciona segredo único do ESP32                                       |
-| GET/POST         | `/rooms/:id/devices`                       | Colaborador/Admin; escrita admin | Lista/cadastra dispositivos                                                 |
-| PATCH/DELETE     | `/devices/:id`                             | Admin                            | Configura/remove dispositivo                                                |
-| POST             | `/devices/:id/command`                     | Colaborador/Admin                | Define `{value}` do dispositivo de saída                                    |
-| GET/POST         | `/rooms/:id/automations`                   | Colaborador/Admin da sala        | Lista/cria regras de automação para a sala                                  |
-| PATCH/DELETE     | `/automations/:id`                         | Admin                            | Altera/remove uma regra                                                     |
-| POST             | `/device/handshake`                        | ESP32                            | Troca MAC + segredo nos headers por JWT de dispositivo                      |
-| GET              | `/device/commands`                         | ESP32                            | Busca configuração e estados dos dispositivos da sala                       |
-| POST             | `/device/devices/:id/state`                | ESP32                            | Reporta `{value}` do dispositivo                                            |
+## Segurança
 
-`sensors` no banco representa tanto sensores quanto atuadores. Cada sala aceita um ESP32; credenciais são armazenadas com SHA-256 e o segredo é mostrado uma única vez. O ESP32 envia `X-Device-MAC` e `X-Device-Credential` no handshake. Rotacionar o segredo invalida os tokens existentes. O colaborador pode comandar saídas das salas vinculadas, sem permissão de configuração ou acesso a outras salas.
+- **Senhas**: bcrypt (custo 12), máx. 72 bytes; hash fictício no login para igualar o tempo quando o e-mail não existe.
+- **JWT**: HS256 fixo, `issuer`, expiração configurável. Papel, status e senha são relidos do banco a cada requisição: promoção/desativação valem na hora e **trocar a senha invalida os tokens antigos**.
+- **Anti-enumeração**: cadastro, reenvio e "esqueci a senha" respondem sempre igual.
+- **Códigos de 6 dígitos**: CSPRNG, guardados como HMAC-SHA256 (vinculado ao usuário e à finalidade), validade, uso único, limite de tentativas e intervalo de reenvio; comparação em tempo constante.
+- **ESP32**: só o SHA-256 da credencial é guardado; ela nunca é devolvida pela API.
+- **Autorização**: papéis `owner` / `admin` / `member`; sala sem permissão responde 404; owner protegido; só o owner promove.
+- **Entrada**: Zod `.strict()` em todos os corpos, SQL parametrizado (colunas dinâmicas só de allowlists), limite de 100 KB por JSON.
+- **Uploads**: tipo verificado pelos bytes (JPEG/PNG/WebP; SVG recusado), máx. 5 MB, nome aleatório, escrita só dentro de `UPLOAD_DIR`.
+- **HTTP**: helmet, CORS liberal, rate limit global, por IP+e-mail (login/códigos) e por ESP32; erros internos sem vazar detalhes.
+- **Banco**: `foreign_keys` ligadas, `CHECK` nos enums, transações nas operações compostas.
 
-As regras disparam quando o ESP32 reporta uma leitura de entrada. `cooldown_seconds` limita a repetição durante a execução do backend para regras que mantêm o último valor. Com `restore_previous: true`, a automação salva o estado desejado da saída ao iniciar a condição, bloqueia comandos manuais enquanto estiver ativa e restaura o valor salvo quando a condição termina. O bloqueio aparece em `automation_lock` na resposta do dispositivo e comandos manuais recebem HTTP 423. Pausar ou excluir uma regra ativa libera o controle sem alterar o estado atual. Regras existentes mantêm o comportamento anterior (`restore_previous: false`).
+## Limitações conhecidas
 
-## HTTP e HTTPS
-
-O servidor escuta na porta `PORT` (padrão 3000), em `0.0.0.0`. Pode atender HTTPS diretamente quando `HTTPS_KEY_FILE` e `HTTPS_CERT_FILE` apontarem para a chave e o certificado TLS; em produção também pode ficar atrás de um proxy HTTPS. Configure as origens web em `CORS_ORIGIN`; use `*` para aceitar qualquer origem. Credenciais CORS permanecem desabilitadas.
-
-## Importar no Insomnia
-
-Importe `insomnia/zephora-api-insomnia.json` pelo menu **Import** do Insomnia. Em **Base Environment**, ajuste `base_url` se necessário. Faça login e copie o JWT de usuário para `token`; gere a credencial do ESP32 e copie-a para `device_credential`; depois do handshake, copie o JWT de dispositivo para `device_token`. Para os uploads de foto, selecione um arquivo JPEG, PNG ou WebP no campo multipart `photo`; o slot da foto da sala vem da variável `photo_slot` (1 a 3). Em desenvolvimento, o código de verificação aparece no terminal do backend se SMTP não estiver configurado. Atualize os IDs do ambiente conforme as respostas da API antes de executar as requisições dependentes.
+- Só access token (sem refresh). Para sessões longas, adicione refresh token.
+- Schema aplicado com `IF NOT EXISTS` a cada start: mudanças futuras exigem migrações.
+- Sem edição de gatilhos/ações de uma automação (apague e recrie).
+- Atrás de proxy reverso com HTTPS, configure `TRUST_PROXY` para o rate limit enxergar o IP real.
+- Backup: o banco é um arquivo (`DB_PATH`, modo WAL); faça backup junto com `UPLOAD_DIR`.
