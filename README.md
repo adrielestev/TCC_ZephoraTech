@@ -12,9 +12,9 @@ acompanhar o estado dos dispositivos.
 
 ## Requisitos
 
-- Node.js 22.13 ou superior
+- Node.js 22 ou superior
 - npm
-- PlatformIO (apenas para o firmware)
+- arduino cli (apenas para o firmware)
 
 ## Início rápido
 
