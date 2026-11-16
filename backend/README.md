@@ -5,7 +5,7 @@ automações e sincronização com ESP32.
 
 ## Tecnologias
 
-Node.js 22.13+ · Express 5 · SQLite (`node:sqlite`) · JWT · Zod.
+Node.js 22+ · Express 5 · SQLite (`node:sqlite`) · JWT · Zod.
 
 ## Executar localmente
 
@@ -14,12 +14,6 @@ npm install
 cp .env.example .env
 npm run db:seed
 npm run dev
-```
-
-No PowerShell, copie o arquivo de ambiente com:
-
-```powershell
-Copy-Item .env.example .env
 ```
 
 Antes do seed, preencha `OWNER_EMAIL` e `OWNER_PASSWORD` no `.env`.
