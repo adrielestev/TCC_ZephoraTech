@@ -19,12 +19,6 @@ cp .env.example .env
 npm start
 ```
 
-No PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
 Comandos úteis:
 
 ```bash
@@ -41,15 +35,6 @@ no `.env` o endereço acessível da API:
 ```env
 EXPO_PUBLIC_API_URL=http://IP-DO-COMPUTADOR:3333
 ```
-
-O valor deve ser a URL da API sem `/api`. No desenvolvimento, os valores
-mais comuns são:
-
-| Ambiente | URL |
-| --- | --- |
-| navegador ou simulador iOS | `http://localhost:3333` |
-| emulador Android | `http://10.0.2.2:3333` |
-| celular físico | `http://IP-DO-COMPUTADOR:3333` |
 
 ## Organização do código
 
