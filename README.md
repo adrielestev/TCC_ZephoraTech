@@ -20,8 +20,7 @@ acompanhar o estado dos dispositivos.
 
 1. Inicie a API seguindo [`backend/README.md`](./backend/README.md).
 2. Configure e execute o aplicativo seguindo [`mobile/README.md`](./mobile/README.md).
-3. Para usar uma placa ou o Wokwi, extraia [`esp32.zip`](./esp32.zip) e siga o
-   README incluído no diretório extraído.
+3. Para usar o firmware, extraia [`esp32.zip`](./esp32.zip) e siga as instruções.
 
 A API deve estar disponível antes do aplicativo e dos módulos ESP32. Por
 padrão, ela usa `http://localhost:3333`.
