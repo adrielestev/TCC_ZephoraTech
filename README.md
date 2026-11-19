@@ -8,7 +8,7 @@ acompanhar o estado dos dispositivos.
 
 - [`backend/`](./backend): API REST em Node.js, Express e SQLite.
 - [`mobile/`](./mobile): aplicativo Android, iOS e web com Expo/React Native.
-- [`esp32.zip`](./esp32.zip): código-fonte do firmware dos módulos ESP32.
+- [`esp32/`](./esp32): código-fonte do firmware dos módulos ESP32.
 
 ## Requisitos
 
@@ -20,15 +20,14 @@ acompanhar o estado dos dispositivos.
 
 1. Inicie a API seguindo [`backend/README.md`](./backend/README.md).
 2. Configure e execute o aplicativo seguindo [`mobile/README.md`](./mobile/README.md).
-3. Para usar o firmware, extraia [`esp32.zip`](./esp32.zip) e siga as instruções.
+3. Para usar o firmware [`esp32/`](./esp32), siga as instruções.
 
 A API deve estar disponível antes do aplicativo e dos módulos ESP32. Por
 padrão, ela usa `http://localhost:3333`.
 
 ## Gravação e botões do ESP32
 
-Depois de extrair [`esp32.zip`](./esp32.zip), mantenha o nome da pasta
-`zephora-esp32` e entre nela. O firmware pode ser compilado e gravado usando
+Na pasta [`esp32/`](./esp32) dentro terá `zephora-esp32`, entre nela. O firmware pode ser compilado e gravado usando
 o Arduino CLI:
 
 ```powershell
@@ -76,7 +75,7 @@ de presença no GPIO 27, o DHT22 no GPIO 26 e os quatro relés nos GPIOs 18, 19,
 ```text
 backend/  API, banco de dados
 mobile/   aplicativo Expo
-esp32.zip firmware
+esp32/ firmware
 ```
 
 ## Licença
