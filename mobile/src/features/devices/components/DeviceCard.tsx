@@ -7,7 +7,7 @@ import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/Icon';
 import { IconTile } from '@/ui/ListItem';
 import { colors, spacing } from '@/ui/theme';
-import { describeFlag, deviceTypes, effectiveFlag, getFlag, isApplying } from '../deviceTypes';
+import { describeFlag, deviceTypes, effectiveFlag, getFlag, getTemperature, isApplying } from '../deviceTypes';
 
 interface Props {
   device: Device;
@@ -22,7 +22,12 @@ export function DeviceCard({ device, onToggle, onManage }: Props) {
   const flag = effectiveFlag(device);
   const active = flag === true;
   const applying = isApplying(device);
-  const statusText = device.controllable
+  const statusText = device.type === 'temperature_sensor'
+    ? (() => {
+        const temperature = getTemperature(device.type, device.currentState);
+        return temperature === null ? 'Sem leitura' : `${temperature.toFixed(1)} °C`;
+      })()
+    : device.controllable
     ? describeFlag(device.type, flag)
     : describeFlag(device.type, getFlag(device.type, device.currentState));
 

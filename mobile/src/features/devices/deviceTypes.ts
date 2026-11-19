@@ -4,10 +4,9 @@ import type { IconName } from '@/ui/Icon';
 interface DeviceTypeMeta {
   label: string;
   icon: IconName;
-  /** chave booleana do estado enviado/recebido pela API */
-  stateKey: 'on' | 'presence';
-  trueLabel: string;
-  falseLabel: string;
+  stateKey: 'on' | 'presence' | 'temperature';
+  trueLabel?: string;
+  falseLabel?: string;
 }
 
 /** Para suportar um novo tipo: adicione aqui (e na API em device-types.js). */
@@ -26,11 +25,21 @@ export const deviceTypes: Record<DeviceType, DeviceTypeMeta> = {
     trueLabel: 'Presença detectada',
     falseLabel: 'Sem presença',
   },
+  temperature_sensor: {
+    label: 'Sensor de temperatura',
+    icon: 'thermometer-outline',
+    stateKey: 'temperature',
+  },
 };
 
 export const getFlag = (type: DeviceType, state: DeviceState | null): boolean | null => {
   const value = state?.[deviceTypes[type].stateKey];
   return typeof value === 'boolean' ? value : null;
+};
+
+export const getTemperature = (type: DeviceType, state: DeviceState | null): number | null => {
+  const value = state?.[deviceTypes[type].stateKey];
+  return typeof value === 'number' ? value : null;
 };
 
 export const buildState = (type: DeviceType, value: boolean): DeviceState => ({
@@ -39,7 +48,7 @@ export const buildState = (type: DeviceType, value: boolean): DeviceState => ({
 
 export const describeFlag = (type: DeviceType, value: boolean | null): string => {
   if (value === null) return 'Sem leitura';
-  return value ? deviceTypes[type].trueLabel : deviceTypes[type].falseLabel;
+  return value ? deviceTypes[type].trueLabel ?? 'Ativo' : deviceTypes[type].falseLabel ?? 'Inativo';
 };
 
 /** Estado que o usuário "vê": o pedido mais recente, se houver, senão o último reportado. */

@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS devices (
   esp32_id            INTEGER NOT NULL REFERENCES esp32_modules (id) ON DELETE CASCADE,
   room_id             INTEGER REFERENCES rooms (id) ON DELETE RESTRICT,
   name                TEXT    NOT NULL,
-  type                TEXT    NOT NULL CHECK (type IN ('light', 'presence_sensor')),
+  type                TEXT    NOT NULL CHECK (type IN ('light', 'presence_sensor', 'temperature_sensor')),
   channel             TEXT    NOT NULL,
   registration_status TEXT    NOT NULL DEFAULT 'discovered'
                               CHECK (registration_status IN ('discovered', 'registered')),

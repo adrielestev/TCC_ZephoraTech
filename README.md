@@ -66,8 +66,9 @@ O botão **BOOT** tem funções diferentes conforme o momento:
 | Apertar rapidamente | Não faz nada. |
 
 Antes de gravar, confira os pinos em
-`zephora-esp32/src/hardware/hardware_setup.cpp`. O exemplo usa o relé no
-GPIO 26 e o sensor de presença no GPIO 27. A senha do portal fica em
+`zephora-esp32/src/hardware/hardware_setup.cpp`. Esta configuração usa o sensor
+de presença no GPIO 27, o DHT22 no GPIO 26 e os quatro relés nos GPIOs 18, 19,
+21 e 22. A senha do portal fica em
 `zephora-esp32/include/portal_password.h`.
 
 ## Estrutura do repositório

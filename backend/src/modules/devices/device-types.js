@@ -18,6 +18,11 @@ const DEVICE_TYPES = Object.freeze({
     controllable: false,
     stateSchema: z.object({ presence: z.boolean() }).strict(),
   },
+  temperature_sensor: {
+    label: "Sensor de temperatura",
+    controllable: false,
+    stateSchema: z.object({ temperature: z.number().finite() }).strict(),
+  },
 });
 
 const TYPE_NAMES = Object.keys(DEVICE_TYPES);

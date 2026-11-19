@@ -1,8 +1,8 @@
 // Tipos das respostas da API do Zephora
 
 export type Role = 'owner' | 'admin' | 'member';
-export type DeviceType = 'light' | 'presence_sensor';
-export type DeviceState = Record<string, boolean>;
+export type DeviceType = 'light' | 'presence_sensor' | 'temperature_sensor';
+export type DeviceState = Record<string, boolean | number>;
 export type Esp32Status = 'pending' | 'online' | 'offline';
 
 export interface User {
