@@ -3,7 +3,11 @@
 const path = require('node:path');
 const { z } = require('zod');
 
-const bool = (fallback) => z.enum(['true', 'false']).default(fallback).transform((v) => v === 'true');
+const bool = (fallback) =>
+  z
+    .enum(['true', 'false'])
+    .default(fallback)
+    .transform((v) => v === 'true');
 const int = (fallback, min = 0, max = Number.MAX_SAFE_INTEGER) =>
   z.coerce.number().int().min(min).max(max).default(fallback);
 
@@ -42,7 +46,11 @@ const schema = z
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production' && !env.SMTP_HOST) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['SMTP_HOST'], message: 'obrigatório em produção' });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SMTP_HOST'],
+        message: 'obrigatório em produção',
+      });
     }
   });
 
@@ -55,7 +63,11 @@ if (!result.success) {
   throw new Error(`Configuração de ambiente inválida:\n${lines.join('\n')}`);
 }
 
-const list = (value) => value.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+const list = (value) =>
+  value
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
 
 module.exports = Object.freeze({
   ...result.data,

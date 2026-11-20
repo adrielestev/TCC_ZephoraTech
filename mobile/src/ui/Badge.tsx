@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';
-import { colors, radius, spacing, type ColorName } from './theme';
+import { colors, fonts, radius, spacing, type ColorName } from './theme';
 
-export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'admin' | 'owner';
+export type BadgeTone =
+  'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'admin' | 'owner';
 
 const tones: Record<BadgeTone, { bg: string; fg: ColorName }> = {
   neutral: { bg: colors.surfaceMuted, fg: 'textMuted' },
@@ -43,5 +44,5 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: radius.pill,
   },
-  text: { fontWeight: '600', fontSize: 12, lineHeight: 16 },
+  text: { fontFamily: fonts.semibold, fontSize: 12, lineHeight: 16 },
 });

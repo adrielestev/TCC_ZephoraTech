@@ -8,7 +8,11 @@ interface Props<T extends FieldValues> {
 }
 
 /** Campo do código de 6 dígitos recebido por e-mail (só aceita números). */
-export function CodeField<T extends FieldValues>({ control, name, label = 'Código de 6 dígitos' }: Props<T>) {
+export function CodeField<T extends FieldValues>({
+  control,
+  name,
+  label = 'Código de 6 dígitos',
+}: Props<T>) {
   return (
     <Controller
       control={control}

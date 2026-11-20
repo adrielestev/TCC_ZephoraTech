@@ -5,7 +5,7 @@ import { formatLastSeen } from '@/core/format';
 import { routes } from '@/core/navigation/routes';
 import { useNumericParam } from '@/core/hooks/useNumericParam';
 import type { Esp32Detail } from '@/core/types';
-import { deviceTypes } from '@/features/devices/deviceTypes';
+import { getDeviceTypeMeta } from '@/features/devices/deviceTypes';
 import { useRooms } from '@/features/rooms/hooks';
 import { AppText } from '@/ui/AppText';
 import { Badge } from '@/ui/Badge';
@@ -24,7 +24,11 @@ export default function Esp32DetailScreen() {
   const id = useNumericParam('esp32Id');
   const module_ = useEsp32(id, true);
   return (
-    <Screen width="form" onRefresh={() => void module_.refetch()} refreshing={module_.isRefetching && !module_.isPending}>
+    <Screen
+      width="form"
+      onRefresh={() => void module_.refetch()}
+      refreshing={module_.isRefetching && !module_.isPending}
+    >
       <QueryBoundary query={module_}>{(data) => <Detail module_={data} />}</QueryBoundary>
     </Screen>
   );
@@ -39,12 +43,14 @@ function Detail({ module_ }: { module_: Esp32Detail }) {
 
   const registered = module_.devices.filter((d) => d.registrationStatus === 'registered');
   const discovered = module_.devices.filter((d) => d.registrationStatus === 'discovered');
-  const roomName = (id: number | null) => rooms.data?.find((r) => r.id === id)?.name ?? 'Sala removida';
+  const roomName = (id: number | null) =>
+    rooms.data?.find((r) => r.id === id)?.name ?? 'Sala removida';
 
   const removeModule = async () => {
     const ok = await confirm({
       title: 'Remover módulo?',
-      message: 'Os aparelhos dele serão descadastrados e as automações que dependem deles serão removidas.',
+      message:
+        'Os aparelhos dele serão descadastrados e as automações que dependem deles serão removidas.',
       confirmLabel: 'Remover módulo',
       destructive: true,
     });
@@ -71,7 +77,9 @@ function Detail({ module_ }: { module_: Esp32Detail }) {
             </AppText>
           </View>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap' }}
+        >
           <Esp32StatusBadge status={module_.status} />
           <AppText variant="caption" color="textMuted">
             Última conexão: {formatLastSeen(module_.lastSeenAt)}
@@ -81,7 +89,11 @@ function Detail({ module_ }: { module_: Esp32Detail }) {
 
       {discovered.length > 0 ? (
         <Card>
-          <Badge label={`${discovered.length} aparelho(s) novo(s) reportado(s)`} tone="admin" icon="sparkles-outline" />
+          <Badge
+            label={`${discovered.length} aparelho(s) novo(s) reportado(s)`}
+            tone="admin"
+            icon="sparkles-outline"
+          />
           <Button
             label="Adicionar aparelhos novos"
             icon="add-circle-outline"
@@ -104,9 +116,9 @@ function Detail({ module_ }: { module_: Esp32Detail }) {
             {registered.map((d) => (
               <ListItem
                 key={d.id}
-                leading={<IconTile name={deviceTypes[d.type].icon} size={44} />}
+                leading={<IconTile name={getDeviceTypeMeta(d.type).icon} size={44} />}
                 title={d.name}
-                description={`${deviceTypes[d.type].label} · ${roomName(d.roomId)}`}
+                description={`${getDeviceTypeMeta(d.type).label} · ${roomName(d.roomId)}`}
               />
             ))}
           </View>
@@ -114,7 +126,13 @@ function Detail({ module_ }: { module_: Esp32Detail }) {
       </Section>
 
       <Section title="Zona de risco">
-        <Button label="Remover módulo" variant="danger" icon="trash-outline" onPress={removeModule} loading={remove.isPending} />
+        <Button
+          label="Remover módulo"
+          variant="danger"
+          icon="trash-outline"
+          onPress={removeModule}
+          loading={remove.isPending}
+        />
       </Section>
     </>
   );

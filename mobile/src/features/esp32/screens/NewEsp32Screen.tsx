@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorCode, getErrorMessage } from '@/core/api/errors';
 import { routes } from '@/core/navigation/routes';
 import { CREDENTIAL_REGEX } from '../constants';
-import { deviceTypes } from '@/features/devices/deviceTypes';
+import { getDeviceTypeMeta } from '@/features/devices/deviceTypes';
 import { RoomPicker } from '@/features/rooms/components/RoomPicker';
 import { useRooms } from '@/features/rooms/hooks';
 import type { Device, Room } from '@/core/types';
@@ -79,7 +79,11 @@ export default function NewEsp32Screen() {
     if (step !== 2 || initialized || discovered.length === 0) return;
     if (initializedFor.current === esp32Id) return;
     initializedFor.current = esp32Id;
-    setChoices(Object.fromEntries(discovered.map((d) => [d.id, { selected: true, name: d.name, roomId: null }])));
+    setChoices(
+      Object.fromEntries(
+        discovered.map((d) => [d.id, { selected: true, name: d.name, roomId: null }]),
+      ),
+    );
     setInitialized(true);
   }, [step, initialized, discovered, esp32Id]);
 
@@ -88,7 +92,9 @@ export default function NewEsp32Screen() {
     const value = credential.trim();
     let valid = true;
     if (!CREDENTIAL_REGEX.test(value)) {
-      setCredentialError('A credencial tem de 32 a 128 caracteres (letras, números, - e _). Copie-a do ESP32.');
+      setCredentialError(
+        'A credencial tem de 32 a 128 caracteres (letras, números, - e _). Copie-a do ESP32.',
+      );
       valid = false;
     } else setCredentialError(undefined);
     if (name.trim() && name.trim().length < 2) {
@@ -98,7 +104,10 @@ export default function NewEsp32Screen() {
     if (!valid) return;
 
     try {
-      const created = await register.mutateAsync({ credential: value, name: name.trim() || undefined });
+      const created = await register.mutateAsync({
+        credential: value,
+        name: name.trim() || undefined,
+      });
       setEsp32Id(created.id);
       setWaitKey((k) => k + 1);
       setStep(1);
@@ -115,15 +124,20 @@ export default function NewEsp32Screen() {
   const setChoice = (id: number, patch: Partial<Choice>) =>
     setChoices((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } as Choice }));
   const setAllSelected = (selected: boolean) =>
-    setChoices((prev) => Object.fromEntries(Object.entries(prev).map(([id, c]) => [id, { ...c, selected }])));
+    setChoices((prev) =>
+      Object.fromEntries(Object.entries(prev).map(([id, c]) => [id, { ...c, selected }])),
+    );
   const setRoomForSelected = (roomId: number) =>
     setChoices((prev) =>
-      Object.fromEntries(Object.entries(prev).map(([id, c]) => [id, c.selected ? { ...c, roomId } : c])),
+      Object.fromEntries(
+        Object.entries(prev).map(([id, c]) => [id, c.selected ? { ...c, roomId } : c]),
+      ),
     );
 
   const goToConfirm = () => {
     setFormError(null);
-    if (selectedList.length === 0) return setFormError('Escolha ao menos um aparelho para cadastrar.');
+    if (selectedList.length === 0)
+      return setFormError('Escolha ao menos um aparelho para cadastrar.');
     if (selectedList.some((d) => !choices[d.id]?.roomId)) {
       return setFormError('Escolha a sala de cada aparelho selecionado.');
     }
@@ -159,7 +173,10 @@ export default function NewEsp32Screen() {
           title="Aparelhos prontos!"
           message={`${done.count} aparelho(s) cadastrado(s). Já dá para controlá-los na sala.`}
         />
-        <Button label={`Ver a sala ${roomName(done.roomId)}`.trim()} onPress={() => router.replace(routes.room(done.roomId))} />
+        <Button
+          label={`Ver a sala ${roomName(done.roomId)}`.trim()}
+          onPress={() => router.replace(routes.room(done.roomId))}
+        />
         <Button
           label="Voltar para os módulos"
           variant="outline"
@@ -177,11 +194,19 @@ export default function NewEsp32Screen() {
           <Button label="Continuar" onPress={submitCredential} loading={register.isPending} />
         ) : step === 2 ? (
           <View style={{ gap: spacing.sm }}>
-            <Button label={`Continuar com ${selectedList.length} aparelho(s)`} onPress={goToConfirm} disabled={discovered.length === 0} />
+            <Button
+              label={`Continuar com ${selectedList.length} aparelho(s)`}
+              onPress={goToConfirm}
+              disabled={discovered.length === 0}
+            />
           </View>
         ) : step === 3 ? (
           <View style={{ gap: spacing.sm }}>
-            <Button label={`Cadastrar ${selectedList.length} aparelho(s)`} onPress={confirm} loading={registerDevices.isPending} />
+            <Button
+              label={`Cadastrar ${selectedList.length} aparelho(s)`}
+              onPress={confirm}
+              loading={registerDevices.isPending}
+            />
             <Button label="Voltar" variant="ghost" onPress={() => setStep(2)} />
           </View>
         ) : undefined
@@ -194,7 +219,8 @@ export default function NewEsp32Screen() {
       {step === 0 ? (
         <>
           <AppText color="textMuted">
-            Cada ESP32 tem uma credencial única. Ligue o módulo, copie a credencial exibida por ele e cole abaixo.
+            Cada ESP32 tem uma credencial única. Ligue o módulo, copie a credencial exibida por ele
+            e cole abaixo.
           </AppText>
           <TextField
             label="Credencial do ESP32"
@@ -227,7 +253,8 @@ export default function NewEsp32Screen() {
                 Aguardando o ESP32 se conectar...
               </AppText>
               <AppText color="textMuted" center>
-                Mantenha o módulo ligado e perto do Wi-Fi. Esta tela avança sozinha quando ele responder.
+                Mantenha o módulo ligado e perto do Wi-Fi. Esta tela avança sozinha quando ele
+                responder.
               </AppText>
             </View>
           </Card>
@@ -237,13 +264,30 @@ export default function NewEsp32Screen() {
                 <Icon name="help-buoy-outline" size={22} color="warning" />
                 <AppText variant="heading">Ainda não conectou?</AppText>
               </View>
-              <AppText color="textMuted">• Confirme que o ESP32 está ligado e conectado ao Wi-Fi.</AppText>
-              <AppText color="textMuted">• Confira se a credencial no ESP32 é igual à que você informou.</AppText>
-              <AppText color="textMuted">• Verifique se o endereço da API configurado no ESP32 está correto.</AppText>
-              <Button label="Tentar de novo" variant="outline" onPress={() => { setWaitKey((k) => k + 1); void esp.refetch(); }} />
+              <AppText color="textMuted">
+                • Confirme que o ESP32 está ligado e conectado ao Wi-Fi.
+              </AppText>
+              <AppText color="textMuted">
+                • Confira se a credencial no ESP32 é igual à que você informou.
+              </AppText>
+              <AppText color="textMuted">
+                • Verifique se o endereço da API configurado no ESP32 está correto.
+              </AppText>
+              <Button
+                label="Tentar de novo"
+                variant="outline"
+                onPress={() => {
+                  setWaitKey((k) => k + 1);
+                  void esp.refetch();
+                }}
+              />
             </Card>
           ) : null}
-          <Button label="Continuar depois" variant="ghost" onPress={() => router.replace(routes.esp32List)} />
+          <Button
+            label="Continuar depois"
+            variant="ghost"
+            onPress={() => router.replace(routes.esp32List)}
+          />
         </>
       ) : null}
 
@@ -265,8 +309,18 @@ export default function NewEsp32Screen() {
               O ESP32 reportou estes aparelhos. Escolha quais cadastrar, o nome e a sala de cada um.
             </AppText>
             <View style={styles.bulk}>
-              <Button label="Selecionar todos" variant="secondary" fullWidth={false} onPress={() => setAllSelected(true)} />
-              <Button label="Limpar seleção" variant="ghost" fullWidth={false} onPress={() => setAllSelected(false)} />
+              <Button
+                label="Selecionar todos"
+                variant="secondary"
+                fullWidth={false}
+                onPress={() => setAllSelected(true)}
+              />
+              <Button
+                label="Limpar seleção"
+                variant="ghost"
+                fullWidth={false}
+                onPress={() => setAllSelected(false)}
+              />
             </View>
 
             <Card>
@@ -297,11 +351,12 @@ export default function NewEsp32Screen() {
           {selectedList.map((d) => (
             <Card key={d.id}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                <Icon name={deviceTypes[d.type].icon} size={24} color="primary" />
+                <Icon name={getDeviceTypeMeta(d.type).icon} size={24} color="primary" />
                 <View style={{ flex: 1 }}>
                   <AppText variant="bodyStrong">{choices[d.id]?.name}</AppText>
                   <AppText variant="caption" color="textMuted">
-                    {deviceTypes[d.type].label} · sala {roomName(choices[d.id]?.roomId ?? null)}
+                    {getDeviceTypeMeta(d.type).label} · sala{' '}
+                    {roomName(choices[d.id]?.roomId ?? null)}
                   </AppText>
                 </View>
               </View>
@@ -324,7 +379,7 @@ function DeviceChoiceCard({
   rooms: Room[];
   onChange: (patch: Partial<Choice>) => void;
 }) {
-  const meta = deviceTypes[device.type];
+  const meta = getDeviceTypeMeta(device.type);
   if (!choice) return null;
   return (
     <Card>
@@ -336,9 +391,17 @@ function DeviceChoiceCard({
       />
       {choice.selected ? (
         <View style={{ gap: spacing.md }}>
-          <TextField label="Nome" value={choice.name} onChangeText={(text) => onChange({ name: text })} />
+          <TextField
+            label="Nome"
+            value={choice.name}
+            onChangeText={(text) => onChange({ name: text })}
+          />
           <AppText variant="label">Sala</AppText>
-          <RoomPicker rooms={rooms} value={choice.roomId} onChange={(roomId) => onChange({ roomId })} />
+          <RoomPicker
+            rooms={rooms}
+            value={choice.roomId}
+            onChange={(roomId) => onChange({ roomId })}
+          />
         </View>
       ) : null}
     </Card>

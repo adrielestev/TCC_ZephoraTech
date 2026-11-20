@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const { z } = require("zod");
-const { TYPE_NAMES } = require("../devices/device-types");
+const { z } = require('zod');
+const { TYPE_NAMES } = require('../devices/device-types');
 
 const reportedDevice = z
   .object({
@@ -21,7 +21,7 @@ module.exports = {
         .max(32)
         .refine(
           (items) => new Set(items.map((i) => i.channel)).size === items.length,
-          "Canal repetido",
+          'Canal repetido',
         ),
     })
     .strict(),

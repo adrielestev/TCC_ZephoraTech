@@ -36,7 +36,8 @@ export function getErrorStatus(error: unknown): number | undefined {
 
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiErrorBody>(error)) {
-    if (!error.response) return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';
+    if (!error.response)
+      return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';
     const code = error.response.data?.error?.code;
     if (code && MESSAGES[code]) return MESSAGES[code];
     return error.response.data?.error?.message ?? 'Algo deu errado. Tente novamente.';

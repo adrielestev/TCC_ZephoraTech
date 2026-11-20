@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-const multer = require("multer");
+const multer = require('multer');
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 

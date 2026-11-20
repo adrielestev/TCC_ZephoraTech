@@ -29,7 +29,10 @@ export default function NewRoomScreen() {
   const submit = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      const room = await create.mutateAsync({ name: values.name.trim(), description: values.description.trim() || null });
+      const room = await create.mutateAsync({
+        name: values.name.trim(),
+        description: values.description.trim() || null,
+      });
       toast('Sala criada! Adicione fotos e cadastre os aparelhos.', 'success');
       router.replace(routes.room(room.id));
     } catch (error) {
@@ -38,10 +41,16 @@ export default function NewRoomScreen() {
   });
 
   return (
-    <Screen width="form" footer={<Button label="Criar sala" onPress={submit} loading={create.isPending} />}>
+    <Screen
+      width="form"
+      footer={<Button label="Criar sala" onPress={submit} loading={create.isPending} />}
+    >
       {formError ? <Banner tone="danger" message={formError} /> : null}
       <Card>
-        <CardHeader title="Dados da sala" description="Depois de criar, você adiciona fotos e cadastra os aparelhos." />
+        <CardHeader
+          title="Dados da sala"
+          description="Depois de criar, você adiciona fotos e cadastra os aparelhos."
+        />
         <FormField
           control={control}
           name="name"

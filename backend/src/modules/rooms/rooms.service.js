@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const AppError = require("../../shared/errors");
-const { isUniqueViolation } = require("../../database/db");
-const { saveImage, removeFile, fileUrl } = require("../../shared/files");
-const { isAdmin } = require("../../shared/roles");
-const usersService = require("../users/users.service");
-const roomsRepository = require("./rooms.repository");
+const AppError = require('../../shared/errors');
+const { isUniqueViolation } = require('../../database/db');
+const { saveImage, removeFile, fileUrl } = require('../../shared/files');
+const { isAdmin } = require('../../shared/roles');
+const usersService = require('../users/users.service');
+const roomsRepository = require('./rooms.repository');
 
 const toPublic = (room) => ({
   id: room.id,
@@ -19,8 +19,7 @@ const toPublic = (room) => ({
   updatedAt: room.updated_at,
 });
 
-const roomNotFound = () =>
-  AppError.notFound("Sala não encontrada", "ROOM_NOT_FOUND");
+const roomNotFound = () => AppError.notFound('Sala não encontrada', 'ROOM_NOT_FOUND');
 
 /**
  * Garante que a sala existe e que o usuário pode acessá-la.
@@ -40,25 +39,19 @@ function getOrFail(roomId) {
 }
 
 const list = (user) => ({
-  data: (isAdmin(user)
-    ? roomsRepository.listAll()
-    : roomsRepository.listForUser(user.id)
-  ).map(toPublic),
+  data: (isAdmin(user) ? roomsRepository.listAll() : roomsRepository.listForUser(user.id)).map(
+    toPublic,
+  ),
 });
 
 const get = (user, roomId) => toPublic(getAccessible(user, roomId));
 
 function create(user, { name, description }) {
   try {
-    return toPublic(
-      roomsRepository.insert({ name, description, createdBy: user.id }),
-    );
+    return toPublic(roomsRepository.insert({ name, description, createdBy: user.id }));
   } catch (err) {
     if (isUniqueViolation(err))
-      throw AppError.conflict(
-        "Já existe uma sala com esse nome",
-        "ROOM_NAME_TAKEN",
-      );
+      throw AppError.conflict('Já existe uma sala com esse nome', 'ROOM_NAME_TAKEN');
     throw err;
   }
 }
@@ -69,10 +62,7 @@ function update(roomId, patch) {
     roomsRepository.update(roomId, patch);
   } catch (err) {
     if (isUniqueViolation(err))
-      throw AppError.conflict(
-        "Já existe uma sala com esse nome",
-        "ROOM_NAME_TAKEN",
-      );
+      throw AppError.conflict('Já existe uma sala com esse nome', 'ROOM_NAME_TAKEN');
     throw err;
   }
   return toPublic(getOrFail(roomId));
@@ -82,19 +72,17 @@ async function remove(roomId) {
   const room = getOrFail(roomId);
   if (room.device_count > 0) {
     throw AppError.conflict(
-      "Remova ou mova os aparelhos da sala antes de excluí-la",
-      "ROOM_HAS_DEVICES",
+      'Remova ou mova os aparelhos da sala antes de excluí-la',
+      'ROOM_HAS_DEVICES',
     );
   }
   roomsRepository.remove(roomId);
-  await Promise.all(
-    [1, 2, 3].map((slot) => removeFile(room[`photo_${slot}_path`])),
-  );
+  await Promise.all([1, 2, 3].map((slot) => removeFile(room[`photo_${slot}_path`])));
 }
 
 async function setPhoto(roomId, slot, file) {
   const room = getOrFail(roomId);
-  const newPath = await saveImage(file, "rooms");
+  const newPath = await saveImage(file, 'rooms');
   roomsRepository.setPhoto(roomId, slot, newPath);
   await removeFile(room[`photo_${slot}_path`]);
   return toPublic(getOrFail(roomId));
@@ -110,9 +98,7 @@ async function removePhoto(roomId, slot) {
 function listAccess(roomId) {
   getOrFail(roomId);
   return {
-    data: roomsRepository
-      .listUsersWithAccess(roomId)
-      .map(usersService.toPublic),
+    data: roomsRepository.listUsersWithAccess(roomId).map(usersService.toPublic),
   };
 }
 

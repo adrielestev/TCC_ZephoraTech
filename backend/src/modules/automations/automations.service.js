@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const AppError = require("../../shared/errors");
-const { transaction } = require("../../database/db");
-const { parseJson, sameState, isSubset } = require("../../shared/json");
-const roomsService = require("../rooms/rooms.service");
-const devicesRepository = require("../devices/devices.repository");
-const { isControllable, parseState } = require("../devices/device-types");
-const repository = require("./automations.repository");
+const AppError = require('../../shared/errors');
+const { transaction } = require('../../database/db');
+const { parseJson, sameState, isSubset } = require('../../shared/json');
+const roomsService = require('../rooms/rooms.service');
+const devicesRepository = require('../devices/devices.repository');
+const { isControllable, parseState } = require('../devices/device-types');
+const repository = require('./automations.repository');
 
 function buildAutomations(rows) {
   const links = repository.listLinks(rows.map((r) => r.id));
@@ -20,13 +20,13 @@ function buildAutomations(rows) {
       pausedBy: row.paused_by,
       pausedAt: row.paused_at,
       triggers: own
-        .filter((l) => l.role === "trigger")
+        .filter((l) => l.role === 'trigger')
         .map((l) => ({
           deviceId: l.device_id,
           condition: parseJson(l.config),
         })),
       actions: own
-        .filter((l) => l.role === "action")
+        .filter((l) => l.role === 'action')
         .map((l) => ({ deviceId: l.device_id, state: parseJson(l.config) })),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -34,8 +34,7 @@ function buildAutomations(rows) {
   });
 }
 
-const notFound = () =>
-  AppError.notFound("Automação não encontrada", "AUTOMATION_NOT_FOUND");
+const notFound = () => AppError.notFound('Automação não encontrada', 'AUTOMATION_NOT_FOUND');
 
 function getAccessible(user, id) {
   const automation = repository.findById(id);
@@ -53,19 +52,13 @@ function listByRoom(user, roomId) {
 
 /** Todos os aparelhos precisam estar cadastrados e na mesma sala da automação. */
 function loadRoomDevices(roomId, deviceIds) {
-  const devices = new Map(
-    devicesRepository.findByIds(deviceIds).map((d) => [d.id, d]),
-  );
+  const devices = new Map(devicesRepository.findByIds(deviceIds).map((d) => [d.id, d]));
   for (const id of deviceIds) {
     const device = devices.get(id);
-    if (
-      !device ||
-      device.registration_status !== "registered" ||
-      device.room_id !== roomId
-    ) {
+    if (!device || device.registration_status !== 'registered' || device.room_id !== roomId) {
       throw AppError.badRequest(
         `O aparelho ${id} não está cadastrado nesta sala`,
-        "DEVICE_NOT_IN_ROOM",
+        'DEVICE_NOT_IN_ROOM',
       );
     }
   }
@@ -85,33 +78,28 @@ function create(user, { roomId, name, triggers, actions }) {
     if (isControllable(device.type)) {
       throw AppError.badRequest(
         `O aparelho ${device.id} não é um sensor e não pode ser gatilho`,
-        "INVALID_TRIGGER",
+        'INVALID_TRIGGER',
       );
     }
     links.push({
       deviceId: device.id,
-      role: "trigger",
+      role: 'trigger',
       config: parseState(device.type, t.condition, { partial: true }),
     });
   }
   for (const a of actions) {
     const device = devices.get(a.deviceId);
     if (!isControllable(device.type)) {
-      throw AppError.badRequest(
-        `O aparelho ${device.id} não pode receber ações`,
-        "INVALID_ACTION",
-      );
+      throw AppError.badRequest(`O aparelho ${device.id} não pode receber ações`, 'INVALID_ACTION');
     }
     links.push({
       deviceId: device.id,
-      role: "action",
+      role: 'action',
       config: parseState(device.type, a.state),
     });
   }
 
-  const id = transaction(() =>
-    repository.insert({ roomId, name, createdBy: user.id, links }),
-  );
+  const id = transaction(() => repository.insert({ roomId, name, createdBy: user.id, links }));
   return getOne(id);
 }
 
@@ -146,28 +134,25 @@ function evaluateTriggers(changedDeviceIds) {
 
       const links = repository.listLinks([automation.id]);
       const devices = new Map(
-        devicesRepository
-          .findByIds(links.map((l) => l.device_id))
-          .map((d) => [d.id, d]),
+        devicesRepository.findByIds(links.map((l) => l.device_id)).map((d) => [d.id, d]),
       );
 
       const fired = links
-        .filter((l) => l.role === "trigger")
+        .filter((l) => l.role === 'trigger')
         .every((l) => {
           const d = devices.get(l.device_id);
           return (
-            d?.registration_status === "registered" &&
+            d?.registration_status === 'registered' &&
             isSubset(parseJson(l.config), parseJson(d.current_state))
           );
         });
       if (!fired) continue;
 
-      for (const link of links.filter((l) => l.role === "action")) {
+      for (const link of links.filter((l) => l.role === 'action')) {
         const d = devices.get(link.device_id);
-        if (!d || d.registration_status !== "registered") continue;
+        if (!d || d.registration_status !== 'registered') continue;
         const target = parseJson(link.config);
-        const effective =
-          parseJson(d.desired_state) ?? parseJson(d.current_state);
+        const effective = parseJson(d.desired_state) ?? parseJson(d.current_state);
         if (!sameState(effective, target))
           devicesRepository.setDesiredState(d.id, JSON.stringify(target));
       }

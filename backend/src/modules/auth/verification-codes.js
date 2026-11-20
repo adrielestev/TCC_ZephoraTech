@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const env = require("../../config/env");
-const { hmacCode, generateCode, safeEqualHex } = require("../../shared/crypto");
-const { toSql, fromSql } = require("../../shared/time");
-const usersRepository = require("../users/users.repository");
+const env = require('../../config/env');
+const { hmacCode, generateCode, safeEqualHex } = require('../../shared/crypto');
+const { toSql, fromSql } = require('../../shared/time');
+const usersRepository = require('../users/users.repository');
 
 const { CODE_COLUMNS } = usersRepository;
 const TTL_MS = env.CODE_TTL_MINUTES * 60_000;
@@ -39,8 +39,7 @@ function consume(user, kind, code) {
   const hash = fresh[cols.hash];
   const expiresAt = fresh[cols.expires];
 
-  if (!hash || !expiresAt || fromSql(expiresAt).getTime() < Date.now())
-    return false;
+  if (!hash || !expiresAt || fromSql(expiresAt).getTime() < Date.now()) return false;
   if (fresh[cols.attempts] >= env.CODE_MAX_ATTEMPTS) return false;
 
   if (!safeEqualHex(hash, hmacCode(kind, fresh.id, code))) {

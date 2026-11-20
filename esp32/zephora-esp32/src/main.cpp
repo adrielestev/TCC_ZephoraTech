@@ -5,6 +5,7 @@
 //   3) a 1ª sincronização (POST /api/device-sync) torna o módulo "online" e revela os aparelhos;
 //   4) a cada ciclo: envia o estado dos aparelhos e executa os comandos recebidos.
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
 #include <time.h>
 
@@ -148,6 +149,16 @@ void setup() {
   for (size_t i = 0; i < gRegistry.size(); ++i) gRegistry.at(i).begin();
 
   settings::load(gSettings);
+  for (size_t i = 0; i < gRegistry.size(); ++i) {
+    Channel& channel = gRegistry.at(i);
+    if (channel.type() != DeviceType::PresenceSensor) continue;
+    std::string executionJson;
+    if (!settings::loadChannelExecutionConfig(channel.id(), executionJson)) continue;
+    JsonDocument execution;
+    if (deserializeJson(execution, executionJson) == DeserializationError::Ok &&
+        execution.is<JsonObjectConst>())
+      channel.setExecutionConfig(execution.as<JsonObjectConst>());
+  }
 #ifdef ZEPHORA_DEV_SERVER_URL
   // Só no ambiente de simulação (Wokwi): sem portal, Wi-Fi/servidor já vêm gravados no build
   if (gSettings.ssid.empty() || gSettings.serverUrl.empty())

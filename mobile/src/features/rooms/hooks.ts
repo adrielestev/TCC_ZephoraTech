@@ -4,7 +4,8 @@ import { roomsApi, type RoomInput } from './api';
 
 export const useRooms = () => useQuery({ queryKey: qk.rooms, queryFn: roomsApi.list });
 
-export const useRoom = (id: number) => useQuery({ queryKey: qk.room(id), queryFn: () => roomsApi.get(id) });
+export const useRoom = (id: number) =>
+  useQuery({ queryKey: qk.room(id), queryFn: () => roomsApi.get(id) });
 
 export const useRoomAccess = (id: number) =>
   useQuery({ queryKey: qk.roomAccess(id), queryFn: () => roomsApi.listAccess(id) });

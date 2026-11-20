@@ -7,7 +7,7 @@ import { Badge } from '@/ui/Badge';
 import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/Icon';
 import { IconTile } from '@/ui/ListItem';
-import { colors, spacing } from '@/ui/theme';
+import { colors, fonts, spacing } from '@/ui/theme';
 
 interface Props {
   automation: Automation;
@@ -24,11 +24,15 @@ export function describeLink(devices: Device[], deviceId: number, state: DeviceS
 
 export function AutomationCard({ automation, devices, onPauseChange, onManage }: Props) {
   const active = !automation.isPaused;
-  const when = automation.triggers.map((t) => describeLink(devices, t.deviceId, t.condition)).join(' e ');
-  const then = automation.actions.map((a) => describeLink(devices, a.deviceId, a.state)).join(' e ');
+  const when = automation.triggers
+    .map((t) => describeLink(devices, t.deviceId, t.condition))
+    .join(' e ');
+  const then = automation.actions
+    .map((a) => describeLink(devices, a.deviceId, a.state))
+    .join(' e ');
 
   return (
-    <Card>
+    <Card active={active}>
       <View style={styles.row}>
         <IconTile name="flash-outline" solid={active} tone="neutral" />
         <AppText variant="bodyStrong" style={styles.title}>
@@ -40,7 +44,11 @@ export function AutomationCard({ automation, devices, onPauseChange, onManage }:
           accessibilityLabel={`Automação ${automation.name}: ${active ? 'ativa' : 'pausada'}. Toque para alternar`}
         />
         {onManage ? (
-          <IconButton name="settings-outline" label={`Gerenciar automação ${automation.name}`} onPress={onManage} />
+          <IconButton
+            name="settings-outline"
+            label={`Gerenciar automação ${automation.name}`}
+            onPress={onManage}
+          />
         ) : null}
       </View>
 
@@ -63,7 +71,9 @@ export function AutomationCard({ automation, devices, onPauseChange, onManage }:
         </View>
       </View>
 
-      {!active ? <Badge label="Pausada: não vai disparar" tone="warning" icon="pause-circle-outline" /> : null}
+      {!active ? (
+        <Badge label="Pausada: não vai disparar" tone="warning" icon="pause-circle-outline" />
+      ) : null}
     </Card>
   );
 }
@@ -71,8 +81,13 @@ export function AutomationCard({ automation, devices, onPauseChange, onManage }:
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   title: { flex: 1 },
-  rules: { gap: spacing.sm, backgroundColor: colors.surfaceMuted, borderRadius: 10, padding: spacing.md },
+  rules: {
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: 10,
+    padding: spacing.md,
+  },
   rule: { flexDirection: 'row', gap: spacing.md },
-  ruleLabel: { width: 56, paddingTop: 2 },
-  ruleText: { flex: 1, fontWeight: '500' },
+  ruleLabel: { width: 72, paddingTop: 2 },
+  ruleText: { flex: 1, fontFamily: fonts.medium },
 });

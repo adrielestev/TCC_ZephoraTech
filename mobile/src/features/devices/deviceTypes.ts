@@ -32,23 +32,35 @@ export const deviceTypes: Record<DeviceType, DeviceTypeMeta> = {
   },
 };
 
-export const getFlag = (type: DeviceType, state: DeviceState | null): boolean | null => {
-  const value = state?.[deviceTypes[type].stateKey];
-  return typeof value === 'boolean' ? value : null;
+const unknownDeviceType: DeviceTypeMeta = {
+  label: 'Aparelho',
+  icon: 'hardware-chip-outline',
+  stateKey: 'on',
+  trueLabel: 'Ativo',
+  falseLabel: 'Inativo',
 };
 
+export const getDeviceTypeMeta = (type: string): DeviceTypeMeta =>
+  (deviceTypes as Record<string, DeviceTypeMeta>)[type] ?? unknownDeviceType;
+
 export const getTemperature = (type: DeviceType, state: DeviceState | null): number | null => {
-  const value = state?.[deviceTypes[type].stateKey];
+  const value = state?.[getDeviceTypeMeta(type).stateKey];
   return typeof value === 'number' ? value : null;
 };
 
+export const getFlag = (type: DeviceType, state: DeviceState | null): boolean | null => {
+  const value = state?.[getDeviceTypeMeta(type).stateKey];
+  return typeof value === 'boolean' ? value : null;
+};
+
 export const buildState = (type: DeviceType, value: boolean): DeviceState => ({
-  [deviceTypes[type].stateKey]: value,
+  [getDeviceTypeMeta(type).stateKey]: value,
 });
 
 export const describeFlag = (type: DeviceType, value: boolean | null): string => {
   if (value === null) return 'Sem leitura';
-  return value ? deviceTypes[type].trueLabel ?? 'Ativo' : deviceTypes[type].falseLabel ?? 'Inativo';
+  const meta = getDeviceTypeMeta(type);
+  return value ? (meta.trueLabel ?? 'Ativo') : (meta.falseLabel ?? 'Inativo');
 };
 
 /** Estado que o usuário "vê": o pedido mais recente, se houver, senão o último reportado. */

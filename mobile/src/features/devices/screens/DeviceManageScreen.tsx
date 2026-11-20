@@ -19,10 +19,14 @@ import { Screen } from '@/ui/Screen';
 import { IconTile } from '@/ui/ListItem';
 import { spacing } from '@/ui/theme';
 import { EmptyState, LoadingView } from '@/ui/States';
-import { deviceTypes } from '../deviceTypes';
+import { getDeviceTypeMeta } from '../deviceTypes';
 import { useRemoveDevice, useRoomDevices, useUpdateDevice } from '../hooks';
 
-const schema = z.object({ name: z.string().trim().min(2, 'O nome deve ter ao menos 2 letras').max(80) });
+const schema = z.object({
+  name: z.string().trim().min(2, 'O nome deve ter ao menos 2 letras').max(80),
+  holdMs: z.string().optional(),
+  warmupMs: z.string().optional(),
+});
 
 export default function DeviceManageScreen() {
   const roomId = useNumericParam('roomId');
@@ -56,17 +60,45 @@ function DeviceForm({ device }: { device: Device }) {
   const [roomId, setRoomId] = useState<number | null>(device.roomId);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const pirConfig = device.type === 'presence_sensor' ? device.executionConfig : null;
   const { control, handleSubmit } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { name: device.name },
+    defaultValues: {
+      name: device.name,
+      holdMs: String(pirConfig?.holdMs ?? 30000),
+      warmupMs: String(pirConfig?.warmupMs ?? 45000),
+    },
   });
 
-  const save = handleSubmit(async ({ name }) => {
+  const save = handleSubmit(async ({ name, holdMs, warmupMs }) => {
     setFormError(null);
-    const body: { id: number; name?: string; roomId?: number } = { id: device.id };
+    const body: {
+      id: number;
+      name?: string;
+      roomId?: number;
+      executionConfig?: { holdMs: number; warmupMs: number };
+    } = { id: device.id };
     if (name.trim() !== device.name) body.name = name.trim();
     if (roomId !== null && roomId !== device.roomId) body.roomId = roomId;
-    if (!body.name && !body.roomId) return router.back();
+    if (device.type === 'presence_sensor') {
+      const hold = Number(holdMs);
+      const warmup = Number(warmupMs);
+      if (
+        !Number.isInteger(hold) ||
+        hold < 0 ||
+        hold > 3600000 ||
+        !Number.isInteger(warmup) ||
+        warmup < 0 ||
+        warmup > 600000
+      ) {
+        setFormError('Informe tempos válidos em milissegundos.');
+        return;
+      }
+      if (hold !== pirConfig?.holdMs || warmup !== pirConfig?.warmupMs) {
+        body.executionConfig = { holdMs: hold, warmupMs: warmup };
+      }
+    }
+    if (!body.name && !body.roomId && !body.executionConfig) return router.back();
     try {
       await update.mutateAsync(body);
       toast('Aparelho atualizado.', 'success');
@@ -94,10 +126,13 @@ function DeviceForm({ device }: { device: Device }) {
     }
   };
 
-  const meta = deviceTypes[device.type];
+  const meta = getDeviceTypeMeta(device.type);
 
   return (
-    <Screen width="form" footer={<Button label="Salvar" onPress={save} loading={update.isPending} />}>
+    <Screen
+      width="form"
+      footer={<Button label="Salvar" onPress={save} loading={update.isPending} />}
+    >
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
           <IconTile name={meta.icon} size={52} />
@@ -114,8 +149,38 @@ function DeviceForm({ device }: { device: Device }) {
 
       <Card>
         <CardHeader title="Nome" />
-        <FormField control={control} name="name" label="Nome do aparelho" returnKeyType="done" onSubmitEditing={() => void save()} />
+        <FormField
+          control={control}
+          name="name"
+          label="Nome do aparelho"
+          returnKeyType="done"
+          onSubmitEditing={() => void save()}
+        />
       </Card>
+
+      {device.type === 'presence_sensor' ? (
+        <Card>
+          <CardHeader title="Execução" description="Tempos individuais deste sensor de presença." />
+          <View style={{ gap: spacing.md }}>
+            <FormField
+              control={control}
+              name="holdMs"
+              label="Tempo de permanência (ms)"
+              hint="Tempo sem movimento antes de informar ausência."
+              keyboardType="number-pad"
+              inputMode="numeric"
+            />
+            <FormField
+              control={control}
+              name="warmupMs"
+              label="Aquecimento (ms)"
+              hint="Leituras ignoradas após o ESP32 ligar."
+              keyboardType="number-pad"
+              inputMode="numeric"
+            />
+          </View>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader title="Sala" description="Mover o aparelho para outra sala." />
@@ -124,7 +189,13 @@ function DeviceForm({ device }: { device: Device }) {
 
       <Card>
         <CardHeader title="Zona de risco" description="O aparelho sai da sala e das automações." />
-        <Button label="Descadastrar aparelho" variant="danger" icon="trash-outline" onPress={unregister} loading={remove.isPending} />
+        <Button
+          label="Descadastrar aparelho"
+          variant="danger"
+          icon="trash-outline"
+          onPress={unregister}
+          loading={remove.isPending}
+        />
       </Card>
     </Screen>
   );

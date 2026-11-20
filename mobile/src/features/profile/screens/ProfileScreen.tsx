@@ -86,9 +86,18 @@ export default function ProfileScreen() {
           <AppText color="textMuted" center>
             {user.email}
           </AppText>
-          <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: spacing.sm,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             <RoleBadge role={user.role} />
-            {user.emailVerified ? <Badge label="E-mail verificado" tone="success" icon="checkmark-circle" /> : null}
+            {user.emailVerified ? (
+              <Badge label="E-mail verificado" tone="success" icon="checkmark-circle" />
+            ) : null}
           </View>
         </View>
         <CardFooter>
@@ -116,7 +125,10 @@ export default function ProfileScreen() {
       </Card>
 
       <Card>
-        <CardHeader title="Seus dados" description="Como seu nome aparece para os administradores." />
+        <CardHeader
+          title="Seus dados"
+          description="Como seu nome aparece para os administradores."
+        />
         <TextField
           label="Nome"
           value={name}
@@ -126,7 +138,12 @@ export default function ProfileScreen() {
           returnKeyType="done"
           onSubmitEditing={submitName}
         />
-        <Button label="Salvar nome" onPress={submitName} loading={saveName.isPending} disabled={name.trim() === user.name} />
+        <Button
+          label="Salvar nome"
+          onPress={submitName}
+          loading={saveName.isPending}
+          disabled={name.trim() === user.name}
+        />
       </Card>
 
       <Button label="Sair da conta" variant="outline" icon="log-out-outline" onPress={logout} />

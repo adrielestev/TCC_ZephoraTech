@@ -1,27 +1,23 @@
-"use strict";
+'use strict';
 
-const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
-const env = require("../../config/env");
-const AppError = require("../errors");
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const env = require('../../config/env');
+const AppError = require('../errors');
 
 const make = (options) =>
   rateLimit({
-    standardHeaders: "draft-7",
+    standardHeaders: 'draft-7',
     legacyHeaders: false,
     skip: () => !env.RATE_LIMIT_ENABLED,
     handler: (_req, _res, next) =>
       next(
-        new AppError(
-          429,
-          "TOO_MANY_REQUESTS",
-          "Muitas requisições. Tente novamente em instantes.",
-        ),
+        new AppError(429, 'TOO_MANY_REQUESTS', 'Muitas requisições. Tente novamente em instantes.'),
       ),
     ...options,
   });
 
 const emailKey = (req) =>
-  `${ipKeyGenerator(req.ip)}|${String(req.body?.email ?? "")
+  `${ipKeyGenerator(req.ip)}|${String(req.body?.email ?? '')
     .toLowerCase()
     .slice(0, 254)}`;
 
@@ -52,8 +48,6 @@ const limiters = {
 
 // O limitador global não se aplica ao endpoint de sincronização dos ESP32
 limiters.globalExceptSync = (req, res, next) =>
-  req.path.startsWith("/device-sync")
-    ? next()
-    : limiters.global(req, res, next);
+  req.path.startsWith('/device-sync') ? next() : limiters.global(req, res, next);
 
 module.exports = limiters;

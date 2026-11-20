@@ -28,7 +28,10 @@ export function IconButton({ name, size = 22, color = 'text', label, onPress }: 
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={6}
-      style={({ pressed }) => [styles.iconButton, pressed && { backgroundColor: colors.surfaceMuted }]}
+      style={({ pressed }) => [
+        styles.iconButton,
+        pressed && { backgroundColor: colors.surfaceMuted },
+      ]}
     >
       <Ionicons name={name} size={size} color={colors[color]} />
     </Pressable>

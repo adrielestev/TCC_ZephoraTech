@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/core/query/keys';
-import type { Device, DeviceState } from '@/core/types';
+import type { Device, DeviceExecutionConfig, DeviceState } from '@/core/types';
 import { devicesApi } from './api';
 
 /** Atualiza a cada 5 s para refletir o que o ESP32 confirmou. */
@@ -17,7 +17,8 @@ export function useSetDeviceState(roomId: number) {
   const key = qk.devices(roomId);
 
   return useMutation({
-    mutationFn: ({ id, state }: { id: number; state: DeviceState }) => devicesApi.setState(id, state),
+    mutationFn: ({ id, state }: { id: number; state: DeviceState }) =>
+      devicesApi.setState(id, state),
     onMutate: async ({ id, state }) => {
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<Device[]>(key);
@@ -36,7 +37,15 @@ export function useSetDeviceState(roomId: number) {
 export function useUpdateDevice() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: number; name?: string; roomId?: number }) => devicesApi.update(id, body),
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: number;
+      name?: string;
+      roomId?: number;
+      executionConfig?: DeviceExecutionConfig;
+    }) => devicesApi.update(id, body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['devices'] });
       void qc.invalidateQueries({ queryKey: qk.rooms });

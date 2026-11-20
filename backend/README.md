@@ -27,6 +27,8 @@ npm start       # produção/local sem modo watch
 npm run dev     # desenvolvimento com reinício automático
 npm test        # testes de API
 npm run db:seed # cria ou atualiza o usuário owner
+npm run format  # formata o código com Prettier
+npm run format:check # verifica a formatação sem alterar arquivos
 ```
 
 A API inicia em `http://localhost:3333`. O endpoint de verificação é
@@ -42,6 +44,16 @@ As opções estão documentadas em [`.env.example`](./.env.example).
 - `JWT_SECRET` e `CODE_HMAC_SECRET`: segredos obrigatórios.
 - `SMTP_*`: configuração de e-mail; obrigatória em produção.
 - `ESP32_POLL_INTERVAL_MS`: intervalo sugerido de sincronização.
+
+## Banco de dados
+
+O schema é aplicado automaticamente na inicialização (`src/database/schema.sql`).
+As tabelas são `STRICT` e `room_access` e `automation_devices` usam chave composta.
+Ao atualizar de uma versão anterior do schema, apague o arquivo definido em
+`DB_PATH` (por padrão `data/zephora.db`) e rode `npm run db:seed` de novo.
+
+O status do ESP32 (`pending`, `online`, `offline`) não é gravado: é calculado a
+partir de `last_seen_at` e de `ESP32_OFFLINE_AFTER_SECONDS`.
 
 ## Rotas principais
 

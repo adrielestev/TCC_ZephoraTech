@@ -144,6 +144,32 @@ TEST(resposta_multiplos_comandos) {
   CHECK(s.applied == 2); CHECK(s.rejected == 1); CHECK(a.on && b.on);
 }
 
+TEST(resposta_aplica_configuracao_individual_pir) {
+  ChannelRegistry r; FakePir pir("pir_1", "PIR"); r.add(pir);
+  std::string b = R"({"executions":[{"channel":"pir_1","executionConfig":{"holdMs":12000,"warmupMs":30000}}]})";
+  SyncResponse s = handleSyncResponse(b.data(), b.size(), r);
+  CHECK(s.valid);
+  CHECK(s.configsApplied == 1);
+  CHECK(s.configsRejected == 0);
+  CHECK(pir.executionConfigApplied);
+  CHECK(pir.holdMs == 12000);
+  CHECK(pir.warmupMs == 30000);
+}
+TEST(resposta_rejeita_configuracao_pir_invalida) {
+  ChannelRegistry r; FakePir pir("pir_1", "PIR"); r.add(pir);
+  const char* cases[] = {
+    R"({"executions":[{"channel":"nada","executionConfig":{"holdMs":1000,"warmupMs":2000}}]})",
+    R"({"executions":[{"channel":"pir_1","executionConfig":{"holdMs":"1000","warmupMs":2000}}]})",
+    R"({"executions":[{"channel":"pir_1","executionConfig":{"holdMs":1000}}]})",
+  };
+  for (const char* c : cases) {
+    SyncResponse s = handleSyncResponse(c, strlen(c), r);
+    CHECK(s.valid);
+    CHECK(s.configsApplied == 0);
+    CHECK(s.configsRejected == 1);
+  }
+}
+
 // ---------- filtro de presença ----------
 TEST(pir_ignora_aquecimento) {
   PresenceFilter f(5000, 30000);

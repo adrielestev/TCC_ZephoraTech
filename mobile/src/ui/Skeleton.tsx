@@ -1,6 +1,17 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import {
+  StyleSheet,
+  View,
+  type DimensionValue,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { colors, radius, spacing } from './theme';
 
 interface Props {
@@ -24,7 +35,11 @@ export function Skeleton({ width = '100%', height = 16, rounded = radius.sm, sty
     <Animated.View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[{ width, height, borderRadius: rounded, backgroundColor: colors.border }, animated, style]}
+      style={[
+        { width, height, borderRadius: rounded, backgroundColor: colors.border },
+        animated,
+        style,
+      ]}
     />
   );
 }
@@ -55,9 +70,19 @@ export function ListItemSkeleton() {
   );
 }
 
-export function SkeletonList({ count = 3, children }: { count?: number; children: () => React.ReactNode }) {
+export function SkeletonList({
+  count = 3,
+  children,
+}: {
+  count?: number;
+  children: () => React.ReactNode;
+}) {
   return (
-    <View style={{ gap: spacing.md }} accessibilityLabel="Carregando" accessibilityLiveRegion="polite">
+    <View
+      style={{ gap: spacing.md }}
+      accessibilityLabel="Carregando"
+      accessibilityLiveRegion="polite"
+    >
       {Array.from({ length: count }, (_, i) => (
         <View key={i}>{children()}</View>
       ))}

@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-const env = require("../../config/env");
-const { transaction } = require("../../database/db");
-const { parseJson, sameState } = require("../../shared/json");
-const esp32Repository = require("../esp32/esp32.repository");
-const devicesRepository = require("../devices/devices.repository");
-const { safeParseState } = require("../devices/device-types");
-const automationsService = require("../automations/automations.service");
+const env = require('../../config/env');
+const { transaction } = require('../../database/db');
+const { parseJson, sameState } = require('../../shared/json');
+const esp32Repository = require('../esp32/esp32.repository');
+const devicesRepository = require('../devices/devices.repository');
+const { safeParseState, getExecutionConfig } = require('../devices/device-types');
+const automationsService = require('../automations/automations.service');
 
 /**
  * Um único ciclo de polling do ESP32:
@@ -19,14 +19,11 @@ function sync(esp32, { firmware, devices: reported }) {
   return transaction(() => {
     esp32Repository.touch(esp32.id, firmware ?? null);
 
-    const known = new Map(
-      devicesRepository.listByEsp32(esp32.id).map((d) => [d.channel, d]),
-    );
+    const known = new Map(devicesRepository.listByEsp32(esp32.id).map((d) => [d.channel, d]));
     const changedRegistered = [];
 
     for (const item of reported) {
-      const state =
-        item.state === undefined ? null : safeParseState(item.type, item.state);
+      const state = item.state === undefined ? null : safeParseState(item.type, item.state);
       const existing = known.get(item.channel);
 
       if (!existing) {
@@ -42,8 +39,7 @@ function sync(esp32, { firmware, devices: reported }) {
 
       if (!sameState(parseJson(existing.current_state), state)) {
         devicesRepository.updateReported(existing.id, JSON.stringify(state));
-        if (existing.registration_status === "registered")
-          changedRegistered.push(existing.id);
+        if (existing.registration_status === 'registered') changedRegistered.push(existing.id);
       }
     }
 
@@ -53,16 +49,26 @@ function sync(esp32, { firmware, devices: reported }) {
       .listByEsp32(esp32.id)
       .filter(
         (d) =>
-          d.registration_status === "registered" &&
+          d.registration_status === 'registered' &&
           d.desired_state !== null &&
           !sameState(parseJson(d.desired_state), parseJson(d.current_state)),
       )
       .map((d) => ({ channel: d.channel, state: parseJson(d.desired_state) }));
 
+    const executions = devicesRepository
+      .listByEsp32(esp32.id)
+      .filter((d) => d.registration_status === 'registered')
+      .map((d) => {
+        const executionConfig = getExecutionConfig(d.type, parseJson(d.execution_config));
+        return executionConfig ? { channel: d.channel, executionConfig } : null;
+      })
+      .filter(Boolean);
+
     return {
       serverTime: new Date().toISOString(),
       pollIntervalMs: env.ESP32_POLL_INTERVAL_MS,
       commands,
+      executions,
     };
   });
 }

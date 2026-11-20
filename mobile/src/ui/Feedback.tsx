@@ -37,7 +37,11 @@ const FeedbackContext = createContext<FeedbackContextValue | null>(null);
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
-  const [toastState, setToastState] = useState<{ id: number; message: string; tone: ToastTone } | null>(null);
+  const [toastState, setToastState] = useState<{
+    id: number;
+    message: string;
+    tone: ToastTone;
+  } | null>(null);
   const [dialog, setDialog] = useState<ConfirmOptions | null>(null);
   const resolver = useRef<((value: boolean) => void) | null>(null);
   const toastId = useRef(0);
@@ -84,7 +88,13 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           >
             <Pressable onPress={() => setToastState(null)} accessibilityRole="alert">
               <Banner
-                tone={toastState.tone === 'danger' ? 'danger' : toastState.tone === 'success' ? 'success' : 'info'}
+                tone={
+                  toastState.tone === 'danger'
+                    ? 'danger'
+                    : toastState.tone === 'success'
+                      ? 'success'
+                      : 'info'
+                }
                 message={toastState.message}
               />
             </Pressable>
@@ -92,10 +102,20 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         </View>
       ) : null}
 
-      <Modal transparent visible={!!dialog} animationType="fade" onRequestClose={() => close(false)}>
+      <Modal
+        transparent
+        visible={!!dialog}
+        animationType="fade"
+        onRequestClose={() => close(false)}
+      >
         <View style={styles.overlay}>
           <View style={styles.dialog} accessibilityViewIsModal>
-            <View style={[styles.dialogIcon, { backgroundColor: dialog?.destructive ? colors.dangerSoft : colors.primarySoft }]}>
+            <View
+              style={[
+                styles.dialogIcon,
+                { backgroundColor: dialog?.destructive ? colors.dangerSoft : colors.primarySoft },
+              ]}
+            >
               <Icon
                 name={dialog?.destructive ? 'warning-outline' : 'help-circle-outline'}
                 size={24}
@@ -105,7 +125,11 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             <AppText variant="title">{dialog?.title}</AppText>
             {dialog?.message ? <AppText color="textMuted">{dialog.message}</AppText> : null}
             <View style={styles.actions}>
-              <Button label={dialog?.cancelLabel ?? 'Cancelar'} variant="outline" onPress={() => close(false)} />
+              <Button
+                label={dialog?.cancelLabel ?? 'Cancelar'}
+                variant="outline"
+                onPress={() => close(false)}
+              />
               <Button
                 label={dialog?.confirmLabel ?? 'Confirmar'}
                 variant={dialog?.destructive ? 'danger' : 'primary'}
@@ -129,7 +153,13 @@ export const useToast = () => useFeedback().toast;
 export const useConfirm = () => useFeedback().confirm;
 
 const styles = StyleSheet.create({
-  toastWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: spacing.lg },
+  toastWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+  },
   toast: { width: '100%', maxWidth: 520, borderRadius: radius.md, boxShadow: shadows.raised },
   overlay: {
     flex: 1,
@@ -148,6 +178,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     boxShadow: shadows.overlay,
   },
-  dialogIcon: { width: 48, height: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  dialogIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actions: { gap: spacing.sm, marginTop: spacing.sm },
 });

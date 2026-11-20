@@ -38,7 +38,10 @@ export default function RegisterScreen() {
   });
 
   return (
-    <AuthLayout title="Criar conta" subtitle="Use seu e-mail. Enviaremos um código para confirmá-lo.">
+    <AuthLayout
+      title="Criar conta"
+      subtitle="Use seu e-mail. Enviaremos um código para confirmá-lo."
+    >
       {formError ? <Banner tone="danger" message={formError} /> : null}
 
       <FormField

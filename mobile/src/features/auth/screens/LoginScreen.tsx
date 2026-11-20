@@ -47,9 +47,15 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout title="Entrar" subtitle="Use seu e-mail e senha para continuar.">
-      {sessionExpired ? <Banner tone="warning" message="Sua sessão expirou. Entre novamente." /> : null}
-      {params.verified ? <Banner tone="success" message="E-mail verificado! Agora é só entrar." /> : null}
-      {params.reset ? <Banner tone="success" message="Senha alterada. Entre com a nova senha." /> : null}
+      {sessionExpired ? (
+        <Banner tone="warning" message="Sua sessão expirou. Entre novamente." />
+      ) : null}
+      {params.verified ? (
+        <Banner tone="success" message="E-mail verificado! Agora é só entrar." />
+      ) : null}
+      {params.reset ? (
+        <Banner tone="success" message="Senha alterada. Entre com a nova senha." />
+      ) : null}
       {formError ? <Banner tone="danger" message={formError} /> : null}
 
       <FormField

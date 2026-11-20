@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Valida params/query/body com zod. O resultado fica em `req.valid`
@@ -6,11 +6,9 @@
  */
 const validate = (schemas) => (req, _res, next) => {
   req.valid = {};
-  for (const part of ["params", "query", "body"]) {
+  for (const part of ['params', 'query', 'body']) {
     if (schemas[part])
-      req.valid[part] = schemas[part].parse(
-        part === "body" ? (req.body ?? {}) : req[part],
-      );
+      req.valid[part] = schemas[part].parse(part === 'body' ? (req.body ?? {}) : req[part]);
   }
   next();
 };

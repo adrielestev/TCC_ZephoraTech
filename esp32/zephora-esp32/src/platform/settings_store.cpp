@@ -11,6 +11,38 @@ namespace zephora::settings {
 
 static constexpr const char* kNs = "zephora";
 
+static std::string channelKey(const char* channelId) {
+  uint32_t hash = 2166136261u;
+  for (const unsigned char* p = reinterpret_cast<const unsigned char*>(channelId);
+       p && *p; ++p) {
+    hash ^= *p;
+    hash *= 16777619u;
+  }
+  char key[12];
+  snprintf(key, sizeof(key), "exec_%08x", static_cast<unsigned int>(hash));
+  return key;
+}
+
+bool saveChannelExecutionConfig(const char* channelId, const char* json) {
+  if (!channelId || !*channelId || !json) return false;
+  Preferences p;
+  if (!p.begin("zephora_exec", false)) return false;
+  const std::string key = channelKey(channelId);
+  bool ok = p.putString(key.c_str(), json) > 0;
+  p.end();
+  return ok;
+}
+
+bool loadChannelExecutionConfig(const char* channelId, std::string& json) {
+  if (!channelId || !*channelId) return false;
+  Preferences p;
+  if (!p.begin("zephora_exec", true)) return false;
+  const std::string key = channelKey(channelId);
+  json = p.getString(key.c_str(), "").c_str();
+  p.end();
+  return !json.empty();
+}
+
 void load(Settings& s) {
   Preferences p;
   p.begin(kNs, true);
@@ -75,6 +107,10 @@ void factoryReset() {
   p.begin(kNs, false);
   p.clear();
   p.end();
+  Preferences execution;
+  execution.begin("zephora_exec", false);
+  execution.clear();
+  execution.end();
 }
 
 }  // namespace zephora::settings

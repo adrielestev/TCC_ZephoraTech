@@ -5,7 +5,7 @@ import { getErrorMessage } from '@/core/api/errors';
 import { useNumericParam } from '@/core/hooks/useNumericParam';
 import type { Device } from '@/core/types';
 import { routes } from '@/core/navigation/routes';
-import { buildState, deviceTypes, describeFlag } from '@/features/devices/deviceTypes';
+import { buildState, describeFlag, getDeviceTypeMeta } from '@/features/devices/deviceTypes';
 import { useRoomDevices } from '@/features/devices/hooks';
 import { AppText } from '@/ui/AppText';
 import { Banner } from '@/ui/Banner';
@@ -43,7 +43,7 @@ function DevicePicker({
   return (
     <View style={{ gap: spacing.md }}>
       {devices.map((device) => {
-        const meta = deviceTypes[device.type];
+        const meta = getDeviceTypeMeta(device.type);
         const isOn = device.id in selected;
         return (
           <Card key={device.id}>
@@ -163,9 +163,16 @@ export default function NewAutomationScreen() {
                 {step < SUMMARY ? (
                   <Button label={step === 2 ? 'Revisar' : 'Continuar'} onPress={next} />
                 ) : (
-                  <Button label="Salvar automação" icon="checkmark" onPress={() => save(devices)} loading={create.isPending} />
+                  <Button
+                    label="Salvar automação"
+                    icon="checkmark"
+                    onPress={() => save(devices)}
+                    loading={create.isPending}
+                  />
                 )}
-                {step > 0 ? <Button label="Voltar" variant="ghost" onPress={() => setStep((s) => s - 1)} /> : null}
+                {step > 0 ? (
+                  <Button label="Voltar" variant="ghost" onPress={() => setStep((s) => s - 1)} />
+                ) : null}
               </View>
             }
           >
@@ -190,7 +197,8 @@ export default function NewAutomationScreen() {
             {step === 1 ? (
               <>
                 <AppText color="textMuted">
-                  Quando isso acontecer... Escolha os sensores e a condição. Com mais de um, todos precisam ser verdade.
+                  Quando isso acontecer... Escolha os sensores e a condição. Com mais de um, todos
+                  precisam ser verdade.
                 </AppText>
                 <DevicePicker
                   devices={sensors}
@@ -203,7 +211,9 @@ export default function NewAutomationScreen() {
 
             {step === 2 ? (
               <>
-                <AppText color="textMuted">...faça isto. Escolha os aparelhos e como eles devem ficar.</AppText>
+                <AppText color="textMuted">
+                  ...faça isto. Escolha os aparelhos e como eles devem ficar.
+                </AppText>
                 <DevicePicker
                   devices={controllable}
                   selected={actions}
@@ -222,7 +232,11 @@ export default function NewAutomationScreen() {
                   </AppText>
                   {Object.entries(triggers).map(([id, v]) => {
                     const d = devices.find((x) => x.id === Number(id)) as Device;
-                    return <AppText key={id}>• {describeLink(devices, d.id, buildState(d.type, v))}</AppText>;
+                    return (
+                      <AppText key={id}>
+                        • {describeLink(devices, d.id, buildState(d.type, v))}
+                      </AppText>
+                    );
                   })}
                 </View>
                 <View style={styles.summaryRule}>
@@ -231,7 +245,11 @@ export default function NewAutomationScreen() {
                   </AppText>
                   {Object.entries(actions).map(([id, v]) => {
                     const d = devices.find((x) => x.id === Number(id)) as Device;
-                    return <AppText key={id}>• {describeLink(devices, d.id, buildState(d.type, v))}</AppText>;
+                    return (
+                      <AppText key={id}>
+                        • {describeLink(devices, d.id, buildState(d.type, v))}
+                      </AppText>
+                    );
                   })}
                 </View>
               </Card>
@@ -245,6 +263,11 @@ export default function NewAutomationScreen() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  summaryRule: { gap: spacing.xs, backgroundColor: colors.surfaceMuted, borderRadius: 10, padding: spacing.md },
+  summaryRule: {
+    gap: spacing.xs,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: 10,
+    padding: spacing.md,
+  },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.xs },
 });

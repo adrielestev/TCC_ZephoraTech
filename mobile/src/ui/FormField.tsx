@@ -3,7 +3,10 @@ import type { TextInputProps } from 'react-native';
 import type { Ref } from 'react';
 import { TextField, type TextInputHandle } from './TextField';
 
-interface Props<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'onChangeText' | 'style'> {
+interface Props<T extends FieldValues> extends Omit<
+  TextInputProps,
+  'value' | 'onChangeText' | 'style'
+> {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -12,7 +15,14 @@ interface Props<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'o
 }
 
 /** TextField ligado ao react-hook-form (valor, erro e blur). */
-export function FormField<T extends FieldValues>({ control, name, label, hint, inputRef, ...rest }: Props<T>) {
+export function FormField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  hint,
+  inputRef,
+  ...rest
+}: Props<T>) {
   return (
     <Controller
       control={control}

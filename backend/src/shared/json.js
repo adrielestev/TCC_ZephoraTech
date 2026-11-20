@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const parseJson = (value) => {
   if (value === null || value === undefined) return null;
@@ -10,10 +10,8 @@ const parseJson = (value) => {
 };
 
 const canonical = (value) => {
-  if (value === null || value === undefined) return "null";
-  const sorted = Object.entries(value).sort(([a], [b]) =>
-    a < b ? -1 : a > b ? 1 : 0,
-  );
+  if (value === null || value === undefined) return 'null';
+  const sorted = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   return JSON.stringify(Object.fromEntries(sorted));
 };
 

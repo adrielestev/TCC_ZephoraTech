@@ -92,7 +92,11 @@ export default function VerifyEmailScreen() {
         disabled={cooldown.isRunning}
         loading={resend.isPending}
       />
-      <Button label="Voltar ao login" variant="ghost" onPress={() => router.replace(routes.login)} />
+      <Button
+        label="Voltar ao login"
+        variant="ghost"
+        onPress={() => router.replace(routes.login)}
+      />
     </AuthLayout>
   );
 }

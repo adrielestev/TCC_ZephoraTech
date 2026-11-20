@@ -25,17 +25,24 @@ interface EmptyProps {
 }
 
 const iconTones = {
-  neutral: { bg: colors.surfaceMuted, fg: 'textMuted' },
+  neutral: { bg: colors.primarySoft, fg: 'primary' },
   danger: { bg: colors.dangerSoft, fg: 'danger' },
   success: { bg: colors.successSoft, fg: 'success' },
 } as const;
 
-export function EmptyState({ icon = 'file-tray-outline', title, message, actionLabel, onAction, tone = 'neutral' }: EmptyProps) {
+export function EmptyState({
+  icon = 'file-tray-outline',
+  title,
+  message,
+  actionLabel,
+  onAction,
+  tone = 'neutral',
+}: EmptyProps) {
   const t = iconTones[tone];
   return (
     <View style={styles.center}>
       <View style={[styles.iconCircle, { backgroundColor: t.bg }]}>
-        <Icon name={icon} size={30} color={t.fg} />
+        <Icon name={icon} size={32} color={t.fg} />
       </View>
       <View style={styles.textBlock}>
         <AppText variant="heading" center>
@@ -47,7 +54,14 @@ export function EmptyState({ icon = 'file-tray-outline', title, message, actionL
           </AppText>
         ) : null}
       </View>
-      {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} fullWidth={false} style={{ alignSelf: 'center' }} /> : null}
+      {actionLabel && onAction ? (
+        <Button
+          label={actionLabel}
+          onPress={onAction}
+          fullWidth={false}
+          style={{ alignSelf: 'center' }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -92,5 +106,14 @@ export function QueryBoundary<T>({ query, children, skeleton }: BoundaryProps<T>
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center', gap: spacing.lg, padding: spacing.xl },
   textBlock: { gap: spacing.xs, maxWidth: 360 },
-  iconCircle: { width: 64, height: 64, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.borderStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

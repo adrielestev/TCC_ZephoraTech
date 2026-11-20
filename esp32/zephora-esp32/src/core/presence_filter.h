@@ -11,6 +11,12 @@ class PresenceFilter {
  public:
   PresenceFilter(uint32_t holdMs, uint32_t warmupMs) : holdMs_(holdMs), warmupMs_(warmupMs) {}
 
+  bool setConfig(uint32_t holdMs, uint32_t warmupMs) {
+    holdMs_ = holdMs;
+    warmupMs_ = warmupMs;
+    return true;
+  }
+
   bool update(bool raw, uint32_t nowMs) {
     if (!started_) {
       started_ = true;

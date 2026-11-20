@@ -14,7 +14,10 @@ export async function pickImage(aspect: [number, number]): Promise<ImagePickerAs
 }
 
 /** Monta o multipart para a API (web precisa de Blob; nativo aceita { uri, name, type }). */
-export async function buildImageFormData(field: string, asset: ImagePickerAsset): Promise<FormData> {
+export async function buildImageFormData(
+  field: string,
+  asset: ImagePickerAsset,
+): Promise<FormData> {
   const mime = asset.mimeType ?? 'image/jpeg';
   const name = asset.fileName ?? `foto.${mime.split('/')[1] ?? 'jpg'}`;
   const form = new FormData();

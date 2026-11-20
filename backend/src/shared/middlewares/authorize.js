@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const AppError = require("../errors");
-const { ROLES } = require("../roles");
+const AppError = require('../errors');
+const { ROLES } = require('../roles');
 
 const requireRole =
   (...roles) =>

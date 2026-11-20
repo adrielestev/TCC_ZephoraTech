@@ -79,7 +79,10 @@ function EditRoomForm({ room }: { room: Room }) {
   const save = handleSubmit(async (values) => {
     setFormError(null);
     try {
-      await update.mutateAsync({ name: values.name.trim(), description: values.description.trim() || null });
+      await update.mutateAsync({
+        name: values.name.trim(),
+        description: values.description.trim() || null,
+      });
       toast('Sala salva.', 'success');
       router.back();
     } catch (error) {
@@ -107,7 +110,10 @@ function EditRoomForm({ room }: { room: Room }) {
   const hasDevices = room.deviceCount > 0;
 
   return (
-    <Screen width="form" footer={<Button label="Salvar alterações" onPress={save} loading={update.isPending} />}>
+    <Screen
+      width="form"
+      footer={<Button label="Salvar alterações" onPress={save} loading={update.isPending} />}
+    >
       {formError ? <Banner tone="danger" message={formError} /> : null}
 
       <Card>
@@ -119,11 +125,20 @@ function EditRoomForm({ room }: { room: Room }) {
           returnKeyType="next"
           onSubmitEditing={() => descriptionRef.current?.focus()}
         />
-        <FormField control={control} name="description" label="Descrição (opcional)" inputRef={descriptionRef} multiline />
+        <FormField
+          control={control}
+          name="description"
+          label="Descrição (opcional)"
+          inputRef={descriptionRef}
+          multiline
+        />
       </Card>
 
       <Card>
-        <CardHeader title="Fotos da sala" description="Até 3 fotos. Elas aparecem na galeria da sala." />
+        <CardHeader
+          title="Fotos da sala"
+          description="Até 3 fotos. Elas aparecem na galeria da sala."
+        />
         {SLOTS.map((slot) => {
           const photo = room.photos.find((p) => p.slot === slot);
           const busy = busySlot === slot;
@@ -131,7 +146,11 @@ function EditRoomForm({ room }: { room: Room }) {
             <View key={slot} style={styles.slot}>
               <View style={styles.preview}>
                 {photo ? (
-                  <Image source={{ uri: photo.url }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                  />
                 ) : (
                   <Icon name="image-outline" size={28} color="textMuted" />
                 )}
@@ -167,7 +186,10 @@ function EditRoomForm({ room }: { room: Room }) {
       </Card>
 
       <Card>
-        <CardHeader title="Zona de risco" description="Excluir remove fotos, acessos e automações da sala." />
+        <CardHeader
+          title="Zona de risco"
+          description="Excluir remove fotos, acessos e automações da sala."
+        />
         {hasDevices ? (
           <Banner
             tone="warning"

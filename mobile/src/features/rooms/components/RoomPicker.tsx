@@ -18,10 +18,17 @@ export function RoomPicker({ rooms, value, onChange }: Props) {
   return (
     <View style={styles.wrap}>
       {rooms.map((room) => (
-        <Chip key={room.id} label={room.name} selected={room.id === value} onPress={() => onChange(room.id)} />
+        <Chip
+          key={room.id}
+          label={room.name}
+          selected={room.id === value}
+          onPress={() => onChange(room.id)}
+        />
       ))}
     </View>
   );
 }
 
-const styles = StyleSheet.create({ wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm } });
+const styles = StyleSheet.create({
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+});

@@ -40,11 +40,7 @@ export default function RoomDetailScreen() {
     void automations.refetch();
   };
 
-  const skeleton = (
-    <SkeletonList count={2}>
-      {() => <ListItemSkeleton />}
-    </SkeletonList>
-  );
+  const skeleton = <SkeletonList count={2}>{() => <ListItemSkeleton />}</SkeletonList>;
 
   return (
     <Screen width="wide" onRefresh={refresh} refreshing={room.isRefetching && !room.isPending}>
@@ -53,13 +49,19 @@ export default function RoomDetailScreen() {
       {room.data ? (
         <View style={{ gap: spacing.md }}>
           <PhotoCarousel photos={room.data.photos} />
-          {room.data.description ? <AppText color="textMuted">{room.data.description}</AppText> : null}
+          {room.data.description ? (
+            <AppText color="textMuted">{room.data.description}</AppText>
+          ) : null}
         </View>
       ) : room.isError ? (
         <ErrorView error={room.error} onRetry={() => void room.refetch()} />
       ) : null}
 
-      <Section title="Aparelhos" count={devices.data?.length} description="Use o interruptor para ligar ou desligar.">
+      <Section
+        title="Aparelhos"
+        count={devices.data?.length}
+        description="Use o interruptor para ligar ou desligar."
+      >
         {devices.isPending ? (
           skeleton
         ) : devices.isError ? (
@@ -118,7 +120,9 @@ export default function RoomDetailScreen() {
           <ErrorView error={automations.error} onRetry={() => void automations.refetch()} />
         ) : automations.data.length === 0 ? (
           <AppText color="textMuted">
-            {isAdmin ? 'Nenhuma automação ainda. Toque em "Nova" para criar a primeira.' : 'Nenhuma automação nesta sala.'}
+            {isAdmin
+              ? 'Nenhuma automação ainda. Toque em "Nova" para criar a primeira.'
+              : 'Nenhuma automação nesta sala.'}
           </AppText>
         ) : (
           <Grid minItemWidth={420} gap={spacing.md}>
@@ -131,12 +135,15 @@ export default function RoomDetailScreen() {
                   pause.mutate(
                     { id: automation.id, paused },
                     {
-                      onSuccess: () => toast(paused ? 'Automação pausada.' : 'Automação ativada.', 'success'),
+                      onSuccess: () =>
+                        toast(paused ? 'Automação pausada.' : 'Automação ativada.', 'success'),
                       onError: (error) => toast(getErrorMessage(error), 'danger'),
                     },
                   )
                 }
-                onManage={isAdmin ? () => router.push(routes.automation(roomId, automation.id)) : undefined}
+                onManage={
+                  isAdmin ? () => router.push(routes.automation(roomId, automation.id)) : undefined
+                }
               />
             ))}
           </Grid>
@@ -146,13 +153,13 @@ export default function RoomDetailScreen() {
       {isAdmin ? (
         <Section title="Administração da sala">
           <ListItem
-            leading={<IconTile name="people-outline" tone="admin" />}
+            leading={<IconTile name="people-outline" tone="primary" />}
             title="Quem tem acesso"
             description="Usuários comuns liberados para esta sala."
             onPress={() => router.push(routes.roomAccess(roomId))}
           />
           <ListItem
-            leading={<IconTile name="create-outline" tone="admin" />}
+            leading={<IconTile name="create-outline" tone="primary" />}
             title="Editar sala e fotos"
             description="Nome, descrição, até 3 fotos e exclusão."
             onPress={() => router.push(routes.editRoom(roomId))}

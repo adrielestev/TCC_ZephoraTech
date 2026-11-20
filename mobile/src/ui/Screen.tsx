@@ -1,7 +1,22 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CONTENT_WIDTHS, WIDE_BREAKPOINT, colors, shadows, spacing, type ContentWidth } from './theme';
+import {
+  CONTENT_WIDTHS,
+  WIDE_BREAKPOINT,
+  colors,
+  shadows,
+  spacing,
+  type ContentWidth,
+} from './theme';
 
 interface Props {
   children: ReactNode;
@@ -19,14 +34,25 @@ interface Props {
 }
 
 /** Base de toda tela: rolagem, teclado, largura máxima centralizada, margens seguras e espaçamento padrão. */
-export function Screen({ children, onRefresh, refreshing = false, centered, footer, width = 'content', scroll = true }: Props) {
+export function Screen({
+  children,
+  onRefresh,
+  refreshing = false,
+  centered,
+  footer,
+  width = 'content',
+  scroll = true,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const pad = windowWidth >= WIDE_BREAKPOINT ? spacing.xl : spacing.lg;
   const inner = [styles.inner, { maxWidth: CONTENT_WIDTHS[width] }];
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {scroll ? (
         <ScrollView
           style={styles.flex}
@@ -34,7 +60,13 @@ export function Screen({ children, onRefresh, refreshing = false, centered, foot
           keyboardShouldPersistTaps="handled"
           contentInsetAdjustmentBehavior="automatic"
           refreshControl={
-            onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} /> : undefined
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+              />
+            ) : undefined
           }
         >
           <View style={inner}>{children}</View>

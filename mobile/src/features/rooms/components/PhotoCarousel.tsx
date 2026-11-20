@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import type { RoomPhoto } from '@/core/types';
+import { ChalkBoard } from '@/ui/ChalkBoard';
 import { Icon } from '@/ui/Icon';
 import { colors, radius, shadows, spacing } from '@/ui/theme';
 
@@ -15,8 +16,10 @@ export function PhotoCarousel({ photos }: { photos: RoomPhoto[] }) {
 
   if (photos.length === 0) {
     return (
-      <View style={[styles.frame, styles.placeholder]} onLayout={onLayout}>
-        <Icon name="image-outline" size={40} color="textMuted" />
+      <View style={styles.frame} onLayout={onLayout}>
+        <ChalkBoard style={styles.placeholder} anchor="bottom" chalk={0.6}>
+          <Icon name="image-outline" size={36} color="chalk" />
+        </ChalkBoard>
       </View>
     );
   }
@@ -54,9 +57,21 @@ export function PhotoCarousel({ photos }: { photos: RoomPhoto[] }) {
 }
 
 const styles = StyleSheet.create({
-  frame: { borderRadius: radius.lg, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: colors.primarySoft, boxShadow: shadows.card },
+  frame: {
+    borderRadius: radius.lg,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+    backgroundColor: colors.primarySoft,
+    boxShadow: shadows.card,
+  },
   placeholder: { height: 160, alignItems: 'center', justifyContent: 'center' },
-  dots: { position: 'absolute', bottom: spacing.sm, alignSelf: 'center', flexDirection: 'row', gap: 6 },
+  dots: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.55)' },
   dotActive: { backgroundColor: colors.surface, width: 20 },
 });

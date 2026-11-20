@@ -19,7 +19,11 @@ export default function RoomAccessScreen() {
   const access = useRoomAccess(roomId);
 
   return (
-    <Screen width="form" onRefresh={() => void access.refetch()} refreshing={access.isRefetching && !access.isPending}>
+    <Screen
+      width="form"
+      onRefresh={() => void access.refetch()}
+      refreshing={access.isRefetching && !access.isPending}
+    >
       <Banner
         tone="info"
         message="Admins sempre acessam todas as salas. Aqui aparecem os usuários comuns com acesso a esta sala."
@@ -50,7 +54,11 @@ export default function RoomAccessScreen() {
                   onPress={() => router.push(routes.user(user.id))}
                 />
               ))}
-              <Button label="Gerenciar usuários" variant="outline" onPress={() => router.push(routes.users)} />
+              <Button
+                label="Gerenciar usuários"
+                variant="outline"
+                onPress={() => router.push(routes.users)}
+              />
             </View>
           )
         }

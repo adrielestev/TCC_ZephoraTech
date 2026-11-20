@@ -36,7 +36,8 @@ export function usePauseAutomation(roomId: number) {
   const key = qk.automations(roomId);
 
   return useMutation({
-    mutationFn: ({ id, paused }: { id: number; paused: boolean }) => automationsApi.setPaused(id, paused),
+    mutationFn: ({ id, paused }: { id: number; paused: boolean }) =>
+      automationsApi.setPaused(id, paused),
     onMutate: async ({ id, paused }) => {
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<Automation[]>(key);

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon } from './Icon';
-import { colors, radius, spacing } from './theme';
+import { colors, fonts, radius, spacing } from './theme';
 
 interface Props {
   steps: string[];
@@ -16,23 +16,38 @@ export function StepIndicator({ steps, current, doneLabel = 'Concluído' }: Prop
   const finished = current >= steps.length;
   const label = finished ? doneLabel : steps[current];
   return (
-    <View accessibilityLabel={finished ? 'Todos os passos concluídos' : `Passo ${current + 1} de ${steps.length}: ${label}`} style={styles.wrap}>
+    <View
+      accessibilityLabel={
+        finished
+          ? 'Todos os passos concluídos'
+          : `Passo ${current + 1} de ${steps.length}: ${label}`
+      }
+      style={styles.wrap}
+    >
       <View style={styles.track}>
         {steps.map((step, index) => {
           const done = index < current;
           const active = index === current;
           return (
             <View key={step} style={styles.stepWrap}>
-              <View style={[styles.dot, (done || active) && styles.dotOn, active && styles.dotActive]}>
+              <View
+                style={[styles.dot, (done || active) && styles.dotOn, active && styles.dotActive]}
+              >
                 {done ? (
                   <Icon name="checkmark" size={14} color="onPrimary" />
                 ) : (
-                  <AppText variant="caption" color={active ? 'onPrimary' : 'textMuted'} style={styles.dotText}>
+                  <AppText
+                    variant="caption"
+                    color={active ? 'onPrimary' : 'textMuted'}
+                    style={styles.dotText}
+                  >
                     {index + 1}
                   </AppText>
                 )}
               </View>
-              {index < steps.length - 1 ? <View style={[styles.line, done && styles.lineOn]} /> : null}
+              {index < steps.length - 1 ? (
+                <View style={[styles.line, done && styles.lineOn]} />
+              ) : null}
             </View>
           );
         })}
@@ -65,7 +80,13 @@ const styles = StyleSheet.create({
   },
   dotOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   dotActive: { boxShadow: `0 0 0 4px ${colors.ring}` },
-  dotText: { fontWeight: '700', lineHeight: 16 },
-  line: { flex: 1, height: 2, marginHorizontal: spacing.xs, backgroundColor: colors.border, borderRadius: 1 },
+  dotText: { fontFamily: fonts.bold, lineHeight: 16 },
+  line: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: spacing.xs,
+    backgroundColor: colors.border,
+    borderRadius: 1,
+  },
   lineOn: { backgroundColor: colors.primary },
 });

@@ -15,6 +15,8 @@ namespace settings {
 
 void load(Settings& s);
 bool saveNetwork(Settings& s, const std::string& ssid, const std::string& password, const std::string& serverUrl);
+bool saveChannelExecutionConfig(const char* channelId, const char* json);
+bool loadChannelExecutionConfig(const char* channelId, std::string& json);
 
 // Gera a credencial (32 bytes do gerador de números aleatórios do chip) se ainda não existir.
 // Chame com o rádio Wi-Fi ligado: só assim o esp_random() é aleatório de verdade (TRNG).

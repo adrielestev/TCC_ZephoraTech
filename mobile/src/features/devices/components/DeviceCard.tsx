@@ -7,7 +7,13 @@ import { Card } from '@/ui/Card';
 import { IconButton } from '@/ui/Icon';
 import { IconTile } from '@/ui/ListItem';
 import { colors, spacing } from '@/ui/theme';
-import { describeFlag, deviceTypes, effectiveFlag, getFlag, getTemperature, isApplying } from '../deviceTypes';
+import {
+  describeFlag,
+  effectiveFlag,
+  getDeviceTypeMeta,
+  getFlag,
+  isApplying,
+} from '../deviceTypes';
 
 interface Props {
   device: Device;
@@ -17,22 +23,17 @@ interface Props {
 }
 
 export function DeviceCard({ device, onToggle, onManage }: Props) {
-  const meta = deviceTypes[device.type];
+  const meta = getDeviceTypeMeta(device.type);
   const offline = device.esp32Status !== 'online';
   const flag = effectiveFlag(device);
   const active = flag === true;
   const applying = isApplying(device);
-  const statusText = device.type === 'temperature_sensor'
-    ? (() => {
-        const temperature = getTemperature(device.type, device.currentState);
-        return temperature === null ? 'Sem leitura' : `${temperature.toFixed(1)} °C`;
-      })()
-    : device.controllable
+  const statusText = device.controllable
     ? describeFlag(device.type, flag)
     : describeFlag(device.type, getFlag(device.type, device.currentState));
 
   return (
-    <Card>
+    <Card active={active}>
       <View style={styles.row}>
         <IconTile name={meta.icon} solid={active} tone="neutral" />
         <View style={styles.info}>
@@ -51,14 +52,22 @@ export function DeviceCard({ device, onToggle, onManage }: Props) {
             accessibilityLabel={`${device.name}: ${active ? 'ligada' : 'desligada'}. Toque para alternar`}
           />
         ) : null}
-        {onManage ? <IconButton name="settings-outline" label={`Gerenciar ${device.name}`} onPress={onManage} /> : null}
+        {onManage ? (
+          <IconButton
+            name="settings-outline"
+            label={`Gerenciar ${device.name}`}
+            onPress={onManage}
+          />
+        ) : null}
       </View>
 
       {offline || applying ? (
         <View style={styles.badges}>
           {offline ? (
             <Badge
-              label={device.controllable ? 'ESP32 offline · o comando fica pendente' : 'ESP32 offline'}
+              label={
+                device.controllable ? 'ESP32 offline · o comando fica pendente' : 'ESP32 offline'
+              }
               tone="warning"
               icon="cloud-offline-outline"
             />

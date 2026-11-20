@@ -22,6 +22,7 @@ class Channel {
   virtual bool state() const = 0;         // estado atual (on / presence)
   virtual void writeState(JsonObject state) const { state[typeInfo(type()).stateKey] = this->state(); }
   virtual bool setState(bool /*value*/) { return false; }  // só aparelhos controláveis
+  virtual bool setExecutionConfig(JsonObjectConst /*config*/) { return false; }  // parâmetros específicos por aparelho
 };
 
 }  // namespace zephora

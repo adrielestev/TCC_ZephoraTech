@@ -1,13 +1,19 @@
-"use strict";
+'use strict';
 
-const AppError = require("../../shared/errors");
-const { transaction } = require("../../database/db");
-const { parseJson } = require("../../shared/json");
-const roomsService = require("../rooms/rooms.service");
-const roomsRepository = require("../rooms/rooms.repository");
-const automationsRepository = require("../automations/automations.repository");
-const devicesRepository = require("./devices.repository");
-const { isControllable, parseState } = require("./device-types");
+const AppError = require('../../shared/errors');
+const { transaction } = require('../../database/db');
+const { parseJson } = require('../../shared/json');
+const { esp32Status } = require('../../shared/esp32-status');
+const roomsService = require('../rooms/rooms.service');
+const roomsRepository = require('../rooms/rooms.repository');
+const automationsRepository = require('../automations/automations.repository');
+const devicesRepository = require('./devices.repository');
+const {
+  isControllable,
+  parseState,
+  parseExecutionConfig,
+  getExecutionConfig,
+} = require('./device-types');
 
 const toPublic = (device) => ({
   id: device.id,
@@ -20,18 +26,17 @@ const toPublic = (device) => ({
   controllable: isControllable(device.type),
   desiredState: parseJson(device.desired_state),
   currentState: parseJson(device.current_state),
+  executionConfig: getExecutionConfig(device.type, parseJson(device.execution_config)),
   stateUpdatedAt: device.state_updated_at,
-  esp32Status: device.esp32_status,
+  esp32Status: esp32Status(device.esp32_last_seen_at),
 });
 
-const deviceNotFound = () =>
-  AppError.notFound("Aparelho não encontrado", "DEVICE_NOT_FOUND");
+const deviceNotFound = () => AppError.notFound('Aparelho não encontrado', 'DEVICE_NOT_FOUND');
 
 /** Aparelho cadastrado, acessível ao usuário (sem acesso à sala = 404). */
 function getAccessible(user, deviceId) {
   const device = devicesRepository.findById(deviceId);
-  if (!device || device.registration_status !== "registered")
-    throw deviceNotFound();
+  if (!device || device.registration_status !== 'registered') throw deviceNotFound();
   roomsService.getAccessible(user, device.room_id);
   return device;
 }
@@ -45,10 +50,7 @@ function listByRoom(user, roomId) {
 function setState(user, deviceId, state) {
   const device = getAccessible(user, deviceId);
   if (!isControllable(device.type)) {
-    throw AppError.badRequest(
-      "Este aparelho não pode ser controlado",
-      "DEVICE_NOT_CONTROLLABLE",
-    );
+    throw AppError.badRequest('Este aparelho não pode ser controlado', 'DEVICE_NOT_CONTROLLABLE');
   }
   const parsed = parseState(device.type, state);
   devicesRepository.setDesiredState(device.id, JSON.stringify(parsed));
@@ -57,19 +59,22 @@ function setState(user, deviceId, state) {
 
 function update(deviceId, patch) {
   const device = devicesRepository.findById(deviceId);
-  if (!device || device.registration_status !== "registered")
-    throw deviceNotFound();
+  if (!device || device.registration_status !== 'registered') throw deviceNotFound();
 
   if (patch.roomId !== undefined && patch.roomId !== device.room_id) {
     if (!roomsRepository.findById(patch.roomId)) {
-      throw AppError.notFound("Sala não encontrada", "ROOM_NOT_FOUND");
+      throw AppError.notFound('Sala não encontrada', 'ROOM_NOT_FOUND');
     }
     if (automationsRepository.usesDevice(device.id)) {
       throw AppError.conflict(
-        "Remova o aparelho das automações antes de movê-lo de sala",
-        "DEVICE_IN_AUTOMATION",
+        'Remova o aparelho das automações antes de movê-lo de sala',
+        'DEVICE_IN_AUTOMATION',
       );
     }
+  }
+  if (patch.executionConfig !== undefined) {
+    const parsed = parseExecutionConfig(device.type, patch.executionConfig);
+    devicesRepository.setExecutionConfig(device.id, JSON.stringify(parsed));
   }
   devicesRepository.update(device.id, patch);
   return toPublic(devicesRepository.findById(device.id));

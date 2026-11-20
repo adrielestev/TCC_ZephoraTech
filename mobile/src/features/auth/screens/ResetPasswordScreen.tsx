@@ -50,7 +50,11 @@ export default function ResetPasswordScreen() {
 
   const submit = handleSubmit((values) => {
     setFormError(null);
-    reset.mutate({ email: values.email.trim(), code: values.code, newPassword: values.newPassword });
+    reset.mutate({
+      email: values.email.trim(),
+      code: values.code,
+      newPassword: values.newPassword,
+    });
   });
 
   return (

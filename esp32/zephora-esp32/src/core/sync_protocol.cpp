@@ -38,6 +38,8 @@ SyncResponse handleSyncResponse(const char* body, size_t len, ChannelRegistry& r
   filter["pollIntervalMs"] = true;
   filter["commands"][0]["channel"] = true;
   filter["commands"][0]["state"] = true;
+  filter["executions"][0]["channel"] = true;
+  filter["executions"][0]["executionConfig"] = true;
 
   JsonDocument doc;
   if (deserializeJson(doc, body, len, DeserializationOption::Filter(filter))) return result;
@@ -59,6 +61,19 @@ SyncResponse handleSyncResponse(const char* body, size_t len, ChannelRegistry& r
     }
     if (ok) { if (result.applied < 255) ++result.applied; }
     else    { if (result.rejected < 255) ++result.rejected; }
+  }
+
+  JsonArrayConst executions = doc["executions"].as<JsonArrayConst>();
+  for (JsonVariantConst execution : executions) {
+    const char* channelId = execution["channel"].is<const char*>()
+        ? execution["channel"].as<const char*>()
+        : nullptr;
+    Channel* ch = registry.find(channelId);
+    JsonObjectConst config = execution["executionConfig"].as<JsonObjectConst>();
+    bool ok = ch && !config.isNull() &&
+              ch->setExecutionConfig(config);
+    if (ok) { if (result.configsApplied < 255) ++result.configsApplied; }
+    else    { if (result.configsRejected < 255) ++result.configsRejected; }
   }
   return result;
 }

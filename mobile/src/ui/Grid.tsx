@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { spacing } from './theme';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { motion, spacing } from './theme';
 
 interface Props {
   children: ReactNode[] | ReactNode;
@@ -9,7 +10,7 @@ interface Props {
   gap?: number;
 }
 
-/** Grade responsiva: 1 coluna no celular, 2 ou 3 em telas largas. */
+/** Grade responsiva: 1 coluna no celular, 2 ou 3 em telas largas. Os itens entram em cascata. */
 export function Grid({ children, minItemWidth = 300, gap = spacing.lg }: Props) {
   const [width, setWidth] = useState(0);
   const items = Array.isArray(children) ? children : [children];
@@ -22,13 +23,19 @@ export function Grid({ children, minItemWidth = 300, gap = spacing.lg }: Props) 
     <View style={[styles.grid, { gap }]} onLayout={onLayout}>
       {width > 0
         ? items.map((child, i) => (
-            <View key={i} style={{ width: itemWidth }}>
+            <Animated.View
+              key={i}
+              entering={FadeInDown.delay(Math.min(i, 8) * motion.stagger).duration(motion.base)}
+              style={{ width: itemWidth }}
+            >
               {child}
-            </View>
+            </Animated.View>
           ))
         : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({ grid: { flexDirection: 'row', flexWrap: 'wrap', width: '100%' } });
+const styles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', width: '100%' },
+});

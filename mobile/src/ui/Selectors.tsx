@@ -16,7 +16,11 @@ export function Chip({ label, selected, onPress }: ChipProps) {
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      style={({ pressed }) => [styles.chip, selected && styles.chipSelected, pressed && { opacity: 0.85 }]}
+      style={({ pressed }) => [
+        styles.chip,
+        selected && styles.chipSelected,
+        pressed && { opacity: 0.85 },
+      ]}
     >
       {selected ? <Icon name="checkmark" size={16} color="onPrimary" /> : null}
       <AppText variant="label" color={selected ? 'onPrimary' : 'text'}>
@@ -40,7 +44,10 @@ export function CheckRow({ label, sublabel, checked, onToggle }: CheckRowProps) 
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
       accessibilityLabel={label}
-      style={({ pressed }) => [styles.checkRow, pressed && { backgroundColor: colors.surfaceMuted }]}
+      style={({ pressed }) => [
+        styles.checkRow,
+        pressed && { backgroundColor: colors.surfaceMuted },
+      ]}
     >
       <View style={[styles.box, checked && styles.boxChecked]}>
         {checked ? <Icon name="checkmark" size={16} color="onPrimary" /> : null}

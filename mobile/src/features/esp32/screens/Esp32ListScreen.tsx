@@ -17,7 +17,10 @@ export default function Esp32ListScreen() {
   const modules = useEsp32List();
 
   return (
-    <Screen onRefresh={() => void modules.refetch()} refreshing={modules.isRefetching && !modules.isPending}>
+    <Screen
+      onRefresh={() => void modules.refetch()}
+      refreshing={modules.isRefetching && !modules.isPending}
+    >
       <Button label="Cadastrar módulo" icon="add" onPress={() => router.push(routes.newEsp32)} />
 
       <QueryBoundary
@@ -45,7 +48,11 @@ export default function Esp32ListScreen() {
                       <Esp32StatusBadge status={m.status} />
                       <Badge label={`${m.registeredDevices} cadastrados`} tone="neutral" />
                       {m.discoveredDevices > 0 ? (
-                        <Badge label={`${m.discoveredDevices} novos para cadastrar`} tone="admin" icon="sparkles-outline" />
+                        <Badge
+                          label={`${m.discoveredDevices} novos para cadastrar`}
+                          tone="admin"
+                          icon="sparkles-outline"
+                        />
                       ) : null}
                     </>
                   }

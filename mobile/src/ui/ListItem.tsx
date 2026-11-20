@@ -33,6 +33,7 @@ export function IconTile({
       style={[
         styles.tile,
         { width: size, height: size, backgroundColor: solid ? colors.primary : t.bg },
+        solid && { boxShadow: shadows.glow },
       ]}
     >
       <Icon name={name} size={Math.round(size * 0.5)} color={solid ? 'onPrimary' : t.fg} />
@@ -54,7 +55,15 @@ interface Props {
 }
 
 /** Linha de lista (Item do shadcn/ui): leading + texto + trailing, dentro de um card. */
-export function ListItem({ title, description, leading, footer, trailing, onPress, accessibilityLabel }: Props) {
+export function ListItem({
+  title,
+  description,
+  leading,
+  footer,
+  trailing,
+  onPress,
+  accessibilityLabel,
+}: Props) {
   const content = (
     <>
       {leading}
@@ -97,7 +106,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     boxShadow: shadows.card,
   },
-  tile: { borderRadius: radius.md, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center' },
+  tile: {
+    borderRadius: radius.md,
+    borderCurve: 'continuous',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   text: { flex: 1, gap: 2 },
   footer: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
 });

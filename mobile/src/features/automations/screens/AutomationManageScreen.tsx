@@ -20,7 +20,9 @@ import { EmptyState, LoadingView } from '@/ui/States';
 import { describeLink } from '../components/AutomationCard';
 import { useDeleteAutomation, useRenameAutomation, useRoomAutomations } from '../hooks';
 
-const schema = z.object({ name: z.string().trim().min(2, 'O nome deve ter ao menos 2 letras').max(100) });
+const schema = z.object({
+  name: z.string().trim().min(2, 'O nome deve ter ao menos 2 letras').max(100),
+});
 
 export default function AutomationManageScreen() {
   const roomId = useNumericParam('roomId');
@@ -89,16 +91,28 @@ function AutomationForm({ roomId, automation }: { roomId: number; automation: Au
   const list = devices.data ?? [];
 
   return (
-    <Screen width="form" footer={<Button label="Salvar nome" onPress={save} loading={rename.isPending} />}>
+    <Screen
+      width="form"
+      footer={<Button label="Salvar nome" onPress={save} loading={rename.isPending} />}
+    >
       {formError ? <Banner tone="danger" message={formError} /> : null}
 
       <Card>
         <CardHeader title="Nome" />
-        <FormField control={control} name="name" label="Nome da automação" returnKeyType="done" onSubmitEditing={() => void save()} />
+        <FormField
+          control={control}
+          name="name"
+          label="Nome da automação"
+          returnKeyType="done"
+          onSubmitEditing={() => void save()}
+        />
       </Card>
 
       <Card>
-        <CardHeader title="Como ela funciona" description="Para mudar gatilhos ou ações, exclua e crie de novo." />
+        <CardHeader
+          title="Como ela funciona"
+          description="Para mudar gatilhos ou ações, exclua e crie de novo."
+        />
         <View style={{ gap: spacing.xs }}>
           <AppText variant="overline" color="textMuted">
             Quando (todos precisam ser verdade)
@@ -123,7 +137,13 @@ function AutomationForm({ roomId, automation }: { roomId: number; automation: Au
 
       <Card>
         <CardHeader title="Zona de risco" description="A automação deixa de funcionar." />
-        <Button label="Excluir automação" variant="danger" icon="trash-outline" onPress={deleteAutomation} loading={remove.isPending} />
+        <Button
+          label="Excluir automação"
+          variant="danger"
+          icon="trash-outline"
+          onPress={deleteAutomation}
+          loading={remove.isPending}
+        />
       </Card>
     </Screen>
   );

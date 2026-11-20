@@ -1,10 +1,19 @@
 import type { Role, User } from '@/core/types';
 import { Badge } from '@/ui/Badge';
 
-const roleLabel: Record<Role, string> = { owner: 'Admin padrão', admin: 'Admin', member: 'Usuário comum' };
+const roleLabel: Record<Role, string> = {
+  owner: 'Admin padrão',
+  admin: 'Admin',
+  member: 'Usuário comum',
+};
 
 export function RoleBadge({ role }: { role: Role }) {
-  return <Badge label={roleLabel[role]} tone={role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : 'neutral'} />;
+  return (
+    <Badge
+      label={roleLabel[role]}
+      tone={role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : 'neutral'}
+    />
+  );
 }
 
 export function StatusBadges({ user }: { user: User }) {

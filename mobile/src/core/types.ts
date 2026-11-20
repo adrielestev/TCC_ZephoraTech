@@ -3,6 +3,10 @@
 export type Role = 'owner' | 'admin' | 'member';
 export type DeviceType = 'light' | 'presence_sensor' | 'temperature_sensor';
 export type DeviceState = Record<string, boolean | number>;
+export type DeviceExecutionConfig = {
+  holdMs?: number;
+  warmupMs?: number;
+};
 export type Esp32Status = 'pending' | 'online' | 'offline';
 
 export interface User {
@@ -42,6 +46,7 @@ export interface Device {
   controllable: boolean;
   desiredState: DeviceState | null;
   currentState: DeviceState | null;
+  executionConfig: DeviceExecutionConfig | null;
   stateUpdatedAt: string | null;
   esp32Status: Esp32Status;
 }

@@ -22,6 +22,8 @@ struct SyncResponse {
   uint32_t pollIntervalMs = kDefaultPollMs;
   uint8_t applied = 0;           // comandos executados
   uint8_t rejected = 0;          // comandos ignorados (canal/estado inválido, aparelho não controlável)
+  uint8_t configsApplied = 0;
+  uint8_t configsRejected = 0;
 };
 
 // Lê a resposta e EXECUTA os comandos nos canais. Comando suspeito é descartado, nunca aplicado.

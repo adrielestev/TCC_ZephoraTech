@@ -9,12 +9,21 @@ interface Props {
   accessibilityLabel?: string;
   /** false remove o espaçamento interno (ex.: card com foto até a borda) */
   padded?: boolean;
+  /** destaca o card em azul (ex.: aparelho ligado) */
+  active?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 /** Card do shadcn/ui: superfície, borda sutil e sombra leve. Componha com CardHeader, CardContent... */
-export function Card({ children, onPress, accessibilityLabel, padded = true, style }: Props) {
-  const base = [styles.card, padded && styles.padded, style];
+export function Card({
+  children,
+  onPress,
+  accessibilityLabel,
+  padded = true,
+  active,
+  style,
+}: Props) {
+  const base = [styles.card, padded && styles.padded, active && styles.active, style];
   if (!onPress) return <View style={base}>{children}</View>;
   return (
     <Pressable
@@ -28,7 +37,15 @@ export function Card({ children, onPress, accessibilityLabel, padded = true, sty
   );
 }
 
-export function CardHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
+export function CardHeader({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
   return (
     <View style={styles.header}>
       <View style={{ flex: 1, gap: 2 }}>
@@ -44,7 +61,13 @@ export function CardHeader({ title, description, action }: { title: string; desc
   );
 }
 
-export function CardContent({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function CardContent({
+  children,
+  style,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
   return <View style={[styles.content, style]}>{children}</View>;
 }
 
@@ -63,6 +86,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   padded: { padding: spacing.lg, gap: spacing.md },
+  active: { backgroundColor: colors.surfaceActive, borderColor: colors.primary + '55' },
   pressed: { backgroundColor: colors.surfaceMuted },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   content: { gap: spacing.md },

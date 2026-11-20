@@ -83,14 +83,23 @@ export default function UsersListScreen() {
           <EmptyState
             icon="people-outline"
             title="Nenhum usuário encontrado"
-            message={debounced ? 'Tente outro nome ou e-mail.' : 'Quando as pessoas criarem conta, elas aparecem aqui.'}
+            message={
+              debounced
+                ? 'Tente outro nome ou e-mail.'
+                : 'Quando as pessoas criarem conta, elas aparecem aqui.'
+            }
           />
         )
       }
       ListFooterComponent={
         users.hasNextPage ? (
           <View style={{ marginTop: spacing.md }}>
-            <Button label="Carregar mais" variant="outline" loading={users.isFetchingNextPage} onPress={() => void users.fetchNextPage()} />
+            <Button
+              label="Carregar mais"
+              variant="outline"
+              loading={users.isFetchingNextPage}
+              onPress={() => void users.fetchNextPage()}
+            />
           </View>
         ) : undefined
       }

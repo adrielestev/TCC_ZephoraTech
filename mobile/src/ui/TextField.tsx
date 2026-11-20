@@ -2,7 +2,7 @@ import { forwardRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';
-import { colors, fontSize, radius, spacing } from './theme';
+import { colors, fontSize, fonts, radius, spacing } from './theme';
 
 /** Tipo da referência de um TextInput (para chamar .focus()). */
 export type TextInputHandle = ComponentRef<typeof TextInput>;
@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
   errored: { borderColor: colors.danger },
   input: {
     flex: 1,
+    fontFamily: fonts.regular,
     fontSize: fontSize.body,
     color: colors.text,
     paddingVertical: spacing.md,

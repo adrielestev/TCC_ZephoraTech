@@ -37,11 +37,15 @@ export default function AdminHomeScreen() {
   const router = useRouter();
   return (
     <Screen>
-      <PageHeader eyebrow="Painel" title="Administração" description="Tudo o que você precisa para configurar a escola." />
+      <PageHeader
+        eyebrow="Painel"
+        title="Administração"
+        description="Tudo o que você precisa para configurar a escola."
+      />
       {items.map((item) => (
         <ListItem
           key={item.title}
-          leading={<IconTile name={item.icon} tone="admin" size={52} />}
+          leading={<IconTile name={item.icon} tone="primary" size={52} />}
           title={item.title}
           description={item.description}
           onPress={() => router.push(item.href)}

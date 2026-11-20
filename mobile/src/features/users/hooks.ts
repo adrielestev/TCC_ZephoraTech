@@ -14,7 +14,8 @@ export function useUsers(search: string) {
   });
 }
 
-export const useUser = (id: number) => useQuery({ queryKey: qk.user(id), queryFn: () => usersApi.get(id) });
+export const useUser = (id: number) =>
+  useQuery({ queryKey: qk.user(id), queryFn: () => usersApi.get(id) });
 
 export const useUserRooms = (id: number) =>
   useQuery({ queryKey: qk.userRooms(id), queryFn: () => usersApi.getRooms(id) });

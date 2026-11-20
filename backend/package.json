@@ -4,12 +4,19 @@
   "private": true,
   "description": "API do Zephora — automação de salas de aula com ESP32",
   "main": "src/server.js",
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "start": "node --env-file-if-exists=.env src/server.js",
     "dev": "node --watch --env-file-if-exists=.env src/server.js",
     "db:seed": "node --env-file-if-exists=.env src/database/seed-owner.js",
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "format": "prettier --write \"src/**/*.{js,json}\" \"test/**/*.js\" package.json",
+    "format:check": "prettier --check \"src/**/*.{js,json}\" \"test/**/*.js\" package.json"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

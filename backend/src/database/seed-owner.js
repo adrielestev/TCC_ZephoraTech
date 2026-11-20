@@ -34,12 +34,17 @@ async function main() {
 
   if (!parsed.success) {
     console.error('Defina OWNER_EMAIL e OWNER_PASSWORD (mín. 8 caracteres):');
-    for (const issue of parsed.error.issues) console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
+    for (const issue of parsed.error.issues)
+      console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
     process.exit(1);
   }
 
   const result = await seedOwner(parsed.data);
-  console.log(result.created ? `Owner criado (id ${result.id}).` : `Owner já existe (id ${result.id}). Nada a fazer.`);
+  console.log(
+    result.created
+      ? `Owner criado (id ${result.id}).`
+      : `Owner já existe (id ${result.id}). Nada a fazer.`,
+  );
   db.close();
 }
 

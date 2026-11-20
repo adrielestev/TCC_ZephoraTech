@@ -50,7 +50,8 @@ function UserDetail({ user }: { user: User }) {
     });
     if (!ok) return;
     changeRole.mutate(promote ? 'admin' : 'member', {
-      onSuccess: () => toast(promote ? 'Usuário promovido a admin.' : 'Usuário voltou a ser comum.', 'success'),
+      onSuccess: () =>
+        toast(promote ? 'Usuário promovido a admin.' : 'Usuário voltou a ser comum.', 'success'),
       onError: (error) => toast(getErrorMessage(error), 'danger'),
     });
   };
@@ -161,7 +162,10 @@ function RoomAccessSection({ user }: { user: User }) {
 
   return (
     <Card>
-      <CardHeader title="Salas liberadas" description="Marque as salas que esta pessoa pode controlar." />
+      <CardHeader
+        title="Salas liberadas"
+        description="Marque as salas que esta pessoa pode controlar."
+      />
       <QueryBoundary query={rooms}>
         {(allRooms) =>
           allRooms.length === 0 ? (
