@@ -1,3 +1,4 @@
+// Processa a sincronização do ESP32, atualiza estados e devolve comandos.
 'use strict';
 
 const env = require('../../config/env');

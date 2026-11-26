@@ -1,3 +1,4 @@
+// Restringe o acesso às rotas de acordo com o papel do usuário.
 'use strict';
 
 const AppError = require('../errors');

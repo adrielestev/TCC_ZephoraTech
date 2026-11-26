@@ -1,0 +1,204 @@
+// Zephora — schema em DBML (espelha src/database/schema.sql, SQLite / node:sqlite)
+//
+// Convenções:
+//  - Todas as tabelas são STRICT (as duas tabelas de vínculo também são WITHOUT ROWID).
+//  - Datas em UTC no formato 'YYYY-MM-DD HH:MM:SS'. As colunas gravadas pela aplicação têm
+//    CHECK (datetime(coluna) = coluna), que recusa qualquer outro formato.
+//  - Booleanos são integer 0/1. Campos JSON são text com CHECK (json_valid(...)).
+//  - Caminhos de arquivo são relativos ao diretório de uploads.
+//  - PRAGMA foreign_keys = ON é por conexão.
+
+Project zephora {
+  database_type: 'SQLite'
+  Note: 'Sistema institucional de automação de salas com módulos ESP32.'
+}
+
+// ===================== ENUMS =====================
+// No SQLite são CHECK (coluna IN (...)).
+
+Enum user_role {
+  owner  [note: 'Administrador padrão da instituição. Só pode existir um.']
+  admin
+  member
+}
+
+Enum device_type {
+  light
+  presence_sensor
+  temperature_sensor
+}
+
+Enum registration_status {
+  discovered [note: 'Reportado pelo ESP32 e ainda sem sala.']
+  registered [note: 'Cadastrado em uma sala.']
+}
+
+Enum automation_role {
+  trigger [note: 'Gatilho: sempre um sensor.']
+  action  [note: 'Ação: sempre uma luz.']
+}
+
+// ===================== USERS =====================
+
+Table users {
+  id                           integer   [pk, increment]
+  name                         text      [not null]
+  email                        text      [not null, unique, note: 'COLLATE NOCASE: único sem diferenciar maiúsculas de minúsculas']
+  password_hash                text      [not null, note: 'bcrypt']
+  role                         user_role [not null, default: 'member']
+  avatar_path                  text
+  email_verified_at            text      [note: 'NULL = e-mail ainda não verificado']
+
+  verification_code_hash       text      [note: 'HMAC-SHA-256 do código de 6 dígitos']
+  verification_code_expires_at text
+  verification_code_attempts   integer   [not null, default: 0]
+
+  reset_code_hash              text      [note: 'HMAC-SHA-256 do código de 6 dígitos']
+  reset_code_expires_at        text
+  reset_code_attempts          integer   [not null, default: 0]
+
+  is_active                    integer   [not null, default: 1, note: '0 = desativada, 1 = ativa (contas não são excluídas)']
+  created_at                   text      [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at                   text      [not null, default: `CURRENT_TIMESTAMP`, note: 'Atualizado pela aplicação a cada alteração']
+
+  Note: '''
+    Índice parcial único ux_users_single_owner ON users (role) WHERE role = 'owner':
+    garante um único owner. O DBML não expressa índices parciais.
+  '''
+}
+
+// ===================== ROOMS =====================
+
+Table rooms {
+  id           integer [pk, increment]
+  name         text    [not null, unique, note: 'COLLATE NOCASE']
+  description  text
+  photo_1_path text
+  photo_2_path text
+  photo_3_path text
+  created_by   integer [not null]
+  created_at   text    [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at   text    [not null, default: `CURRENT_TIMESTAMP`, note: 'Atualizado pela aplicação a cada alteração']
+}
+
+// ===================== ROOM ACCESS =====================
+
+Table room_access {
+  user_id    integer [not null]
+  room_id    integer [not null]
+  granted_by integer [not null]
+  created_at text    [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (user_id, room_id) [pk]
+    room_id [name: 'ix_room_access_room', note: 'Consulta reversa: quem tem acesso à sala']
+  }
+
+  Note: 'Concede acesso de usuários member a salas. Admin e owner acessam todas as salas sem vínculo.'
+}
+
+// ===================== ESP32 MODULES =====================
+
+Table esp32_modules {
+  id               integer [pk, increment]
+  credential_hash  text    [not null, unique, note: 'SHA-256 da credencial do módulo']
+  credential_hint  text    [note: 'Últimos caracteres da credencial, só para identificação pelo admin']
+  name             text
+  firmware_version text
+  last_seen_at     text    [note: 'NULL = nunca sincronizou']
+  registered_by    integer [not null]
+  created_at       text    [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at       text    [not null, default: `CURRENT_TIMESTAMP`, note: 'Atualizado pela aplicação a cada alteração']
+
+  Note: '''
+    Não há coluna de status. Ele é derivado de last_seen_at:
+    pending (nunca sincronizou), online (sincronizou há pouco) ou offline (parou de sincronizar).
+  '''
+}
+
+// ===================== DEVICES =====================
+
+Table devices {
+  id                  integer             [pk, increment]
+  esp32_id            integer             [not null]
+  room_id             integer             [note: 'NULL enquanto discovered; obrigatório quando registered']
+  name                text                [not null]
+  type                device_type         [not null]
+  channel             text                [not null, note: 'Identificador do aparelho dentro do módulo']
+  registration_status registration_status [not null, default: 'discovered']
+  desired_state       text                [note: 'JSON']
+  current_state       text                [note: 'JSON']
+  execution_config    text                [note: 'JSON: parâmetros de execução específicos do aparelho']
+  state_updated_at    text
+  registered_by       integer             [note: 'NULL enquanto discovered']
+  created_at          text                [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at          text                [not null, default: `CURRENT_TIMESTAMP`, note: 'Atualizado pela aplicação a cada alteração']
+
+  indexes {
+    (esp32_id, channel) [unique]
+    room_id [name: 'ix_devices_room']
+  }
+
+  Note: '''
+    CHECK (registration_status = 'discovered' OR room_id IS NOT NULL):
+    aparelho registrado sempre tem sala.
+  '''
+}
+
+// ===================== AUTOMATIONS =====================
+
+Table automations {
+  id         integer [pk, increment]
+  room_id    integer [not null]
+  name       text    [not null]
+  is_paused  integer [not null, default: 0, note: '0 = ativa, 1 = pausada']
+  paused_by  integer
+  paused_at  text
+  created_by integer [not null]
+  created_at text    [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at text    [not null, default: `CURRENT_TIMESTAMP`, note: 'Atualizado pela aplicação a cada alteração']
+
+  indexes {
+    room_id [name: 'ix_automations_room']
+  }
+
+  Note: 'CHECK (is_paused = 1 OR (paused_by IS NULL AND paused_at IS NULL)): paused_by e paused_at só existem quando pausada.'
+}
+
+Table automation_devices {
+  automation_id integer         [not null]
+  device_id     integer         [not null]
+  role          automation_role [not null]
+  config        text            [not null, note: 'JSON: condição do gatilho ou estado a aplicar na ação']
+
+  indexes {
+    (automation_id, device_id, role) [pk]
+    (device_id, role) [name: 'ix_automation_devices_device_role', note: 'Automações disparadas por um sensor']
+  }
+
+  Note: '''
+    Regras validadas pela aplicação: gatilho = sensor, ação = luz,
+    aparelho registrado e da mesma sala da automação.
+  '''
+}
+
+// ===================== RELACIONAMENTOS =====================
+
+Ref: rooms.created_by > users.id
+
+Ref: room_access.user_id > users.id [delete: cascade]
+Ref: room_access.room_id > rooms.id [delete: cascade]
+Ref: room_access.granted_by > users.id
+
+Ref: esp32_modules.registered_by > users.id
+
+Ref: devices.esp32_id > esp32_modules.id [delete: cascade]
+Ref: devices.room_id > rooms.id [delete: restrict]
+Ref: devices.registered_by > users.id
+
+Ref: automations.room_id > rooms.id [delete: cascade]
+Ref: automations.paused_by > users.id
+Ref: automations.created_by > users.id
+
+Ref: automation_devices.automation_id > automations.id [delete: cascade]
+Ref: automation_devices.device_id > devices.id [delete: cascade]

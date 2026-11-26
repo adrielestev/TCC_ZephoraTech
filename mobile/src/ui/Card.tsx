@@ -1,3 +1,4 @@
+// src/ui/Card.tsx -- Cria um contêiner de conteúdo com superfícies e estados visuais padronizados.
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { AppText } from './AppText';

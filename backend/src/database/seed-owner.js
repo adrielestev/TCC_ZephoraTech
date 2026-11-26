@@ -1,3 +1,4 @@
+// Cria a conta inicial de administrador principal no banco.
 'use strict';
 
 // Cria o owner (admin padrão). Seguro para rodar mais de uma vez.

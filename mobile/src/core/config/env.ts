@@ -1,3 +1,4 @@
+// src/core/config/env.ts -- Resolve a URL da API a partir das configurações e do endereço do ambiente Expo.
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 

@@ -1,3 +1,4 @@
+// src/features/devices/api.ts -- Agrupa as chamadas da API para listar, atualizar e controlar dispositivos.
 import { api } from '@/core/api/client';
 import type { Device, DeviceExecutionConfig, DeviceState } from '@/core/types';
 

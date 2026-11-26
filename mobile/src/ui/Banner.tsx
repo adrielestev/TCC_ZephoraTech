@@ -1,3 +1,4 @@
+// src/ui/Banner.tsx -- Exibe mensagens destacadas de informação, sucesso, aviso ou erro.
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';

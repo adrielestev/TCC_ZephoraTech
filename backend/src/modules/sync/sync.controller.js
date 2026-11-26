@@ -1,3 +1,4 @@
+// Liga a requisição de sincronização do ESP32 ao serviço.
 'use strict';
 
 const service = require('./sync.service');

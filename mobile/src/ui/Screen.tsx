@@ -1,3 +1,4 @@
+// src/ui/Screen.tsx -- Define a estrutura e a largura de conteúdo compartilhadas pelas telas do app.
 import type { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,

@@ -1,3 +1,4 @@
+// src/core/query/keys.ts -- Chaves das consultas (invalidar "rooms" também atualiza ["rooms", id]).
 /** Chaves das consultas (invalidar "rooms" também atualiza ["rooms", id]). */
 export const qk = {
   rooms: ['rooms'] as const,

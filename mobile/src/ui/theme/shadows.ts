@@ -1,3 +1,4 @@
+// src/ui/theme/shadows.ts -- Sombras em `boxShadow` (funciona igual no app e na web), tingidas com o azul-lousa.
 /** Sombras em `boxShadow` (funciona igual no app e na web), tingidas com o azul-lousa. */
 export const shadows = {
   card: '0 1px 2px rgba(11, 27, 63, 0.06), 0 1px 1px rgba(11, 27, 63, 0.03)',

@@ -1,3 +1,4 @@
+// src/features/auth/components/AuthLayout.tsx -- Organiza o painel visual compartilhado pelas telas de autenticação.
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';

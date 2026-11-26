@@ -1,3 +1,4 @@
+// Verifica o token do usuário e carrega seus dados atuais.
 'use strict';
 
 const jwt = require('jsonwebtoken');

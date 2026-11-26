@@ -1,3 +1,4 @@
+// Liga as requisições de aparelhos às funções do serviço.
 'use strict';
 
 const service = require('./devices.service');

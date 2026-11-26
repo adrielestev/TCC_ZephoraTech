@@ -1,3 +1,4 @@
+// Declara as operações de sincronização com a API e de classificação de falhas HTTP.
 #pragma once
 #include <stdint.h>
 

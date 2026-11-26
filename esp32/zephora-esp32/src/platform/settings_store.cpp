@@ -1,3 +1,4 @@
+// Carrega e salva configurações, credenciais e ajustes de aparelhos na memória persistente.
 #include "settings_store.h"
 
 #include <Arduino.h>

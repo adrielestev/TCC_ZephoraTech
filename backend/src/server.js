@@ -1,3 +1,4 @@
+// Inicia o servidor da API e encerra seus recursos ao desligar.
 'use strict';
 
 const env = require('./config/env');

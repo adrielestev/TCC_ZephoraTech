@@ -1,3 +1,4 @@
+// Define validadores de dados comuns usados pelas rotas.
 'use strict';
 
 const { z } = require('zod');

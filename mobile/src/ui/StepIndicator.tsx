@@ -1,3 +1,4 @@
+// src/ui/StepIndicator.tsx -- Mostra o progresso atual em um formulário dividido por etapas.
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon } from './Icon';

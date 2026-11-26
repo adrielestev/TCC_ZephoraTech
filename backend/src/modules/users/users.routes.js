@@ -1,3 +1,4 @@
+// Define as rotas de perfil e de administração de usuários.
 'use strict';
 
 const { Router } = require('express');

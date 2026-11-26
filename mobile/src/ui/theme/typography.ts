@@ -1,3 +1,4 @@
+// src/ui/theme/typography.ts -- Define estilos e tamanhos tipográficos reutilizados pelos componentes da interface.
 import type { TextStyle } from 'react-native';
 import { fonts } from './fonts';
 

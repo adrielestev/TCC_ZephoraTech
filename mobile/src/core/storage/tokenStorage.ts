@@ -1,3 +1,4 @@
+// src/core/storage/tokenStorage.ts -- Salva, recupera e remove com segurança o token de acesso da sessão.
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 

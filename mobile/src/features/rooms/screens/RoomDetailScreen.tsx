@@ -1,3 +1,4 @@
+// src/features/rooms/screens/RoomDetailScreen.tsx -- Reúne os detalhes, dispositivos e automações de uma sala selecionada.
 import { Stack, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { getErrorMessage } from '@/core/api/errors';

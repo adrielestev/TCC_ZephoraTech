@@ -1,3 +1,4 @@
+// src/features/automations/api.ts -- Define os dados e as chamadas da API para consultar e gerenciar automações.
 import { api } from '@/core/api/client';
 import type { Automation, DeviceState } from '@/core/types';
 

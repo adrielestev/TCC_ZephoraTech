@@ -1,3 +1,4 @@
+// src/app/(app)/_layout.tsx -- Define a navegação empilhada das telas disponíveis após a autenticação.
 import { Stack } from 'expo-router';
 import { useAuth } from '@/core/auth/AuthProvider';
 import { colors, fonts } from '@/ui/theme';

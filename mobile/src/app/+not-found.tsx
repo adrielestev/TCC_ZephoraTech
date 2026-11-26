@@ -1,3 +1,4 @@
+// src/app/+not-found.tsx -- Exibe a tela de recuperação quando o usuário abre uma rota inexistente.
 import { Stack, useRouter } from 'expo-router';
 import { routes } from '@/core/navigation/routes';
 import { Screen } from '@/ui/Screen';

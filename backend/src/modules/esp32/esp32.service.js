@@ -1,3 +1,4 @@
+// Aplica as regras de negócio para cadastrar e administrar módulos ESP32.
 'use strict';
 
 const AppError = require('../../shared/errors');

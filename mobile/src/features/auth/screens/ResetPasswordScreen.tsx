@@ -1,3 +1,4 @@
+// src/features/auth/screens/ResetPasswordScreen.tsx -- Confirma o código recebido e envia a nova senha para a API.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';

@@ -1,3 +1,4 @@
+// Calcula se um módulo ESP32 está pendente, online ou offline.
 'use strict';
 
 const env = require('../config/env');

@@ -1,3 +1,4 @@
+// Declara a função que inicia o portal de configuração do ESP32.
 #pragma once
 #include "settings_store.h"
 

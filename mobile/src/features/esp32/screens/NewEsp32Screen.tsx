@@ -1,3 +1,4 @@
+// src/features/esp32/screens/NewEsp32Screen.tsx -- Guia o registro e a configuração inicial de um módulo ESP32.
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';

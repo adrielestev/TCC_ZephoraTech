@@ -1,3 +1,4 @@
+// Oferece funções para interpretar e comparar dados JSON.
 'use strict';
 
 const parseJson = (value) => {

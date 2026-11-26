@@ -1,3 +1,4 @@
+// src/features/users/components.tsx -- Exibe etiquetas de papel e situação para contas de usuário.
 import type { Role, User } from '@/core/types';
 import { Badge } from '@/ui/Badge';
 

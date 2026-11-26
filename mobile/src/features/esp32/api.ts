@@ -1,3 +1,4 @@
+// src/features/esp32/api.ts -- Define os dados e as chamadas da API para registrar e gerenciar módulos ESP32.
 import { api } from '@/core/api/client';
 import type { Esp32Detail, Esp32Module } from '@/core/types';
 

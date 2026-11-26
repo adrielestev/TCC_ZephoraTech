@@ -1,3 +1,4 @@
+// src/features/users/screens/UserDetailScreen.tsx -- Mostra os dados de um usuário e permite administrar suas permissões.
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '@/core/api/errors';

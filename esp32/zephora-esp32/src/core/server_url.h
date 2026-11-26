@@ -1,3 +1,4 @@
+// Declara a estrutura e a função usadas para validar o endereço do servidor.
 #pragma once
 #include <string>
 

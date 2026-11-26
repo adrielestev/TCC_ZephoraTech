@@ -1,3 +1,4 @@
+// Liga as requisições de usuários às funções do serviço.
 'use strict';
 
 const service = require('./users.service');

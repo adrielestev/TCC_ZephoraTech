@@ -1,3 +1,4 @@
+// src/features/automations/components/AutomationCard.tsx -- Exibe uma automação e resume os dispositivos e estados associados às suas ações.
 import { StyleSheet, View } from 'react-native';
 import type { Automation, Device, DeviceState } from '@/core/types';
 import { describeFlag, getFlag } from '@/features/devices/deviceTypes';

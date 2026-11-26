@@ -1,3 +1,4 @@
+// Define a interface comum dos aparelhos conectados ao ESP32.
 #pragma once
 #include <stdint.h>
 

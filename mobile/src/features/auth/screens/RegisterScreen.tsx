@@ -1,3 +1,4 @@
+// src/features/auth/screens/RegisterScreen.tsx -- Apresenta o formulário para criar uma conta e iniciar a verificação do e-mail.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';

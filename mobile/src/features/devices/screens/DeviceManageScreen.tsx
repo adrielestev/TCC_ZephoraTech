@@ -1,3 +1,4 @@
+// src/features/devices/screens/DeviceManageScreen.tsx -- Permite editar os dados e as configurações de um dispositivo da sala.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';

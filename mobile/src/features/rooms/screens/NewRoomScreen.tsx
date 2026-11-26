@@ -1,3 +1,4 @@
+// src/features/rooms/screens/NewRoomScreen.tsx -- Apresenta o formulário para criar uma sala e adicionar suas fotos.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';

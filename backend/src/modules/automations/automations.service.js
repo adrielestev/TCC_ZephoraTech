@@ -1,3 +1,4 @@
+// Aplica as regras de negócio para criar e executar automações.
 'use strict';
 
 const AppError = require('../../shared/errors');

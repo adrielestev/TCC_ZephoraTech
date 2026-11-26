@@ -1,3 +1,4 @@
+// Valida os dados recebidos nas operações com salas.
 'use strict';
 
 const { z } = require('zod');

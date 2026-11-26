@@ -1,3 +1,4 @@
+// Valida e normaliza o endereço do servidor da API.
 #include "server_url.h"
 
 #include <ctype.h>

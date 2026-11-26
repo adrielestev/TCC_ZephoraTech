@@ -1,3 +1,4 @@
+// Filtra leituras do sensor de presença para ignorar o aquecimento e atrasos sem movimento.
 #pragma once
 #include <stdint.h>
 

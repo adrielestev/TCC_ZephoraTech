@@ -1,3 +1,4 @@
+// src/features/shell/navItems.ts -- Define os itens de navegação e os critérios de acesso usados pelo menu do app.
 import type { IconName } from '@/ui/Icon';
 
 export interface NavItem {

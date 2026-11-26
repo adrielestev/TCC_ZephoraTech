@@ -1,3 +1,4 @@
+// src/features/auth/components/CodeField.tsx -- Integra o campo de código de verificação ao estado e à validação do formulário.
 import { Controller, type Control, type FieldValues, type Path } from 'react-hook-form';
 import { TextField } from '@/ui/TextField';
 

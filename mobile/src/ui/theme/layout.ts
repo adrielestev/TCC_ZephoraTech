@@ -1,3 +1,4 @@
+// src/ui/theme/layout.ts -- Largura máxima do conteúdo por tipo de tela (centralizado em telas largas).
 /** Largura máxima do conteúdo por tipo de tela (centralizado em telas largas). */
 export const CONTENT_WIDTHS = { form: 560, content: 720, wide: 1040 } as const;
 export type ContentWidth = keyof typeof CONTENT_WIDTHS;

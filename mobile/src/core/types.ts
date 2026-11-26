@@ -1,4 +1,4 @@
-// Tipos das respostas da API do Zephora
+// src/core/types.ts -- Tipos das respostas da API do Zephora
 
 export type Role = 'owner' | 'admin' | 'member';
 export type DeviceType = 'light' | 'presence_sensor' | 'temperature_sensor';

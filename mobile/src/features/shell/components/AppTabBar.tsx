@@ -1,3 +1,4 @@
+// src/features/shell/components/AppTabBar.tsx -- Renderiza a navegação principal como barra inferior ou menu lateral adaptável.
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useAuth } from '@/core/auth/AuthProvider';

@@ -1,3 +1,4 @@
+// Converte datas entre JavaScript e o formato usado pelo SQLite.
 'use strict';
 
 // Formato do SQLite (UTC): "YYYY-MM-DD HH:MM:SS"

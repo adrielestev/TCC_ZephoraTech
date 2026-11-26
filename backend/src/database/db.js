@@ -1,3 +1,4 @@
+// Abre o banco SQLite e oferece operações de transação.
 'use strict';
 
 const fs = require('node:fs');

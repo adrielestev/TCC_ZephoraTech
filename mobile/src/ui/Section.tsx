@@ -1,3 +1,4 @@
+// src/ui/Section.tsx -- Agrupa conteúdo de tela sob um título, descrição, contagem ou ação opcional.
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';

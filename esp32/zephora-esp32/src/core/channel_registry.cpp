@@ -1,3 +1,4 @@
+// Implementa o cadastro, a validação e a busca dos canais do ESP32.
 #include "channel_registry.h"
 
 #include <string.h>

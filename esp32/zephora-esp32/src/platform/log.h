@@ -1,3 +1,4 @@
+// Define o registro de mensagens do firmware pela porta serial.
 #pragma once
 #include <Arduino.h>
 // Log na serial (115200). Nunca registra a credencial, exceto no banner de inicialização.

@@ -1,3 +1,4 @@
+// src/features/devices/deviceTypes.ts -- Associa cada tipo de dispositivo aos rótulos e recursos exibidos na interface.
 import type { Device, DeviceState, DeviceType } from '@/core/types';
 import type { IconName } from '@/ui/Icon';
 

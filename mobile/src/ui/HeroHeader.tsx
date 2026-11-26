@@ -1,3 +1,4 @@
+// src/ui/HeroHeader.tsx -- Apresenta o cabeçalho principal de uma tela com resumo e indicadores.
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';

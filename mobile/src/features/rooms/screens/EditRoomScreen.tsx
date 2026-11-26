@@ -1,3 +1,4 @@
+// src/features/rooms/screens/EditRoomScreen.tsx -- Carrega uma sala existente e salva alterações em seus dados e fotos.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';

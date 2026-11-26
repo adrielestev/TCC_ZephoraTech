@@ -1,3 +1,4 @@
+// src/ui/Skeleton.tsx -- Renderiza espaços reservados enquanto o conteúdo da tela está carregando.
 import { useEffect } from 'react';
 import {
   StyleSheet,

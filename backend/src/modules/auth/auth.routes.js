@@ -1,3 +1,4 @@
+// Define as rotas de cadastro, login e recuperação de acesso.
 'use strict';
 
 const { Router } = require('express');

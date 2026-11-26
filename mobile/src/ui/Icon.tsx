@@ -1,3 +1,4 @@
+// src/ui/Icon.tsx -- Adapta ícones Ionicons às cores e aos tamanhos definidos pelo tema.
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet } from 'react-native';

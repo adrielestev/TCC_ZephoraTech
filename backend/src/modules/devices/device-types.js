@@ -1,3 +1,4 @@
+// Define os tipos de aparelho e valida seus estados e configurações.
 'use strict';
 
 const { z } = require('zod');

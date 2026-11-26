@@ -1,3 +1,4 @@
+// Oferece funções para gerar códigos e calcular hashes e assinaturas.
 'use strict';
 
 const crypto = require('node:crypto');

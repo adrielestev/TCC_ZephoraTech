@@ -1,3 +1,4 @@
+// Define os tipos de aparelho e os dados usados para representá-los no protocolo.
 #pragma once
 // Catálogo de tipos de aparelho — espelho de modules/devices/device-types.js do backend.
 // Novo tipo: 1) inclua aqui; 2) inclua no backend (device-types.js + CHECK de devices.type).

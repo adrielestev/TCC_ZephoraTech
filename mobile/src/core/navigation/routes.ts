@@ -1,3 +1,4 @@
+// src/core/navigation/routes.ts -- Centraliza os caminhos tipados usados para navegar entre as telas do app.
 import type { Href } from 'expo-router';
 
 /**

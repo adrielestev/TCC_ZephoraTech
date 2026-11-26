@@ -1,3 +1,4 @@
+// Cria e valida a credencial única do módulo ESP32.
 #pragma once
 // Credencial única do ESP32: a API aceita 32–128 caracteres [A-Za-z0-9_-].
 // Geramos 32 bytes aleatórios em hexadecimal (64 caracteres).

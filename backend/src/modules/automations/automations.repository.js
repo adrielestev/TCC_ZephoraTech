@@ -1,3 +1,4 @@
+// Consulta e altera automações e seus vínculos no banco.
 'use strict';
 
 const { db } = require('../../database/db');

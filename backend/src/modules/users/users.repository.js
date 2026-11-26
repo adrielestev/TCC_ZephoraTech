@@ -1,3 +1,4 @@
+// Consulta e altera usuários e códigos de verificação no banco.
 'use strict';
 
 const { db } = require('../../database/db');

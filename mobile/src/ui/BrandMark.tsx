@@ -1,3 +1,4 @@
+// src/ui/BrandMark.tsx -- Renderiza a marca Zephora em variantes de cor e tamanho.
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';

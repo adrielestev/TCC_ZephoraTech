@@ -1,3 +1,4 @@
+// Liga as requisições dos módulos ESP32 às funções do serviço.
 'use strict';
 
 const service = require('./esp32.service');

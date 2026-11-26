@@ -1,3 +1,4 @@
+// Valida os dados recebidos nas operações com usuários.
 'use strict';
 
 const { z } = require('zod');

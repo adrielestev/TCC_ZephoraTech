@@ -1,3 +1,4 @@
+// Consulta e altera os módulos ESP32 no banco de dados.
 'use strict';
 
 const { db } = require('../../database/db');

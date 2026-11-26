@@ -1,3 +1,4 @@
+// src/core/api/client.ts -- Configura o cliente HTTP da API e anexa credenciais às requisições.
 import axios from 'axios';
 import { env } from '@/core/config/env';
 

@@ -1,3 +1,4 @@
+// src/features/rooms/components/RoomCard.tsx -- Resume uma sala em um cartão com foto e informações para abrir seus detalhes.
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import type { Room } from '@/core/types';

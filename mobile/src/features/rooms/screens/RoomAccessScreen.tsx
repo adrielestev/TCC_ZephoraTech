@@ -1,3 +1,4 @@
+// src/features/rooms/screens/RoomAccessScreen.tsx -- Gerencia os usuários e níveis de acesso associados a uma sala.
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { useNumericParam } from '@/core/hooks/useNumericParam';

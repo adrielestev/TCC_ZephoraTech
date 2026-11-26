@@ -1,3 +1,4 @@
+// Lê a temperatura do sensor DHT22 e disponibiliza o valor como aparelho.
 #pragma once
 #include <Arduino.h>
 #include <DHT.h>

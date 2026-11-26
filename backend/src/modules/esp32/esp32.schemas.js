@@ -1,3 +1,4 @@
+// Valida os dados recebidos para módulos ESP32 e seus aparelhos.
 'use strict';
 
 const { z } = require('zod');

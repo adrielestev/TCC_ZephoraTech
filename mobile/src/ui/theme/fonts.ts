@@ -1,3 +1,4 @@
+// src/ui/theme/fonts.ts -- Centraliza as fontes e os arquivos tipográficos carregados pelo aplicativo.
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,

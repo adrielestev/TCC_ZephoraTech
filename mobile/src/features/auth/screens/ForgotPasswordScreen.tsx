@@ -1,3 +1,4 @@
+// src/features/auth/screens/ForgotPasswordScreen.tsx -- Permite solicitar por e-mail o código para redefinir a senha.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';

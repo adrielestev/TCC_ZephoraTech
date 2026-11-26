@@ -1,3 +1,4 @@
+// src/features/esp32/screens/Esp32DetailScreen.tsx -- Exibe o estado e os dispositivos associados a um módulo ESP32.
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { getErrorMessage } from '@/core/api/errors';

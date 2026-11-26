@@ -1,3 +1,4 @@
+// Limita a frequência de requisições à API.
 'use strict';
 
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');

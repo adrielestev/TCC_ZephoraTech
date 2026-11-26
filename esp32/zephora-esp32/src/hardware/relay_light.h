@@ -1,3 +1,4 @@
+// Controla uma luz conectada a um módulo relé.
 #pragma once
 #include <Arduino.h>
 

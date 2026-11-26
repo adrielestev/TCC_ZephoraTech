@@ -1,3 +1,4 @@
+// src/features/users/screens/UsersListScreen.tsx -- Lista e filtra usuários para que a equipe administrativa abra seus detalhes.
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';

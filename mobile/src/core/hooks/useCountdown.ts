@@ -1,3 +1,4 @@
+// src/core/hooks/useCountdown.ts -- Fornece um contador regressivo reutilizável para telas com temporizador.
 import { useCallback, useEffect, useState } from 'react';
 
 /** Contagem regressiva em segundos (ex.: intervalo para reenviar código). */

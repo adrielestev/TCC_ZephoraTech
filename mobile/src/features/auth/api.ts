@@ -1,3 +1,4 @@
+// src/features/auth/api.ts -- Agrupa as chamadas da API para login, cadastro, verificação e recuperação de conta.
 import { api } from '@/core/api/client';
 import type { User } from '@/core/types';
 

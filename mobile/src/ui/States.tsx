@@ -1,3 +1,4 @@
+// src/ui/States.tsx -- Apresenta estados reutilizáveis de carregamento, vazio e falha.
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { getErrorMessage } from '@/core/api/errors';

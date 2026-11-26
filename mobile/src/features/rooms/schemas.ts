@@ -1,3 +1,4 @@
+// src/features/rooms/schemas.ts -- Define a validação e os tipos dos dados enviados pelo formulário de sala.
 import { z } from 'zod';
 
 export const roomSchema = z.object({

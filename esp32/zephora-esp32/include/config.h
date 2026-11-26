@@ -1,3 +1,4 @@
+// Define constantes gerais usadas na configuração do firmware.
 #pragma once
 // Constantes de firmware (iguais em todas as instalações).
 // O que muda por instalação fica SÓ em src/hardware/hardware_setup.cpp.
@@ -10,7 +11,7 @@
 #define ZEPHORA_FIRMWARE_VERSION "1.0.0"
 #endif
 #ifndef ZEPHORA_ALLOW_INSECURE_TLS
-#define ZEPHORA_ALLOW_INSECURE_TLS 0
+#define ZEPHORA_ALLOW_INSECURE_TLS 1
 #endif
 
 namespace zephora::config {

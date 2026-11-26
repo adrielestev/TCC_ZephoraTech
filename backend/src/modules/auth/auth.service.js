@@ -1,3 +1,4 @@
+// Executa cadastro, login, verificação de e-mail e recuperação de senha.
 'use strict';
 
 const bcrypt = require('bcryptjs');

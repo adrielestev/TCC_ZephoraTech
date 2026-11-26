@@ -1,3 +1,4 @@
+// src/features/rooms/components/RoomPicker.tsx -- Permite escolher uma sala entre as opções fornecidas.
 import { StyleSheet, View } from 'react-native';
 import type { Room } from '@/core/types';
 import { AppText } from '@/ui/AppText';

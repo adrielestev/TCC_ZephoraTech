@@ -1,3 +1,4 @@
+// Firmware principal do ESP32: configura aparelhos, conecta à rede e sincroniza estados e comandos com a API.
 // Zephora — firmware padrão do módulo ESP32.
 // Fluxo (igual ao fluxograma "Admin: cadastro de ESP32 e aparelhos"):
 //   1) 1º boot: gera a credencial única e abre o portal "Zephora-XXXXXX" (Wi-Fi + endereço do servidor);

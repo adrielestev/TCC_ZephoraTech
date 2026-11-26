@@ -1,3 +1,4 @@
+// src/features/rooms/components/PhotoCarousel.tsx -- Apresenta as fotos da sala em um carrossel com navegação entre imagens.
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View, type LayoutChangeEvent } from 'react-native';

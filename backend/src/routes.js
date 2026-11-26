@@ -1,3 +1,4 @@
+// Registra as rotas dos módulos da API.
 'use strict';
 
 const { Router } = require('express');

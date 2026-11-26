@@ -1,3 +1,4 @@
+// src/features/esp32/screens/Esp32ListScreen.tsx -- Lista os módulos ESP32 cadastrados e permite abrir ou adicionar um módulo.
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { formatLastSeen } from '@/core/format';

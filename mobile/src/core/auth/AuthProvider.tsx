@@ -1,3 +1,4 @@
+// src/core/auth/AuthProvider.tsx -- Mantém a sessão, o usuário atual e as ações de autenticação disponíveis no app.
 import {
   createContext,
   useCallback,

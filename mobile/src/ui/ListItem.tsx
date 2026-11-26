@@ -1,3 +1,4 @@
+// src/ui/ListItem.tsx -- Fornece blocos de lista com ícone, texto e variações de destaque.
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';

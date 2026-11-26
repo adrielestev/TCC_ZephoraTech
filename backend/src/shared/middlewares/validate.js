@@ -1,3 +1,4 @@
+// Valida os dados das requisições e os disponibiliza em req.valid.
 'use strict';
 
 /**

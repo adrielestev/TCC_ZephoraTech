@@ -1,3 +1,4 @@
+// src/core/api/errors.ts -- Extrai informações de falhas da API e fornece mensagens compreensíveis ao usuário.
 import axios from 'axios';
 
 interface ApiErrorBody {

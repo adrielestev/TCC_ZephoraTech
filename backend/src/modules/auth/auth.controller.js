@@ -1,3 +1,4 @@
+// Liga as requisições de autenticação às funções do serviço.
 'use strict';
 
 const service = require('./auth.service');

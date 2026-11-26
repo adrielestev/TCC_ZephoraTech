@@ -1,3 +1,4 @@
+// src/core/format.ts -- Converte datas recebidas da API e formata o horário da última atividade.
 /** Datas da API vêm em UTC no formato "YYYY-MM-DD HH:MM:SS". */
 export function parseApiDate(value: string): Date {
   return new Date(`${value.replace(' ', 'T')}Z`);

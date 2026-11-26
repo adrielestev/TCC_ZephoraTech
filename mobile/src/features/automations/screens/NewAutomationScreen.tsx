@@ -1,3 +1,4 @@
+// src/features/automations/screens/NewAutomationScreen.tsx -- Guia a criação de uma automação por etapas de gatilhos e ações.
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';

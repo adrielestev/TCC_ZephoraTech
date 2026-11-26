@@ -1,3 +1,4 @@
+// src/ui/AppText.tsx -- Aplica estilos tipográficos e cores consistentes aos textos da interface.
 import { Text, type TextProps } from 'react-native';
 import { colors, type, type ColorName, type TextVariant } from './theme';
 

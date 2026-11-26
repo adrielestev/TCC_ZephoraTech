@@ -1,3 +1,4 @@
+// src/features/devices/hooks.ts -- Fornece consultas e ações de dispositivos vinculadas ao cache de dados.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/core/query/keys';
 import type { Device, DeviceExecutionConfig, DeviceState } from '@/core/types';

@@ -1,3 +1,4 @@
+// Define as rotas para cadastrar e administrar módulos ESP32.
 'use strict';
 
 const { Router } = require('express');

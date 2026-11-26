@@ -1,3 +1,4 @@
+-- Cria as tabelas e regras do banco SQLite da aplicação.
 -- Zephora — schema SQLite (node:sqlite)
 -- Obs.: PRAGMA foreign_keys é por conexão; ative em toda abertura do banco.
 -- Datas gravadas pela aplicação usam o formato do SQLite em UTC, 'YYYY-MM-DD HH:MM:SS'

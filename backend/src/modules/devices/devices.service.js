@@ -1,3 +1,4 @@
+// Aplica as regras de negócio para consultar e controlar aparelhos.
 'use strict';
 
 const AppError = require('../../shared/errors');

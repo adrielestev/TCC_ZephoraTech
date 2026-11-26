@@ -1,3 +1,4 @@
+// src/ui/Button.tsx -- Fornece botões reutilizáveis com variantes visuais e estados de carregamento.
 import { useState } from 'react';
 import {
   ActivityIndicator,

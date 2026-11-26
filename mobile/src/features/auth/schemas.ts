@@ -1,3 +1,4 @@
+// src/features/auth/schemas.ts -- Define as regras de validação dos formulários de autenticação.
 import { z } from 'zod';
 
 const email = z.string().trim().min(1, 'Informe o e-mail').pipe(z.email('E-mail inválido'));

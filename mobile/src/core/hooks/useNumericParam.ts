@@ -1,3 +1,4 @@
+// src/core/hooks/useNumericParam.ts -- Lê um parâmetro numérico da rota e o converte para uso nas telas.
 import { useLocalSearchParams } from 'expo-router';
 
 /** Lê um parâmetro de rota (ex.: roomId) como número. */

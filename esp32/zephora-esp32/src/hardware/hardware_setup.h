@@ -1,3 +1,4 @@
+// Declara a função que registra os aparelhos desta instalação.
 #pragma once
 #include "../core/channel_registry.h"
 

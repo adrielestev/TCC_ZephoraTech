@@ -1,3 +1,4 @@
+// Aplica as regras de negócio para salas, acessos e fotos.
 'use strict';
 
 const AppError = require('../../shared/errors');

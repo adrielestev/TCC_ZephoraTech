@@ -1,3 +1,4 @@
+// src/ui/TextField.tsx -- Padroniza entradas de texto e encaminha a referência ao campo nativo.
 import { forwardRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { AppText } from './AppText';

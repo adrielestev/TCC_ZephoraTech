@@ -1,3 +1,4 @@
+// src/ui/Grid.tsx -- Organiza itens em uma grade responsiva que se ajusta à largura disponível.
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';

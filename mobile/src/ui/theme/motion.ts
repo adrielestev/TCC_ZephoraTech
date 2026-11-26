@@ -1,3 +1,4 @@
+// src/ui/theme/motion.ts -- Durações compartilhadas para que todas as animações pareçam parentes.
 /** Durações compartilhadas para que todas as animações pareçam parentes. */
 export const motion = {
   fast: 150, // feedback de estado: toque, alternar

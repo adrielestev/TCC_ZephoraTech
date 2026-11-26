@@ -1,3 +1,4 @@
+// Envia e-mails e mantém uma caixa de saída para desenvolvimento.
 'use strict';
 
 const nodemailer = require('nodemailer');

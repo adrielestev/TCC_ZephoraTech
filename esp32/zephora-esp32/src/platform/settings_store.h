@@ -1,3 +1,4 @@
+// Define as configurações do ESP32 e as operações para salvá-las.
 #pragma once
 // Configuração persistente (NVS). Pertence a este módulo: Wi-Fi, endereço da API e a credencial única.
 #include <string>

@@ -1,3 +1,4 @@
+// Lê o sensor PIR e filtra as mudanças de presença.
 #pragma once
 #include <Arduino.h>
 

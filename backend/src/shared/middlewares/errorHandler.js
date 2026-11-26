@@ -1,3 +1,4 @@
+// Converte erros da aplicação em respostas HTTP padronizadas.
 'use strict';
 
 const multer = require('multer');

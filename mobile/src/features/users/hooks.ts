@@ -1,3 +1,4 @@
+// src/features/users/hooks.ts -- Fornece consultas paginadas e individuais de usuários para as telas administrativas.
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/core/query/keys';
 import { usersApi } from './api';

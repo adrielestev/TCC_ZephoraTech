@@ -1,3 +1,4 @@
+// src/features/users/api.ts -- Agrupa as chamadas paginadas da API para pesquisar e consultar usuários.
 import { api } from '@/core/api/client';
 import { buildImageFormData } from '@/core/api/upload';
 import type { Paginated, User } from '@/core/types';

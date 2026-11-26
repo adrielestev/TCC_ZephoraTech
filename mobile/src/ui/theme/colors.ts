@@ -1,3 +1,4 @@
+// src/ui/theme/colors.ts -- Paleta do Zephora — "lousa inteligente": o azul-lousa da sala de aula (ink) como base escura,
 /**
  * Paleta do Zephora — "lousa inteligente": o azul-lousa da sala de aula (ink) como base escura,
  * o azul-giz (primary) como acento de ação e o branco-giz (chalk) para rabiscos e textos sobre a lousa.

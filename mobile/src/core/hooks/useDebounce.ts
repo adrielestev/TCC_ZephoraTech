@@ -1,3 +1,4 @@
+// src/core/hooks/useDebounce.ts -- Atrasa a propagação de um valor para evitar atualizações a cada digitação.
 import { useEffect, useState } from 'react';
 
 export function useDebounce<T>(value: T, delayMs = 400): T {

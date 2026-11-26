@@ -1,3 +1,4 @@
+// src/features/automations/hooks.ts -- Fornece consultas e mutações de automações integradas ao cache de dados.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/core/query/keys';
 import type { Automation } from '@/core/types';

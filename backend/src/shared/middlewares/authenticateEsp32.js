@@ -1,3 +1,4 @@
+// Autentica módulos ESP32 usando a credencial enviada na requisição.
 'use strict';
 
 const AppError = require('../errors');

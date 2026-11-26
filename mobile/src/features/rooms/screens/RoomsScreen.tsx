@@ -1,3 +1,4 @@
+// src/features/rooms/screens/RoomsScreen.tsx -- Lista as salas disponíveis e permite abrir ou criar uma sala.
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/core/auth/AuthProvider';
 import { routes } from '@/core/navigation/routes';

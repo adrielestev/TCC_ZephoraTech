@@ -1,3 +1,4 @@
+// src/ui/FormField.tsx -- Conecta campos de formulário às mensagens de rótulo, ajuda e validação.
 import { Controller, type Control, type FieldValues, type Path } from 'react-hook-form';
 import type { TextInputProps } from 'react-native';
 import type { Ref } from 'react';

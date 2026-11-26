@@ -1,3 +1,4 @@
+// src/app/(app)/(tabs)/_layout.tsx -- Configura as abas e a barra de navegação adaptada ao tamanho da tela.
 import { Tabs } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
 import { useAuth } from '@/core/auth/AuthProvider';

@@ -1,3 +1,4 @@
+// Calcula quando sincronizar e como reagir a falhas de rede ou do servidor.
 #pragma once
 // Decide QUANDO sincronizar: ritmo do servidor, reação rápida a mudanças e recuo em falhas.
 // Tempo em milissegundos do millis() (comparação segura contra estouro do contador).

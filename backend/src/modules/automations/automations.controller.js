@@ -1,3 +1,4 @@
+// Liga as requisições de automação às funções do serviço.
 'use strict';
 
 const service = require('./automations.service');

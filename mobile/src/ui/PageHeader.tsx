@@ -1,3 +1,4 @@
+// src/ui/PageHeader.tsx -- Padroniza o título, a descrição e a ação principal do cabeçalho de uma tela.
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';

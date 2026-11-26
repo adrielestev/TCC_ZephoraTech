@@ -1,3 +1,4 @@
+// Valida os dados recebidos para criar e alterar automações.
 'use strict';
 
 const { z } = require('zod');

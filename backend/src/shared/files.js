@@ -1,3 +1,4 @@
+// Valida, salva, remove e cria endereços para arquivos de imagem.
 'use strict';
 
 const crypto = require('node:crypto');

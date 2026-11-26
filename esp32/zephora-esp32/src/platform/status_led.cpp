@@ -1,3 +1,4 @@
+// Controla os padrões de luz do LED que indicam o estado do ESP32.
 #include "status_led.h"
 
 #include <Arduino.h>

@@ -1,3 +1,4 @@
+// src/features/auth/screens/LoginScreen.tsx -- Apresenta o formulário de login e conduz o usuário após autenticar.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';

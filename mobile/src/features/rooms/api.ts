@@ -1,3 +1,4 @@
+// src/features/rooms/api.ts -- Define os dados e as chamadas da API para consultar e gerenciar salas.
 import { api } from '@/core/api/client';
 import { buildImageFormData } from '@/core/api/upload';
 import type { Room, User } from '@/core/types';

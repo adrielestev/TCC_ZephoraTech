@@ -1,3 +1,4 @@
+// Define os estados que o LED usa para indicar a situação do ESP32.
 #pragma once
 #include <stdint.h>
 

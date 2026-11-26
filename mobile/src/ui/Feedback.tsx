@@ -1,3 +1,4 @@
+// src/ui/Feedback.tsx -- Fornece notificações temporárias e diálogos de confirmação para a interface.
 import {
   createContext,
   useCallback,

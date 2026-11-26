@@ -1,3 +1,4 @@
+// Consulta e altera salas, acessos e fotos no banco.
 'use strict';
 
 const { db } = require('../../database/db');

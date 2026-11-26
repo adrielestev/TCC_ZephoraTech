@@ -1,3 +1,4 @@
+// Monta os dados de sincronização e interpreta comandos recebidos da API.
 #include "sync_protocol.h"
 
 #include <ArduinoJson.h>

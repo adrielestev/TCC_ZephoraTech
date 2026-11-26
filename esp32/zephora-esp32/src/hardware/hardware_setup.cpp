@@ -1,3 +1,4 @@
+// Registra os aparelhos e sensores ligados a esta instalação do ESP32.
 // ============================================================================
 //  ÚNICO ARQUIVO A EDITAR EM CADA INSTALAÇÃO
 //  Descreva aqui o que está ligado a ESTE ESP32. Todo o resto do firmware

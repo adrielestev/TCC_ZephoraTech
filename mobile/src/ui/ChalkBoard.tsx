@@ -1,3 +1,4 @@
+// src/ui/ChalkBoard.tsx -- Exibe um fundo ilustrado de lousa com elementos decorativos e sobreposição opcional.
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';

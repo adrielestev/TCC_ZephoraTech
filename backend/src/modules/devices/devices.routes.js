@@ -1,3 +1,4 @@
+// Define as rotas para consultar e administrar aparelhos.
 'use strict';
 
 const { Router } = require('express');

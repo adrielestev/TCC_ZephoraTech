@@ -1,3 +1,4 @@
+// src/features/auth/screens/VerifyEmailScreen.tsx -- Valida o código enviado por e-mail e conclui a ativação da conta.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';

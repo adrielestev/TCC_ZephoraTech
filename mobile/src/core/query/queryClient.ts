@@ -1,3 +1,4 @@
+// src/core/query/queryClient.ts -- Configura o cache de consultas e sincroniza seu estado com o foco do aplicativo.
 import { QueryClient, focusManager } from '@tanstack/react-query';
 import { AppState, Platform } from 'react-native';
 import { getErrorStatus } from '@/core/api/errors';

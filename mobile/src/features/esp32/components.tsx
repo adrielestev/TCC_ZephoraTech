@@ -1,3 +1,4 @@
+// src/features/esp32/components.tsx -- Fornece componentes visuais e cores para os estados dos módulos ESP32.
 import type { Esp32Status } from '@/core/types';
 import { Badge } from '@/ui/Badge';
 import type { TileTone } from '@/ui/ListItem';

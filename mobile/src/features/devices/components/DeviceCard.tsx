@@ -1,3 +1,4 @@
+// src/features/devices/components/DeviceCard.tsx -- Apresenta um dispositivo, seu estado atual e os controles de ação disponíveis.
 import { StyleSheet, View } from 'react-native';
 import type { Device } from '@/core/types';
 import { AppSwitch } from '@/ui/AppSwitch';

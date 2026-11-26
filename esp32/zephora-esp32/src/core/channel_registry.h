@@ -1,3 +1,4 @@
+// Declara o registro que valida e organiza os canais do ESP32.
 #pragma once
 #include <stddef.h>
 

@@ -1,4 +1,4 @@
-// Único ponto de entrada do tema: import { colors, spacing } from '@/ui/theme'
+// src/ui/theme/index.ts -- Único ponto de entrada do tema: import { colors, spacing } from '@/ui/theme'
 export { colors, gradients, type ColorName } from './colors';
 export { fonts, fontAssets } from './fonts';
 export { spacing, radius } from './spacing';

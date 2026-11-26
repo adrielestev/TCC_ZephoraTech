@@ -1,3 +1,4 @@
+// src/ui/Avatar.tsx -- Exibe a foto de perfil ou as iniciais da pessoa em um avatar circular.
 import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';

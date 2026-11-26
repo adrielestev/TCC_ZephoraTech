@@ -1,3 +1,4 @@
+// src/features/profile/screens/ProfileScreen.tsx -- Exibe os dados da conta e oferece opções para editar o perfil ou sair.
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';

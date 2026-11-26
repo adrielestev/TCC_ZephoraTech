@@ -1,3 +1,4 @@
+// Define a rota usada pelo ESP32 para sincronizar com a API.
 'use strict';
 
 const { Router } = require('express');

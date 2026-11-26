@@ -1,3 +1,4 @@
+// Consulta e altera aparelhos no banco de dados.
 'use strict';
 
 const { db } = require('../../database/db');

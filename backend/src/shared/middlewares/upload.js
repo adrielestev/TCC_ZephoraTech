@@ -1,3 +1,4 @@
+// Configura o recebimento de imagens em memória com limites de tamanho.
 'use strict';
 
 const multer = require('multer');

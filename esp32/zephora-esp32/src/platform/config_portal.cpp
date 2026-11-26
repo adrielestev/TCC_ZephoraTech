@@ -1,3 +1,4 @@
+// Abre o ponto de acesso e a página para configurar o Wi-Fi e o endereço da API.
 #include "config_portal.h"
 
 #include <Arduino.h>

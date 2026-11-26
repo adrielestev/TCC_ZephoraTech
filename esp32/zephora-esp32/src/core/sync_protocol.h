@@ -1,3 +1,4 @@
+// Define os dados e as funções do protocolo de sincronização com a API.
 #pragma once
 // Protocolo com a API: POST /api/device-sync (ver README do backend).
 // Este módulo não depende do Arduino: roda e é testado no computador.

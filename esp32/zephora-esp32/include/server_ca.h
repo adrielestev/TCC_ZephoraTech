@@ -1,3 +1,4 @@
+// Guarda o certificado usado para validar conexões HTTPS com a API.
 #pragma once
 // Certificado RAIZ da CA que assina o HTTPS da API (formato PEM).
 // Let's Encrypt: ISRG Root X1 (https://letsencrypt.org/certs/isrgrootx1.pem).

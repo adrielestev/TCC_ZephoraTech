@@ -1,3 +1,4 @@
+// src/core/api/upload.ts -- Seleciona uma imagem e a envia para a API como arquivo multipart.
 import type { ImagePickerAsset } from 'expo-image-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';

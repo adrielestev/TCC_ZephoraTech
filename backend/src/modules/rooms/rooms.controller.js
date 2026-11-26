@@ -1,3 +1,4 @@
+// Liga as requisições de salas às funções do serviço.
 'use strict';
 
 const service = require('./rooms.service');

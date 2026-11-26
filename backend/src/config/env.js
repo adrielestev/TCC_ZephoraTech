@@ -1,3 +1,4 @@
+// Valida as variáveis de ambiente e exporta as configurações da API.
 'use strict';
 
 const path = require('node:path');

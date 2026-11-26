@@ -1,3 +1,4 @@
+// src/features/admin/screens/AdminHomeScreen.tsx -- Apresenta os atalhos de administração disponíveis conforme as permissões do usuário.
 import { useRouter, type Href } from 'expo-router';
 import { routes } from '@/core/navigation/routes';
 import { type IconName } from '@/ui/Icon';

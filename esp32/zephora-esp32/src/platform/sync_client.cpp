@@ -1,3 +1,4 @@
+// Envia dados de sincronização à API por HTTP ou HTTPS.
 #include "sync_client.h"
 
 #include <Arduino.h>

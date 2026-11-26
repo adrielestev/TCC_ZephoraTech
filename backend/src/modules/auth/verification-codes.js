@@ -1,3 +1,4 @@
+// Gera, armazena e verifica os códigos de confirmação e recuperação.
 'use strict';
 
 const env = require('../../config/env');

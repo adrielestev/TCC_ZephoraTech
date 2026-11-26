@@ -36,6 +36,9 @@ arduino-cli config add board_manager.additional_urls https://espressif.github.io
 arduino-cli core update-index
 arduino-cli core install esp32:esp32
 arduino-cli lib install ArduinoJson
+arduino-cli lib install "DHT sensor library"
+arduino-cli lib install "Adafruit Unified Sensor"
+
 arduino-cli board list
 arduino-cli compile .
 arduino-cli upload -p COM3 .

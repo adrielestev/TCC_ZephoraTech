@@ -1,3 +1,4 @@
+// Define as rotas para consultar e administrar salas e suas fotos.
 'use strict';
 
 const { Router } = require('express');

@@ -1,3 +1,4 @@
+// Cria e configura a aplicação Express e seus caminhos principais.
 'use strict';
 
 const cors = require('cors');

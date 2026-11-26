@@ -1,3 +1,4 @@
+// src/ui/Selectors.tsx -- Fornece controles compactos de seleção e linhas com caixa de confirmação.
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon } from './Icon';

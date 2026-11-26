@@ -1,3 +1,4 @@
+// Define os papéis de usuário e identifica administradores.
 'use strict';
 
 const ROLES = Object.freeze({

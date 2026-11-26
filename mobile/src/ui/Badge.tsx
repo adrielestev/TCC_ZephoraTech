@@ -1,3 +1,4 @@
+// src/ui/Badge.tsx -- Apresenta um rótulo compacto com cores conforme sua finalidade.
 import { StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { Icon, type IconName } from './Icon';

@@ -1,3 +1,4 @@
+// src/features/automations/screens/AutomationManageScreen.tsx -- Mostra os detalhes de uma automação e permite removê-la da sala.
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';

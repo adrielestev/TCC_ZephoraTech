@@ -1,3 +1,4 @@
+// Define erros da aplicação com códigos e respostas HTTP.
 'use strict';
 
 class AppError extends Error {

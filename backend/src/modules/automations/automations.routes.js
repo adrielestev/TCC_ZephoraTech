@@ -1,3 +1,4 @@
+// Define as rotas para consultar e administrar automações.
 'use strict';
 
 const { Router } = require('express');

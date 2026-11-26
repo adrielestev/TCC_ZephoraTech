@@ -1,3 +1,4 @@
+// src/features/esp32/hooks.ts -- Fornece consultas e ações de módulos ESP32 integradas ao cache de dados.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { qk } from '@/core/query/keys';
 import { esp32Api, type DeviceRegistration } from './api';
